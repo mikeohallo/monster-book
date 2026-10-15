@@ -1,12 +1,12 @@
 # Monster Book
 
-A tiny website for a four-year-old. Flip a monster's head, body and legs, answer four questions about the monster you made, and get a card to print. Or play monster match.
+A tiny website for a four-year-old. Flip a monster's head, body and legs, answer four questions about the monster you made, and get a card to print. Or play games with the monsters.
 
 **Try it:** [monsters.mikeohalloran.au](https://monsters.mikeohalloran.au/)
 
 Built with [Claude](https://claude.ai) in a day, alongside the printed book it goes with.
 
-![Flip a monster, meet it, make its card, and play monster match](docs/screenshot.png)
+![Flip a monster, make its card, then play Whack-a-monster and Monster bedtime](docs/screenshot.png)
 
 ## The story
 
@@ -23,7 +23,13 @@ The site does the same thing as the book, on a phone:
 
 A gift copy of the book gets a link like `?for=Max`, and the site becomes Max's Monster Book.
 
-Then it got one thing the book can't do: **Monster match**, a memory game with the 30 monsters. Cards start face down; turn two over, and if they're the same monster they stay. Four levels, from 6 pairs up to all 30 (60 cards), and the best score for each level is kept on the device. `monsters.mikeohalloran.au/#match` opens straight on the game.
+Then it got things the book can't do: a **Games** tab, with three games made from the same 30 monsters.
+
+- **Monster match.** A memory game. Cards start face down; turn two over, and if they're the same monster they stay. Four levels, from 6 pairs up to all 30 (60 cards).
+- **Whack-a-monster.** Monsters pop up out of holes and you bop them. A round is 20 monsters, not a countdown. Hard adds sleepy monsters you have to leave alone, or they wake up grumpy.
+- **Monster bedtime.** Your own saved monsters go to bed. Tap one and it hops onto a pillow, under a blanket in the colour and texture of its body; tap its lamp and it starts snoring. When they're all asleep the lights go down, the stars come out and Twinkle Twinkle plays on a music box. No score, no way to lose.
+
+Each game has its own link (`/#match`, `/#whack`, `/#bedtime`), and best scores are kept on the device.
 
 ## How it's built
 
@@ -42,8 +48,9 @@ That was the main design decision. The obvious version of this site has user acc
 - **White tummies.** Cutting the monsters out of the print files by colour left the white tummies transparent. The fix was to build a solid silhouette of each monster first, then use that as the alpha mask. Same trick for the printed cut lines that cross pale tummies at the joins.
 - **iPhones delete site data.** Safari removes a site's saved data if you don't open it for seven days of Safari use. Adding the site to the Home Screen avoids that. It's why there's a backup button.
 - **Nothing to type.** A four-year-old can't type H12, but she can swipe. The codes are the parent's shortcut; the swipe is hers.
-- **Nothing to read, either.** Each tab has a picture above its label (a monster for Make, two matching cards for Match, a heart for My monsters), so she can find the game herself. The address follows the tabs, so a reload keeps her where she was.
-- **One link for the book.** The printed book's QR code still opens on Make. The game is a tab, not the front door, so nobody coming from the book has an extra tap.
+- **Nothing to read, either.** Each tab has a picture above its label (a monster for Make, a game controller for Games, a heart for My monsters), and the games page is three big pictures, so she can find a game herself. The address follows the tabs, so a reload keeps her where she was.
+- **Sounds without sound files.** The boings, the snores and the lullaby are all made in the browser with the Web Audio API, so the site is still one HTML file and the images. There's a mute button, and it's remembered.
+- **One link for the book.** The printed book's QR code still opens on Make. The games are a tab, not the front door, so nobody coming from the book has an extra tap.
 
 ## What's in this repo
 
@@ -54,7 +61,8 @@ That was the main design decision. The obvious version of this site has user acc
 | `tools/build_site.py` | Wraps the page for hosting and sets the generic title |
 | `tools/test_site.py` | Drives the site in Chromium at phone size: flipping, swiping, codes, saving, backup, restore |
 | `tools/test_match.py` | Plays the match game: a wrong pair flips back, a full game ends in a win, the best score sticks, every level fits a phone |
-| `tools/test_links.py` | The tab bar fits at 360–430 px, and `#match` / `#monsters` links and gift links work |
+| `tools/test_links.py` | The tab bar fits at 360–430 px, and the `#games`, `#match`, `#whack`, `#bedtime` and `#monsters` links and gift links work |
+| `tools/test_games.py` | Plays Whack-a-monster and Monster bedtime with the page clock fast-forwarded: a perfect round, an empty round, a sleepy monster on Hard, a full bedtime from tuck-in to Good morning |
 | `docs/` | Screenshots |
 
 The monster images aren't in the repo; they're the book. Everything else is.

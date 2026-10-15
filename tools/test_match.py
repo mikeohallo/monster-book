@@ -24,7 +24,7 @@ with sync_playwright() as pw:
     page.on('console', lambda m: m.type == 'error' and problems.append(f'console error: {m.text}'))
     page.on('pageerror', lambda e: problems.append(f'page error: {e}'))
     page.goto(f'http://127.0.0.1:{PORT}/index.html'); page.wait_for_timeout(800)
-    page.click('#tabMatch'); page.wait_for_timeout(600)
+    page.click('#tabGames'); page.click('#playMatch'); page.wait_for_timeout(600)
     print('tabs fit:', page.evaluate("document.querySelector('.tabs').scrollWidth <= document.querySelector('.tabs').clientWidth"),
           '| page wider than screen:', page.evaluate('document.documentElement.scrollWidth > innerWidth'))
     page.screenshot(path=OUT / 'm1_easy.png', full_page=True)
