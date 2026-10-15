@@ -1,12 +1,12 @@
 # Monster Book
 
-A tiny website for a young child. Flip a monster's head, body and legs, answer four questions about the monster you made, and get a card to print.
+A tiny website for a young child. Flip a monster's head, body and legs, answer four questions about the monster you made, and get a card to print. Or play monster match.
 
 **Try it:** [monsters.mikeohalloran.au](https://monsters.mikeohalloran.au/)
 
 Built with [Claude](https://claude.ai) in a day, alongside the printed book it goes with.
 
-![Flip a monster, meet it, and make its card](docs/screenshot.png)
+![Flip a monster, meet it, make its card, and play monster match](docs/screenshot.png)
 
 ## The story
 
@@ -22,6 +22,8 @@ The site does the same thing as the book, on a phone:
 4. **My monsters.** Every saved monster, on that device, with backup and restore.
 
 A gift copy of the book gets a link like `?for=Max`, and the site becomes Max's Monster Book.
+
+Then it got one thing the book can't do: **Monster match**, a memory game with the 30 monsters. Cards start face down; turn two over, and if they're the same monster they stay. Four levels, from 6 pairs up to all 30 (60 cards), and the best score for each level is kept on the device. `monsters.mikeohalloran.au/#match` opens straight on the game.
 
 ## How it's built
 
@@ -40,6 +42,8 @@ That was the main design decision. The obvious version of this site has user acc
 - **White tummies.** Cutting the monsters out of the print files by colour left the white tummies transparent. The fix was to build a solid silhouette of each monster first, then use that as the alpha mask. Same trick for the printed cut lines that cross pale tummies at the joins.
 - **iPhones delete site data.** Safari removes a site's saved data if you don't open it for seven days of Safari use. Adding the site to the Home Screen avoids that. It's why there's a backup button.
 - **Nothing to type.** A young child can't type H12, but she can swipe. The codes are the parent's shortcut; the swipe is hers.
+- **Nothing to read, either.** Each tab has a picture above its label (a monster for Make, two matching cards for Match, a heart for My monsters), so she can find the game herself. The address follows the tabs, so a reload keeps her where she was.
+- **One link for the book.** The printed book's QR code still opens on Make. The game is a tab, not the front door, so nobody coming from the book has an extra tap.
 
 ## What's in this repo
 
@@ -49,6 +53,8 @@ That was the main design decision. The obvious version of this site has user acc
 | `tools/make_web_strips.py` | Cuts the 90 strip images and 30 face icons from the book's print pages |
 | `tools/build_site.py` | Wraps the page for hosting and sets the generic title |
 | `tools/test_site.py` | Drives the site in Chromium at phone size: flipping, swiping, codes, saving, backup, restore |
+| `tools/test_match.py` | Plays the match game: a wrong pair flips back, a full game ends in a win, the best score sticks, every level fits a phone |
+| `tools/test_links.py` | The tab bar fits at 360–430 px, and `#match` / `#monsters` links and gift links work |
 | `docs/` | Screenshots |
 
 The monster images aren't in the repo; they're the book. Everything else is.
