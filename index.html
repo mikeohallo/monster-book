@@ -389,6 +389,56 @@ button { cursor: pointer; }
   .bed .slot img, .bed .blanket, .night, .rstars { transition: none; }
 }
 
+/* ---------- spooky tiles ---------- */
+.spooky-head { display: flex; align-items: center; gap: 8px; margin: 10px 0 -2px; font-size: 22px; }
+.spooky-head svg { width: 22px; height: 22px; fill: var(--purple); }
+.gpic.torchpic { background: #15122E; }
+.gpic.torchpic img { position: absolute; width: 50px; left: 34px; top: 30px; }
+.gpic.torchpic .beam { position: absolute; inset: 0; background: radial-gradient(circle at 58px 52px, rgba(255, 226, 140, .12) 0 26px, rgba(21, 18, 46, .92) 40px); }
+.gpic.pumpkinpic { background: linear-gradient(#2E2660, #4B3D7A); display: grid; place-items: center; }
+.gpic.pumpkinpic svg { width: 84px; height: 84px; }
+
+/* ---------- torch hunt ---------- */
+.tray { display: flex; justify-content: center; gap: 8px; min-height: 48px; flex-wrap: wrap; }
+.tray span { width: 46px; height: 46px; border-radius: 50%; border: 2.5px dashed var(--line); background: var(--card); display: grid; place-items: center; overflow: hidden; }
+.tray span.got { border: 2.5px solid var(--yellow); background: #FFF6D6; animation: bounce .5s ease; }
+.tray img { width: 40px; height: 40px; }
+.troom {
+  position: relative; aspect-ratio: 3 / 4; width: 100%; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow);
+  touch-action: none; user-select: none; -webkit-user-select: none; cursor: none; background: #2A2147;
+}
+.troom svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.tbg { z-index: 0; }
+.tmons img { position: absolute; z-index: 1; translate: -50% -50%; pointer-events: none; -webkit-user-drag: none; }
+.tfg { z-index: 2; pointer-events: none; }
+.tmons.front img { z-index: 3; }
+.tfg2 { z-index: 4; pointer-events: none; }
+.tdark { position: absolute; inset: 0; z-index: 5; pointer-events: none; transition: opacity 1.2s ease; }
+.troom.lit .tdark { opacity: 0; }
+.tfound { position: absolute; inset: 0; z-index: 6; pointer-events: none; }
+.tfound img { position: absolute; translate: -50% -50%; filter: drop-shadow(0 0 10px rgba(255, 226, 140, .9)); animation: popout .6s cubic-bezier(.3, 1.6, .5, 1) both, wave 1.4s ease-in-out .6s infinite; }
+.troom.lit .tfound img { filter: drop-shadow(0 3px 0 rgba(58, 40, 82, .25)); }
+@keyframes popout { 0% { transform: translateY(0) scale(1); } 100% { transform: translateY(-14%) scale(1.25); } }
+@keyframes wave { 0%, 100% { transform: translateY(-14%) scale(1.25) rotate(-6deg); } 50% { transform: translateY(-20%) scale(1.25) rotate(6deg); } }
+.troom .hint { position: absolute; z-index: 7; left: 50%; bottom: 14px; translate: -50% 0; color: #FFF3C4; font-family: var(--font-display); font-weight: 600; font-size: 17px; pointer-events: none; transition: opacity .4s; text-shadow: 0 2px 6px rgba(0,0,0,.6); white-space: nowrap; }
+@media (prefers-reduced-motion: reduce) { .tfound img, .tray span.got { animation: none; } .tdark { transition: none; } }
+
+/* ---------- pumpkin face maker ---------- */
+.pkstage { border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; background: #FFF3DC; transition: background .6s; touch-action: manipulation; }
+.pkstage.lit { background: #1B1638; }
+.pkstage svg { display: block; width: 100%; height: auto; }
+.pkstage .hitzone { cursor: pointer; }
+.pkrows { display: flex; flex-direction: column; gap: 8px; }
+.pkrow { display: grid; grid-template-columns: 52px 1fr 52px; align-items: center; gap: 8px; background: var(--card); border-radius: 16px; box-shadow: var(--shadow); padding: 6px; }
+.pkrow button { width: 52px; height: 52px; border-radius: 50%; border: 2px solid var(--line); background: var(--paper); display: grid; place-items: center; }
+.pkrow button svg { width: 22px; height: 22px; stroke: var(--ink); stroke-width: 3; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.pkrow div { text-align: center; line-height: 1.15; }
+.pkrow b { display: block; font-family: var(--font-display); font-weight: 600; font-size: 19px; }
+.pkrow small { display: block; color: var(--ink-soft); font-weight: 800; font-size: 13px; }
+.pkglow { animation: flicker 2.2s ease-in-out infinite; }
+@keyframes flicker { 0%, 100% { opacity: .85; } 18% { opacity: 1; } 31% { opacity: .7; } 47% { opacity: .95; } 63% { opacity: .78; } 80% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .pkglow { animation: none; } .pkstage { transition: none; } }
+
 /* ---------- library ---------- */
 .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .tile { border: 0; padding: 0; background: none; text-align: left; display: flex; flex-direction: column; gap: 6px; }
@@ -498,6 +548,13 @@ button { cursor: pointer; }
       <button class="gametile" id="playBed" type="button">
         <span class="gpic bedpic" aria-hidden="true"><span class="gmoon"></span><span class="gpillow"></span><img src="faces/F21.webp" alt=""><span class="gblanket"></span><span class="gz">z<small>z</small></span></span>
         <span><b>Monster bedtime</b><small>Tuck them in and say goodnight</small></span></button>
+      <h2 class="h2 spooky-head"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"/></svg>Spooky</h2>
+      <button class="gametile" id="playTorch" type="button">
+        <span class="gpic torchpic" aria-hidden="true"><img src="faces/F26.webp" alt=""><span class="beam"></span></span>
+        <span><b>Torch hunt</b><small>Shine the torch to find who's hiding in the dark</small></span></button>
+      <button class="gametile" id="playPumpkin" type="button">
+        <span class="gpic pumpkinpic" aria-hidden="true"><svg viewBox="0 0 100 100"><path d="M47 22c-1-6 1-11 6-14l4 3c-4 3-5 7-4 11z" fill="#6B8E3A" stroke="#3A2852" stroke-width="2.5" stroke-linejoin="round"/><ellipse cx="34" cy="58" rx="24" ry="33" fill="#E06C1A" stroke="#3A2852" stroke-width="3"/><ellipse cx="66" cy="58" rx="24" ry="33" fill="#E06C1A" stroke="#3A2852" stroke-width="3"/><ellipse cx="50" cy="58" rx="22" ry="36" fill="#F4882C" stroke="#3A2852" stroke-width="3"/><path d="M30 44l8 12H22zM70 44l8 12H62z" fill="#FFD85C"/><path d="M28 66q22 20 44 0q-22 9-44 0z" fill="#FFD85C"/></svg></span>
+        <span><b>Pumpkin face maker</b><small>Make a jack-o'-lantern, then print a stencil to carve</small></span></button>
     </div>
   </section>
 
@@ -560,6 +617,53 @@ button { cursor: pointer; }
       <p class="goodnight" id="goodnight" hidden></p>
     </div>
     <button class="btn primary" id="morning" hidden>Good morning!</button>
+  </section>
+
+  <!-- TORCH HUNT -->
+  <section id="torchgame" class="stack" hidden aria-label="Torch hunt">
+    <div class="gamebar"><button class="back" type="button" data-go="games"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>All games</button><button class="mute" type="button"></button></div>
+    <div class="panel">
+      <h2 class="h2">Torch hunt</h2>
+      <p class="lede">It's dark! Drag your finger to shine the torch and find the monsters hiding in the bedroom.</p>
+      <div class="levels three" id="tLevels" role="group" aria-label="How many monsters"></div>
+    </div>
+    <div class="tray" id="tTray" aria-live="polite"></div>
+    <div class="troom" id="tRoom" role="application" aria-label="A dark bedroom. Drag to move the torch.">
+      <svg class="tbg" viewBox="0 0 360 480" preserveAspectRatio="none" aria-hidden="true" id="tBg"></svg>
+      <div class="tmons" id="tMons"></div>
+      <svg class="tfg" viewBox="0 0 360 480" preserveAspectRatio="none" aria-hidden="true" id="tFg"></svg>
+      <div class="tmons front" id="tMonsFront"></div>
+      <svg class="tfg2" viewBox="0 0 360 480" preserveAspectRatio="none" aria-hidden="true" id="tFg2"></svg>
+      <div class="tdark" id="tDark"></div>
+      <div class="tfound" id="tFound"></div>
+    </div>
+    <div class="panel win" id="tWin" hidden>
+      <h2 class="h2">You found them all!</h2>
+      <p class="lede" id="tWinText"></p>
+      <button class="btn primary" id="tAgain">Play again</button>
+    </div>
+  </section>
+
+  <!-- PUMPKIN FACE MAKER -->
+  <section id="pumpkingame" class="stack" hidden aria-label="Pumpkin face maker">
+    <div class="gamebar"><button class="back" type="button" data-go="games"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>All games</button><button class="mute" type="button"></button></div>
+    <div class="pkstage" id="pkStage">
+      <svg id="pk" viewBox="0 0 400 380" role="img" aria-label="Your pumpkin"></svg>
+    </div>
+    <div class="pkrows" id="pkRows"></div>
+    <div class="row2">
+      <button class="btn" id="pkShuffle"><svg viewBox="0 0 24 24"><path d="M3 7h3c5 0 7 10 12 10h3M18 14l3 3-3 3M3 17h3c1.6 0 2.8-1 3.8-2.4M14.2 9.4C15.2 8 16.4 7 18 7h3M18 4l3 3-3 3"/></svg>Shuffle</button>
+      <button class="btn primary" id="pkLight"><svg viewBox="0 0 24 24"><path d="M12 3c2 3 4 4.5 4 8a4 4 0 0 1-8 0c0-2 1-3 2-4 0 1.5.8 2.5 2 3 0-2.5-.6-4.5 0-7z"/><path d="M10 21h4"/></svg>Light it!</button>
+    </div>
+    <div class="panel pkprint">
+      <h2 class="h2">Carve the real one</h2>
+      <p class="lede">Print this face as a stencil on plain A4 paper. Tape it to the pumpkin, poke along the lines, then a grown-up does the carving.</p>
+      <div class="levels three" id="pkSizes" role="group" aria-label="Pumpkin size"></div>
+      <div class="row2">
+        <button class="btn" id="pkSave">Save picture</button>
+        <button class="btn" id="pkStencil">Print stencil</button>
+      </div>
+    </div>
   </section>
 
   <!-- LIBRARY -->
@@ -941,12 +1045,13 @@ async function renderCard(rec) {
 }
 
 // ------------------------------------------------------------- screens ---
-const screens = ['make', 'meet', 'card', 'games', 'matchgame', 'whackgame', 'bedgame', 'library'];
-const GAME_SCREENS = ['games', 'matchgame', 'whackgame', 'bedgame'];
-const HASHES = { games: '#games', matchgame: '#match', whackgame: '#whack', bedgame: '#bedtime', library: '#monsters' };
+const screens = ['make', 'meet', 'card', 'games', 'matchgame', 'whackgame', 'bedgame', 'torchgame', 'pumpkingame', 'library'];
+const GAME_SCREENS = ['games', 'matchgame', 'whackgame', 'bedgame', 'torchgame', 'pumpkingame'];
+const HASHES = { games: '#games', matchgame: '#match', whackgame: '#whack', bedgame: '#bedtime', torchgame: '#torch', pumpkingame: '#pumpkin', library: '#monsters' };
 function show(id) {
   if (id !== 'whackgame') stopWhack();
   if (id !== 'bedgame') bedQuiet();
+  if (id !== 'torchgame') stopTorch();
   screens.forEach(s => { $(s).hidden = s !== id; });
   $('tabMake').setAttribute('aria-selected', String(['make', 'meet', 'card'].includes(id)));
   $('tabGames').setAttribute('aria-selected', String(GAME_SCREENS.includes(id)));
@@ -962,6 +1067,8 @@ function openGame(id) {
   if (id === 'matchgame') { if (!game.started) newGame(); show('matchgame'); }
   else if (id === 'whackgame') { show('whackgame'); resetWhack(); }
   else if (id === 'bedgame') openBedtime();
+  else if (id === 'torchgame') { show('torchgame'); newTorch(); }
+  else if (id === 'pumpkingame') { show('pumpkingame'); drawPumpkin(); }
   else show('games');
   preloadFaces();
 }
@@ -1209,6 +1316,15 @@ const sound = (() => {
       try { g.gain.setTargetAtTime(0, ctx.currentTime, .12); setTimeout(() => g.disconnect(), 800); } catch (e) {}
     },
     morning() { [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((f, i) => tone({ f0: f, dur: .25, vol: .1, at: i * .09 })); },
+    boo() {   // a friendly "boo!": a wobbly slide down
+      const c = ac(); if (!c) return;
+      const t = c.currentTime, o = c.createOscillator(), g = c.createGain(), lfo = c.createOscillator(), lg = c.createGain();
+      o.type = 'triangle'; o.frequency.setValueAtTime(420, t); o.frequency.exponentialRampToValueAtTime(230, t + .45);
+      lfo.frequency.value = 9; lg.gain.value = 18; lfo.connect(lg); lg.connect(o.frequency);
+      env(g, t, .14, .04, .5); o.connect(g); g.connect(master); o.start(t); lfo.start(t); o.stop(t + .55); lfo.stop(t + .55);
+    },
+    giggle() { [0, .1, .2, .3].forEach((at, i) => tone({ f0: 700 + i * 60, f1: 900 + i * 60, dur: .08, vol: .07, at: .45 + at })); },
+    whoosh() { hiss({ dur: .6, f0: 300, f1: 1800, q: .6, vol: .08, attack: .15 }); [659.25, 880, 1318.5].forEach((f, i) => tone({ f0: f, dur: .5, vol: .05, at: .35 + i * .08 })); },
   };
 })();
 const SPEAKER_ON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path class="cone" d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18.2 6.5a7.6 7.6 0 0 1 0 11"/></svg>';
@@ -1456,6 +1572,328 @@ function goodMorning() {
   setupBed();
 }
 
+// ------------------------------------------------------------- torch hunt -
+// The room is drawn twice: the wall and floor behind the monsters, the furniture in front, so a
+// monster peeks over the couch or out of the toy box. A dark layer on top has a hole where the torch is.
+const T_BG = `<rect width="360" height="300" fill="#EBDDF4"/>
+  <g fill="#E1CFEE">${Array.from({ length: 12 }, (_, i) => `<rect x="${i * 30 + 8}" y="0" width="13" height="300"/>`).join('')}</g>
+  <rect y="300" width="360" height="180" fill="#C99A6B"/>
+  <g stroke="#B5845A" stroke-width="2">${[334, 370, 410, 450].map(y => `<line x1="0" y1="${y}" x2="360" y2="${y}"/>`).join('')}</g>
+  <rect y="294" width="360" height="9" fill="#FFF8EC"/>
+  <rect x="236" y="44" width="96" height="104" rx="6" fill="#1E1A45"/>
+  <circle cx="312" cy="66" r="11" fill="#FFE58A"/><circle cx="306" cy="62" r="10" fill="#1E1A45"/>
+  <g fill="#fff">${[[252, 60], [270, 92], [318, 118], [246, 126], [292, 74]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.6"/>`).join('')}</g>
+  <ellipse cx="172" cy="446" rx="126" ry="26" fill="#F3B5D3"/><ellipse cx="172" cy="446" rx="96" ry="17" fill="none" stroke="#F8D4E4" stroke-width="5"/>`;
+const T_FG = `<g stroke="#3A2852" stroke-width="4" stroke-linejoin="round">
+  <rect x="118" y="58" width="60" height="46" rx="4" fill="#FFF8EC" stroke="#E2A86B" stroke-width="6"/>
+  <circle cx="135" cy="74" r="7" fill="#F2C828" stroke="none"/><path d="M122 100l18-14 12 8 10-6 14 12z" fill="#68B242" stroke="none"/>
+  <rect x="236" y="44" width="96" height="104" rx="6" fill="none" stroke="#FFF8EC" stroke-width="8"/>
+  <line x1="284" y1="44" x2="284" y2="148" stroke="#FFF8EC" stroke-width="6"/>
+  <rect x="228" y="146" width="112" height="12" rx="3" fill="#FFF8EC" stroke-width="3"/>
+  <line x1="204" y1="34" x2="358" y2="34" stroke-width="5"/>
+  <path d="M212 32h28c-6 30 6 60-2 100 4 30-4 52 2 76h-26c4-40-6-70 0-100-4-30 2-50-2-76z" fill="#A880D6"/>
+  <path d="M330 32h28c-4 34 4 66-2 104 4 26-2 48 2 72h-26c4-36-6-66 0-98-4-30 2-52-2-78z" fill="#A880D6"/>
+  <rect x="14" y="120" width="88" height="182" rx="4" fill="#B07A4F"/>
+  ${[165, 210, 255].map(y => `<line x1="14" y1="${y}" x2="102" y2="${y}"/>`).join('')}
+  ${[[20, 130, '#EC6AA8'], [32, 134, '#54A6E2'], [44, 128, '#F2C828'], [58, 136, '#68B242'], [76, 176, '#A880D6'], [22, 180, '#F4882C'], [36, 176, '#54A6E2'], [26, 222, '#68B242'], [42, 226, '#EC6AA8'], [60, 220, '#F2C828'], [74, 268, '#EC6AA8'], [22, 266, '#A880D6']]
+      .map(([x, y, c]) => `<rect x="${x}" y="${y}" width="11" height="${(y % 5) + 30}" rx="2" fill="${c}" stroke-width="2.5"/>`).join('')}
+  <rect x="246" y="262" width="104" height="70" rx="16" fill="#F7C6DD"/>
+  <rect x="236" y="318" width="120" height="52" rx="10" fill="#FFF8EC"/>
+  <rect x="236" y="332" width="120" height="40" rx="8" fill="#68B242"/>
+  <ellipse cx="282" cy="320" rx="28" ry="13" fill="#fff" stroke="#C9BCD8" stroke-width="3"/>
+  <rect x="234" y="368" width="124" height="14" rx="4" fill="#B07A4F"/>
+  <rect x="240" y="380" width="10" height="16" fill="#8A5A36"/><rect x="342" y="380" width="10" height="16" fill="#8A5A36"/>
+  <rect x="30" y="318" width="180" height="46" rx="18" fill="#54A6E2"/>
+  <rect x="24" y="352" width="192" height="40" rx="12" fill="#7CC0EE"/>
+  <rect x="16" y="336" width="30" height="62" rx="13" fill="#54A6E2"/><rect x="194" y="336" width="30" height="62" rx="13" fill="#54A6E2"/>
+  <rect x="34" y="396" width="10" height="12" fill="#8A5A36"/><rect x="196" y="396" width="10" height="12" fill="#8A5A36"/>
+  <ellipse cx="306" cy="372" rx="16" ry="30" fill="#68B242" transform="rotate(-24 306 372)"/>
+  <ellipse cx="334" cy="370" rx="16" ry="30" fill="#5AA03A" transform="rotate(22 334 370)"/>
+  <ellipse cx="320" cy="388" rx="14" ry="26" fill="#68B242"/>
+  <path d="M300 414h42l-6 50h-30z" fill="#F4882C"/>
+</g>`;
+const T_FG2 = `<g stroke="#3A2852" stroke-width="4" stroke-linejoin="round">
+  <rect x="126" y="404" width="82" height="54" rx="6" fill="#F2C828"/>
+  <rect x="122" y="398" width="90" height="12" rx="4" fill="#F4882C"/>
+  <path d="M167 418l5 10 11 1-8 7 3 11-11-6-10 6 3-11-8-7 11-1z" fill="#fff" stroke-width="2"/>
+</g>`;
+// where monsters can hide (centre and size in room units, 360 x 480); front: in front of the couch, behind the toy box
+const T_SPOTS = [
+  { x: 126, y: 300, s: 46 }, { x: 182, y: 302, s: 44 }, { x: 80, y: 410, s: 32 }, { x: 300, y: 250, s: 40 },
+  { x: 300, y: 406, s: 32 }, { x: 167, y: 394, s: 46, front: true }, { x: 114, y: 424, s: 34, front: true }, { x: 296, y: 134, s: 44 },
+  { x: 220, y: 190, s: 40 }, { x: 58, y: 102, s: 44 }, { x: 108, y: 232, s: 40 }, { x: 178, y: 66, s: 32 },
+];
+const TLEVELS = [
+  { name: 'Easy', sub: '3 monsters', n: 3, r: .25, s: 1 },
+  { name: 'Medium', sub: '5 monsters', n: 5, r: .2, s: .95 },
+  { name: 'Hard', sub: '8 monsters', n: 8, r: .16, s: .8 },
+];
+const tor = { level: 0, hidden: [], found: 0, x: .5, y: .55, timer: null, running: false, moved: false };
+function buildTorch() {
+  $('tBg').innerHTML = T_BG; $('tFg').innerHTML = T_FG; $('tFg2').innerHTML = T_FG2;
+  const lv = $('tLevels'); lv.textContent = '';
+  TLEVELS.forEach((L, i) => {
+    const b = document.createElement('button'); b.className = 'level'; b.type = 'button';
+    b.innerHTML = '<span></span><small></small>'; b.firstChild.textContent = L.name; b.lastChild.textContent = L.sub;
+    b.addEventListener('click', () => { tor.level = i; newTorch(); });
+    lv.append(b);
+  });
+  const room = $('tRoom');
+  const move = e => {
+    const r = room.getBoundingClientRect();
+    tor.x = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
+    tor.y = Math.min(1, Math.max(0, (e.clientY - r.top) / r.height));
+    if (!tor.moved) { tor.moved = true; const h = room.querySelector('.hint'); if (h) h.style.opacity = '0'; }
+    drawTorch(); checkTorch();
+  };
+  room.addEventListener('pointerdown', e => { sound.unlock(); room.setPointerCapture?.(e.pointerId); move(e); });
+  room.addEventListener('pointermove', move);
+  addEventListener('resize', () => { if (!$('torchgame').hidden) drawTorch(); });
+}
+function drawTorch() {
+  const room = $('tRoom'), w = room.clientWidth, h = room.clientHeight;
+  const R = TLEVELS[tor.level].r * w, x = tor.x * w, y = tor.y * h;
+  $('tDark').style.background = `radial-gradient(circle at ${x}px ${y}px, rgba(255, 232, 160, .10) 0, rgba(255, 232, 160, .06) ${R * .62}px, rgba(10, 8, 30, .96) ${R}px)`;
+}
+function stopTorch() { clearInterval(tor.timer); tor.timer = null; tor.running = false; }
+function newTorch() {
+  stopTorch();
+  const L = TLEVELS[tor.level];
+  document.querySelectorAll('#tLevels .level').forEach((b, i) => b.setAttribute('aria-pressed', String(i === tor.level)));
+  const room = $('tRoom'); room.classList.remove('lit');
+  $('tMons').textContent = ''; $('tMonsFront').textContent = ''; $('tFound').textContent = ''; $('tWin').hidden = true;
+  room.querySelector('.hint')?.remove();
+  const hint = document.createElement('div'); hint.className = 'hint'; hint.textContent = 'Drag to shine the torch'; room.append(hint);
+  const spots = shuffleArr([...T_SPOTS]).slice(0, L.n);
+  const faces = shuffleArr([...Array(N).keys()].map(i => i + 1)).slice(0, L.n);
+  tor.hidden = spots.map((sp, i) => {
+    const img = new Image(); img.alt = ''; img.draggable = false; img.src = `faces/F${pad(faces[i])}.webp`;
+    const size = sp.s * L.s;
+    Object.assign(img.style, { left: `${sp.x / 3.6}%`, top: `${sp.y / 4.8}%`, width: `${size / 3.6}%` });
+    (sp.front ? $('tMonsFront') : $('tMons')).append(img);
+    return { el: img, n: faces[i], x: sp.x / 360, y: sp.y / 480, size, found: false, litSince: 0 };
+  });
+  const tray = $('tTray'); tray.textContent = '';
+  tor.hidden.forEach(() => tray.append(document.createElement('span')));
+  tor.found = 0; tor.x = .5; tor.y = .55; tor.moved = false; tor.running = true;
+  room.setAttribute('aria-label', `A dark bedroom with ${L.n} monsters hiding. Drag to move the torch.`);
+  drawTorch();
+  tor.timer = setInterval(checkTorch, 90);   // a torch held still still finds things
+  // bring the whole room into view (the instructions sit above it)
+  setTimeout(() => { if (!$('torchgame').hidden) $('tTray').scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' }); }, 60);
+}
+function checkTorch() {
+  if (!tor.running || !tor.moved) return;   // nothing counts until she starts moving the torch
+  const room = $('tRoom'), w = room.clientWidth, h = room.clientHeight, R = TLEVELS[tor.level].r * w, now = performance.now();
+  for (const m of tor.hidden) {
+    if (m.found) continue;
+    const d = Math.hypot((m.x - tor.x) * w, (m.y - tor.y) * h);
+    if (d < R * .6) {
+      if (!m.litSince) m.litSince = now;
+      else if (now - m.litSince > 180) foundTorch(m);
+    } else m.litSince = 0;
+  }
+}
+function foundTorch(m) {
+  m.found = true; tor.found++;
+  m.el.remove();
+  const pop = new Image(); pop.alt = mon(m.n).name; pop.src = m.el.src;
+  Object.assign(pop.style, { left: m.el.style.left, top: m.el.style.top, width: m.el.style.width });
+  $('tFound').append(pop);
+  sound.boo(); sound.giggle();
+  const slot = $('tTray').children[tor.found - 1];
+  if (slot) { slot.className = 'got'; const i = new Image(); i.alt = mon(m.n).name; i.src = m.el.src; slot.append(i); }
+  if (tor.found === tor.hidden.length) {
+    stopTorch();
+    setTimeout(() => {
+      if ($('torchgame').hidden) return;
+      $('tRoom').classList.add('lit'); sound.morning();
+      $('tWinText').textContent = `All ${tor.hidden.length} monsters found. Lights on!`;
+      $('tWin').hidden = false;
+    }, 900);
+  }
+}
+
+// ------------------------------------------------------------- pumpkin face maker -
+// Every shape is one piece of pumpkin to cut out, with teeth and tongues joined to the edge,
+// so nothing falls out when it's carved. Coordinates are in the 400 x 380 pumpkin picture.
+const circ = (cx, cy, r) => `M${cx - r} ${cy}a${r} ${r} 0 1 0 ${2 * r} 0a${r} ${r} 0 1 0 ${-2 * r} 0Z`;
+const poly = pts => 'M' + pts.map(p => p.map(v => Math.round(v * 10) / 10).join(' ')).join('L') + 'Z';
+const star = (cx, cy, R, r) => poly(Array.from({ length: 10 }, (_, i) => { const a = -Math.PI / 2 + i * Math.PI / 5, k = i % 2 ? r : R; return [cx + Math.cos(a) * k, cy + Math.sin(a) * k]; }));
+function smile({ x0 = 122, x1 = 278, y = 262, top = 60, bottom = 176, teeth = [] } = {}) {
+  // a crescent smile; teeth hang down from the top edge as [from x, to x, depth] (or a fang when depth < 0)
+  const pts = [], n = 48;
+  for (let i = 0; i <= n; i++) {
+    const x = x0 + (x1 - x0) * i / n, t = i / n; let yy = y + top * t * (1 - t);
+    for (const [a, b, d] of teeth) if (x >= a && x <= b) yy += d > 0 ? d : -d * (1 - Math.abs((x - (a + b) / 2) / ((b - a) / 2)));
+    pts.push([x, yy]);
+  }
+  for (let i = n; i >= 0; i--) { const x = x0 + (x1 - x0) * i / n, t = i / n; pts.push([x, y + bottom * t * (1 - t)]); }
+  return poly(pts);
+}
+function tongueMouth() {
+  const pts = [[146, 262], [254, 262]], cx = 200, rx = 54, ry = 52, tx = 210, tr = 21;
+  for (let i = 0; i <= 40; i++) {
+    const a = Math.PI * i / 40, x = cx + rx * Math.cos(a); let yy = 262 + ry * Math.sin(a);
+    if (Math.abs(x - tx) < tr) yy = Math.min(yy, 262 + ry - 2 - Math.sqrt(tr * tr - (x - tx) ** 2) * 1.15);
+    pts.push([x, yy]);
+  }
+  return poly(pts);
+}
+function wobblyMouth() {
+  const top = [], bot = [];
+  for (let i = 0; i <= 40; i++) { const x = 128 + 144 * i / 40, y = 278 + 9 * Math.sin(i / 40 * Math.PI * 3); top.push([x, y - 9]); bot.push([x, y + 9]); }
+  return poly([...top, ...bot.reverse()]);
+}
+const PK = {
+  eyes: [
+    { name: 'Round', d: circ(140, 170, 26) + circ(260, 170, 26) },
+    { name: 'Triangle', d: poly([[140, 140], [170, 194], [110, 194]]) + poly([[260, 140], [290, 194], [230, 194]]) },
+    { name: 'One big eye', d: circ(200, 154, 34) },
+    { name: 'Three eyes', d: circ(140, 176, 19) + circ(200, 150, 19) + circ(260, 176, 19) },
+    { name: 'Sleepy', d: 'M108 182Q140 134 172 182Q140 162 108 182Z M228 182Q260 134 292 182Q260 162 228 182Z' },
+    { name: 'Stars', d: star(140, 172, 32, 14) + star(260, 172, 32, 14) },
+  ],
+  nose: [
+    { name: 'Triangle', d: poly([[200, 202], [217, 234], [183, 234]]) },
+    { name: 'Button', d: circ(200, 220, 13) },
+    { name: 'Heart', d: 'M200 238C174 222 176 200 191 201C197 202 200 207 200 212C200 207 203 202 209 201C224 200 226 222 200 238Z' },
+    { name: 'No nose', d: '' },
+  ],
+  mouth: [
+    { name: 'Toothy grin', d: smile({ teeth: [[164, 180, 12], [220, 236, 12]] }) },
+    { name: 'Buck teeth', d: smile({ teeth: [[182, 218, 16]] }) },
+    { name: 'Fangs', d: smile({ x0: 112, x1: 288, bottom: 200, teeth: [[156, 176, -16], [224, 244, -16]] }) },
+    { name: 'Tongue out', d: tongueMouth() },
+    { name: 'Ooh', d: 'M200 258c14 0 22 13 22 28s-8 28-22 28-22-13-22-28 8-28 22-28z' },
+    { name: 'Wobbly', d: wobblyMouth() },
+  ],
+};
+const PK_PARTS = [['eyes', 'Eyes'], ['nose', 'Nose'], ['mouth', 'Mouth']];
+const PK_SIZES = [{ name: 'Small', sub: '12 cm face', cm: 12 }, { name: 'Medium', sub: '15 cm face', cm: 15 }, { name: 'Large', sub: '18 cm face', cm: 18 }];
+const pk = { eyes: 0, nose: 0, mouth: 0, lit: false, size: 1 };
+function pkFace() { return PK.eyes[pk.eyes].d + ' ' + PK.nose[pk.nose].d + ' ' + PK.mouth[pk.mouth].d; }
+function pkSvg() {
+  const L = pk.lit;
+  const lobes = [[110, 220, 92, 140], [290, 220, 92, 140], [158, 220, 86, 150], [242, 220, 86, 150], [200, 220, 84, 156]];
+  const fills = L ? ['#7A360C', '#7A360C', '#93430F', '#93430F', '#A84E13'] : ['#DC6618', '#DC6618', '#EB7720', '#EB7720', '#F6892C'];
+  const rib = L ? '#5E2808' : '#C1560F';
+  const stars = L ? [[40, 50], [80, 120], [350, 70], [320, 140], [60, 300], [365, 260], [30, 200], [150, 30], [262, 26]]
+    .map(([x, y]) => `<circle cx="${x}" cy="${y}" r="2" fill="#FFF6C8"/>`).join('') : '';
+  const face = pkFace();
+  return `<defs>
+      <radialGradient id="pkLitG" cx="50%" cy="45%" r="65%"><stop offset="0" stop-color="#FFF8C8"/><stop offset=".5" stop-color="#FFCB4A"/><stop offset="1" stop-color="#F0861C"/></radialGradient>
+      <linearGradient id="pkDarkG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2A1206"/><stop offset="1" stop-color="#6A2E0E"/></linearGradient>
+      <filter id="pkBlur" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="10"/></filter>
+    </defs>
+    <rect width="400" height="380" fill="${L ? '#1B1638' : '#FFF3DC'}"/>${stars}
+    <ellipse cx="200" cy="362" rx="170" ry="14" fill="${L ? '#2A2350' : '#F0DFC2'}"/>
+    <path d="M188 70C186 50 190 30 205 16L222 26C210 36 206 50 211 72Z" fill="${L ? '#3E5222' : '#6B8E3A'}" stroke="#3A2852" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M214 30c20-14 40-6 38 10s-22 14-22 2 14-8 16 0" fill="none" stroke="${L ? '#3E5222' : '#6B8E3A'}" stroke-width="5" stroke-linecap="round"/>
+    <g>${lobes.map(([cx, cy, rx, ry]) => `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="#3A2852" stroke="#3A2852" stroke-width="12"/>`).join('')}</g>
+    <g>${lobes.map(([cx, cy, rx, ry], i) => `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${fills[i]}" stroke="${rib}" stroke-width="3.5"/>`).join('')}</g>
+    ${L ? '' : '<ellipse cx="170" cy="120" rx="18" ry="34" fill="#fff" opacity=".18" transform="rotate(-18 170 120)"/>'}
+    ${L ? `<path class="pkglow" d="${face}" fill="#FFB52E" filter="url(#pkBlur)"/>` : ''}
+    <path id="pkHoles" d="${face}" fill="${L ? 'url(#pkLitG)' : 'url(#pkDarkG)'}" stroke="${L ? '#FFE7A0' : '#F9C27A'}" stroke-width="${L ? 3 : 5}" stroke-linejoin="round"/>
+    <rect class="hitzone" data-part="eyes" x="90" y="110" width="220" height="92" fill="transparent"/>
+    <rect class="hitzone" data-part="nose" x="150" y="202" width="100" height="42" fill="transparent"/>
+    <rect class="hitzone" data-part="mouth" x="100" y="244" width="200" height="90" fill="transparent"/>`;
+}
+function drawPumpkin() {
+  $('pk').innerHTML = pkSvg();
+  $('pkStage').classList.toggle('lit', pk.lit);
+  $('pk').setAttribute('aria-label', `A pumpkin with ${PK.eyes[pk.eyes].name.toLowerCase()} eyes, ${PK.nose[pk.nose].name.toLowerCase()} and a ${PK.mouth[pk.mouth].name.toLowerCase()}${pk.lit ? ', lit up' : ''}`);
+  PK_PARTS.forEach(([k]) => { const r = $('pkRow_' + k); if (r) r.querySelector('small').textContent = PK[k][pk[k]].name; });
+  $('pkLight').lastChild.textContent = pk.lit ? 'Lights on' : 'Light it!';
+}
+function pkStep(part, dir) { pk[part] = (pk[part] + dir + PK[part].length) % PK[part].length; sound.unlock(); sound.pop(); drawPumpkin(); }
+function buildPumpkin() {
+  const rows = $('pkRows'); rows.textContent = '';
+  for (const [k, label] of PK_PARTS) {
+    const r = document.createElement('div'); r.className = 'pkrow'; r.id = 'pkRow_' + k;
+    r.innerHTML = `<button type="button" aria-label="Previous ${label.toLowerCase()}">${CHEV('M15 5l-7 7 7 7')}</button><div><b></b><small></small></div><button type="button" aria-label="Next ${label.toLowerCase()}">${CHEV('M9 5l7 7-7 7')}</button>`;
+    r.querySelector('b').textContent = label;
+    r.querySelectorAll('button')[0].addEventListener('click', () => pkStep(k, -1));
+    r.querySelectorAll('button')[1].addEventListener('click', () => pkStep(k, +1));
+    rows.append(r);
+  }
+  $('pk').addEventListener('click', e => { const z = e.target.closest('.hitzone'); if (z) pkStep(z.dataset.part, +1); });
+  $('pkShuffle').addEventListener('click', () => {
+    for (const [k] of PK_PARTS) { let v; do { v = Math.floor(Math.random() * PK[k].length); } while (v === pk[k] && PK[k].length > 1); pk[k] = v; }
+    sound.unlock(); sound.pop(); drawPumpkin();
+  });
+  $('pkLight').addEventListener('click', () => { pk.lit = !pk.lit; sound.unlock(); if (pk.lit) sound.whoosh(); else sound.click(); drawPumpkin(); });
+  const sz = $('pkSizes'); sz.textContent = '';
+  PK_SIZES.forEach((S, i) => {
+    const b = document.createElement('button'); b.className = 'level'; b.type = 'button';
+    b.innerHTML = '<span></span><small></small>'; b.firstChild.textContent = S.name; b.lastChild.textContent = S.sub;
+    b.setAttribute('aria-pressed', String(i === pk.size));
+    b.addEventListener('click', () => { pk.size = i; sz.querySelectorAll('.level').forEach((x, j) => x.setAttribute('aria-pressed', String(j === i))); });
+    sz.append(b);
+  });
+  $('pkSave').addEventListener('click', savePumpkin);
+  $('pkStencil').addEventListener('click', pumpkinStencil);
+  drawPumpkin();
+}
+async function savePumpkin() {
+  const svg = $('pk').cloneNode(true);
+  svg.querySelectorAll('.hitzone').forEach(e => e.remove());
+  svg.setAttribute('width', '1200'); svg.setAttribute('height', '1140');
+  const url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(new XMLSerializer().serializeToString(svg));
+  const im = await loadImg(url);
+  const c = document.createElement('canvas'); c.width = 1200; c.height = 1140;
+  c.getContext('2d').drawImage(im, 0, 0, 1200, 1140);
+  const blob = await new Promise(r => c.toBlob(r, 'image/png'));
+  const who = ownerName();
+  if (await saveFile(`${who ? who.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' : ''}pumpkin.png`, blob)) toast('Pumpkin saved.');
+}
+// The stencil keeps the face the size it is on the pumpkin. Every shape fits in this box (x 108-292, y 120-314),
+// and the box is S.cm wide on paper, so the widest faces come out S.cm across and a small "Ooh" stays small.
+const PK_FRAME = { x: 108, y: 120, w: 184, h: 194 };
+function pkStencilLayout(S) {
+  const PX_CM = 300 / 2.54, s = S.cm * PX_CM / PK_FRAME.w, cx = 1240, cy = 1640;
+  const ox = PK_FRAME.x + PK_FRAME.w / 2, oy = PK_FRAME.y + PK_FRAME.h / 2, bb = $('pkHoles').getBBox();
+  return { s, cx, cy, ox, oy, top: cy + (bb.y - oy) * s, bottom: cy + (bb.y + bb.height - oy) * s,
+           left: cx + (bb.x - ox) * s, right: cx + (bb.x + bb.width - ox) * s, wcm: bb.width * s / PX_CM, hcm: bb.height * s / PX_CM };
+}
+async function pumpkinStencil() {
+  await fontsReady();
+  const S = PK_SIZES[pk.size], W = 2480, H = 3508, PX_CM = 300 / 2.54;
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const x = c.getContext('2d');
+  x.fillStyle = '#fff'; x.fillRect(0, 0, W, H);
+  const F = pkStencilLayout(S);
+  x.fillStyle = INK; x.textAlign = 'center';
+  x.font = `700 110px ${DISPLAY}`; x.fillText('Pumpkin stencil', W / 2, 250);
+  x.font = `800 52px ${BODY}`; x.fillStyle = INK_SOFT;
+  x.fillText(`${S.name}: this face is about ${Math.round(F.wcm)} cm wide and ${Math.round(F.hcm)} cm tall`, W / 2, 340);
+  // centre line: the middle of the pumpkin
+  x.strokeStyle = '#B9AFC6'; x.lineWidth = 4; x.setLineDash([18, 14]);
+  x.beginPath(); x.moveTo(F.cx, F.top - 100); x.lineTo(F.cx, F.bottom + 100); x.stroke();
+  x.setLineDash([]);
+  // the face: grey to cut out, black outline to trace
+  x.save(); x.translate(F.cx, F.cy); x.scale(F.s, F.s); x.translate(-F.ox, -F.oy);
+  const path = new Path2D(pkFace());
+  x.fillStyle = '#D6D6D6'; x.fill(path);
+  x.lineWidth = 9 / F.s; x.lineJoin = 'round'; x.strokeStyle = '#111'; x.stroke(path);
+  x.restore();
+  // a 5 cm bar to check the printer didn't shrink it
+  const bx = 220, by = 2860, bl = 5 * PX_CM;
+  x.fillStyle = INK; x.fillRect(bx, by, bl, 22);
+  x.font = `800 40px ${BODY}`; x.textAlign = 'left'; x.fillStyle = INK_SOFT;
+  x.fillText('This bar should be 5 cm long', bx, by + 80);
+  const steps = [
+    '1. Tape the sheet to the pumpkin, with the face where you want it.',
+    '2. Poke along the black lines with a pin or skewer, a few millimetres apart.',
+    '3. Peel the paper off, join the dots and carve. Grown-ups do the cutting;',
+    '    little helpers scoop out the seeds and choose where it goes.',
+  ];
+  x.font = `800 46px ${BODY}`; x.fillStyle = INK;
+  steps.forEach((t, i) => x.fillText(t, 220, 3080 + i * 70));
+  const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', .92));
+  if (await saveFile(`pumpkin-stencil-${S.name.toLowerCase()}.jpg`, blob)) toast('Stencil saved. Print it on plain A4.');
+}
+
 // ------------------------------------------------------------- library ---
 function renderLibrary() {
   $('libCount').textContent = store.monsters.length;
@@ -1511,6 +1949,11 @@ function init() {
   $('playMatch').addEventListener('click', () => openGame('matchgame'));
   $('playWhack').addEventListener('click', () => openGame('whackgame'));
   $('playBed').addEventListener('click', () => openGame('bedgame'));
+  $('playTorch').addEventListener('click', () => openGame('torchgame'));
+  $('playPumpkin').addEventListener('click', () => openGame('pumpkingame'));
+  buildTorch();
+  $('tAgain').addEventListener('click', newTorch);
+  buildPumpkin();
   document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => openGame(b.dataset.go)));
   document.querySelectorAll('.mute').forEach(b => b.addEventListener('click', () => { sound.set(!sound.on); syncMute(); if (!sound.on) bedQuiet(); }));
   syncMute();
