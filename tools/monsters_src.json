@@ -1,0 +1,184 @@
+{
+ "monsters": [
+  {
+   "code": "01",
+   "slug": "unicorn",
+   "colour": "purple",
+   "texture": "furry"
+  },
+  {
+   "code": "02",
+   "slug": "dinosaur",
+   "colour": "green",
+   "texture": "scaly"
+  },
+  {
+   "code": "03",
+   "slug": "ballerina",
+   "colour": "pink",
+   "texture": "furry"
+  },
+  {
+   "code": "04",
+   "slug": "fairy_penguin",
+   "colour": "blue",
+   "texture": "feathery"
+  },
+  {
+   "code": "05",
+   "slug": "octopus",
+   "colour": "orange",
+   "texture": "slimy"
+  },
+  {
+   "code": "06",
+   "slug": "banana",
+   "colour": "yellow",
+   "texture": "woolly"
+  },
+  {
+   "code": "07",
+   "slug": "mermaid",
+   "colour": "pink",
+   "texture": "scaly"
+  },
+  {
+   "code": "08",
+   "slug": "owl",
+   "colour": "purple",
+   "texture": "feathery"
+  },
+  {
+   "code": "09",
+   "slug": "yeti",
+   "colour": "blue",
+   "texture": "furry"
+  },
+  {
+   "code": "10",
+   "slug": "frog",
+   "colour": "green",
+   "texture": "slimy"
+  },
+  {
+   "code": "11",
+   "slug": "bumblebee",
+   "colour": "yellow",
+   "texture": "furry"
+  },
+  {
+   "code": "12",
+   "slug": "pumpkin",
+   "colour": "orange",
+   "texture": "woolly"
+  },
+  {
+   "code": "13",
+   "slug": "flamingo",
+   "colour": "pink",
+   "texture": "feathery"
+  },
+  {
+   "code": "14",
+   "slug": "bat",
+   "colour": "purple",
+   "texture": "woolly"
+  },
+  {
+   "code": "15",
+   "slug": "shark",
+   "colour": "blue",
+   "texture": "scaly"
+  },
+  {
+   "code": "16",
+   "slug": "mossy_troll",
+   "colour": "green",
+   "texture": "furry"
+  },
+  {
+   "code": "17",
+   "slug": "chick",
+   "colour": "yellow",
+   "texture": "feathery"
+  },
+  {
+   "code": "18",
+   "slug": "fox",
+   "colour": "orange",
+   "texture": "furry"
+  },
+  {
+   "code": "19",
+   "slug": "axolotl",
+   "colour": "pink",
+   "texture": "slimy"
+  },
+  {
+   "code": "20",
+   "slug": "chameleon",
+   "colour": "purple",
+   "texture": "scaly"
+  },
+  {
+   "code": "21",
+   "slug": "snow_monster",
+   "colour": "blue",
+   "texture": "woolly"
+  },
+  {
+   "code": "22",
+   "slug": "parrot",
+   "colour": "green",
+   "texture": "feathery"
+  },
+  {
+   "code": "23",
+   "slug": "pineapple",
+   "colour": "yellow",
+   "texture": "scaly"
+  },
+  {
+   "code": "24",
+   "slug": "dragon",
+   "colour": "orange",
+   "texture": "scaly"
+  },
+  {
+   "code": "25",
+   "slug": "cupcake",
+   "colour": "pink",
+   "texture": "woolly"
+  },
+  {
+   "code": "26",
+   "slug": "alien",
+   "colour": "purple",
+   "texture": "slimy"
+  },
+  {
+   "code": "27",
+   "slug": "jellyfish",
+   "colour": "blue",
+   "texture": "slimy"
+  },
+  {
+   "code": "28",
+   "slug": "cactus",
+   "colour": "green",
+   "texture": "woolly"
+  },
+  {
+   "code": "29",
+   "slug": "snail",
+   "colour": "yellow",
+   "texture": "slimy"
+  },
+  {
+   "code": "30",
+   "slug": "firebird",
+   "colour": "orange",
+   "texture": "feathery"
+  }
+ ]
+}

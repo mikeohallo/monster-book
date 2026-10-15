@@ -1,0 +1,829 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FFF8EC">
+<link rel="icon" href="faces/F01.webp" type="image/webp">
+<meta property="og:title" content="My Monster Book">
+<meta property="og:description" content="Flip a head, a body and some legs, meet your monster, and make its card.">
+<meta property="og:image" content="https://monsters.mikeohalloran.au/faces/F01.webp">
+<meta property="og:url" content="https://monsters.mikeohalloran.au/">
+<title>My Monster Book</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Flip a head, a body and some legs, meet your monster, and make its bio card.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800;900&display=swap">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)} body{margin:0} img{max-width:100%}</style>
+<style>
+/* Layout: one phone-first column. The flip book is a coil-bound white card on cream paper, like the
+   printed book; controls sit underneath. Deliberately one look (the book's cream page), in every theme. */
+:root {
+  --paper: #FFF8EC;
+  --paper-deep: #F6EBD6;
+  --card: #FFFFFF;
+  --ink: #3A2852;
+  --ink-soft: #6E5C86;
+  --line: #E4D9EC;
+  --coil: #2E2834;
+  --pink: #EC6AA8;
+  --purple: #A880D6;
+  --blue: #54A6E2;
+  --green: #68B242;
+  --yellow: #F2C828;
+  --orange: #F4882C;
+  --danger: #C2410C;
+  --font-display: 'Fredoka', 'Arial Rounded MT Bold', ui-rounded, system-ui, sans-serif;
+  --font-body: 'Nunito', ui-rounded, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --radius: 18px;
+  --shadow: 0 2px 0 rgba(58, 40, 82, .08), 0 10px 24px rgba(58, 40, 82, .10);
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { background: var(--paper); color: var(--ink); }
+body { font-family: var(--font-body); font-size: 17px; line-height: 1.45; -webkit-tap-highlight-color: transparent; }
+.app {
+  max-width: 560px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 14px 40px;
+  display: flex; flex-direction: column; gap: 18px;
+}
+button, input, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+
+/* ---------- header ---------- */
+.top { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.title {
+  margin: 4px 0 0; font-family: var(--font-display); font-weight: 700;
+  font-size: clamp(30px, 8.6vw, 46px); line-height: 1.05; text-align: center; text-wrap: balance;
+  letter-spacing: .5px;
+}
+.title span {
+  display: inline-block; -webkit-text-stroke: 5px var(--ink); paint-order: stroke fill;
+  text-shadow: 0 3px 0 rgba(58, 40, 82, .18);
+}
+.title span:nth-child(odd) { transform: rotate(-3deg); }
+.title span:nth-child(even) { transform: rotate(3deg); }
+.tabs { display: flex; gap: 6px; background: var(--paper-deep); padding: 5px; border-radius: 999px; }
+.tab {
+  border: 0; background: transparent; padding: 8px 16px; border-radius: 999px;
+  font-family: var(--font-display); font-weight: 600; font-size: 17px; color: var(--ink-soft);
+}
+.tab[aria-selected="true"] { background: var(--card); color: var(--ink); box-shadow: 0 1px 4px rgba(58, 40, 82, .15); }
+.count {
+  display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 6px; margin-left: 4px;
+  border-radius: 999px; background: var(--purple); color: #fff; font-size: 13px; font-family: var(--font-body); font-weight: 800;
+}
+
+/* ---------- flip book ---------- */
+.book {
+  position: relative; background: var(--card); border-radius: 14px; box-shadow: var(--shadow);
+  padding: 10px 10px 10px 30px;
+}
+.coil { position: absolute; left: 4px; top: 12px; width: 34px; height: calc(100% - 24px); pointer-events: none; z-index: 3; overflow: visible; }
+.strip {
+  position: relative; perspective: 750px; touch-action: pan-y; user-select: none; -webkit-user-select: none;
+  overflow: visible;
+}
+.strip + .strip { border-top: 1px dashed var(--line); }
+.strip[data-part="H"] { aspect-ratio: 925 / 600; }
+.strip[data-part="B"] { aspect-ratio: 925 / 330; }
+.strip[data-part="L"] { aspect-ratio: 925 / 555; }
+.strip img {
+  position: absolute; inset: 0; width: 100%; height: 100%; display: block;
+  background: var(--card); transform-origin: left center; backface-visibility: hidden;
+  -webkit-user-drag: none; pointer-events: none;
+}
+.strip .over { z-index: 2; box-shadow: 6px 0 14px rgba(58, 40, 82, .12); }
+.arrow {
+  position: absolute; top: 50%; translate: 0 -50%; z-index: 4;
+  width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--line);
+  background: rgba(255, 255, 255, .88); display: grid; place-items: center;
+  box-shadow: 0 2px 6px rgba(58, 40, 82, .14);
+}
+.arrow svg { width: 20px; height: 20px; stroke: var(--ink); stroke-width: 3; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.arrow.prev { left: 6px; }
+.arrow.next { right: 6px; }
+.arrow:active { scale: .94; }
+.chip {
+  position: absolute; right: 8px; bottom: 6px; z-index: 4;
+  display: inline-flex; align-items: center; gap: 6px; padding: 2px 9px 2px 7px; border-radius: 999px;
+  background: rgba(255, 255, 255, .9); font-size: 13px; font-weight: 800; color: var(--ink-soft);
+  font-variant-numeric: tabular-nums; pointer-events: none;
+}
+.dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+.match {
+  margin: -6px 0 0; text-align: center; font-family: var(--font-display); font-weight: 600; font-size: 19px;
+  min-height: 1.4em;
+}
+.controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* ---------- buttons ---------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 50px; padding: 10px 18px; border-radius: 14px;
+  font-family: var(--font-display); font-weight: 600; font-size: 18px;
+  border: 2px solid var(--ink); background: var(--card); color: var(--ink);
+}
+.btn.primary { background: var(--ink); color: #fff; font-size: 20px; min-height: 58px; }
+.btn.quiet { border-color: var(--line); }
+.btn:active { translate: 0 1px; }
+.btn[disabled] { opacity: .55; cursor: default; }
+.btn svg { width: 20px; height: 20px; stroke: currentColor; stroke-width: 2.6; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ---------- code entry ---------- */
+.codes {
+  background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.codes p { margin: 0; color: var(--ink-soft); font-weight: 700; font-size: 15px; }
+.code-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.code-row label { display: flex; flex-direction: column; gap: 4px; font-weight: 800; font-size: 14px; color: var(--ink-soft); }
+.code-row .box { display: flex; align-items: center; gap: 4px; border: 2px solid var(--line); border-radius: 12px; padding: 6px 10px; background: var(--paper); }
+.code-row .box b { font-family: var(--font-display); font-size: 22px; color: var(--ink); }
+.code-row input { width: 100%; min-width: 0; border: 0; background: transparent; font-family: var(--font-display); font-size: 22px; font-weight: 600; outline: none; font-variant-numeric: tabular-nums; }
+.err { color: var(--danger); font-weight: 800; font-size: 15px; margin: 0; min-height: 1.2em; }
+
+/* ---------- meet ---------- */
+.panel { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px 16px; display: flex; flex-direction: column; gap: 14px; }
+.h2 { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 26px; line-height: 1.15; text-wrap: balance; }
+.lede { margin: 0; color: var(--ink-soft); font-weight: 700; }
+.meet-top { display: grid; grid-template-columns: 112px 1fr; gap: 14px; align-items: center; }
+.meet-top canvas { width: 112px; height: auto; display: block; }
+.q { display: grid; grid-template-columns: 52px 1fr; gap: 10px; align-items: center; border: 2.5px solid var(--qc, var(--line)); border-radius: 999px; padding: 6px 16px 6px 8px; background: var(--card); }
+.q img { width: 52px; height: 52px; }
+.q label { display: block; font-weight: 800; font-size: 14px; color: var(--ink-soft); line-height: 1.2; }
+.q input { width: 100%; min-width: 0; border: 0; background: transparent; outline: none; font-family: var(--font-body); font-weight: 900; font-size: 19px; padding: 2px 0; }
+.q input::placeholder { color: #B6A9C6; font-weight: 700; }
+.q:focus-within { box-shadow: 0 0 0 3px rgba(84, 166, 226, .35); }
+.linkish { border: 0; background: none; padding: 0; color: var(--ink); font-weight: 800; text-decoration: underline; text-underline-offset: 3px; font-size: 15px; justify-self: start; }
+.stack { display: flex; flex-direction: column; gap: 10px; }
+
+/* ---------- card ---------- */
+.card-wrap { display: flex; justify-content: center; }
+.card-img { width: 100%; max-width: 480px; height: auto; border-radius: 16px; box-shadow: var(--shadow); background: var(--card); }
+.hint { margin: 0; text-align: center; color: var(--ink-soft); font-weight: 700; font-size: 15px; }
+.row2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+
+/* ---------- library ---------- */
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.tile { border: 0; padding: 0; background: none; text-align: left; display: flex; flex-direction: column; gap: 6px; }
+.tile canvas { width: 100%; height: auto; border-radius: 12px; box-shadow: var(--shadow); display: block; }
+.tile b { font-family: var(--font-display); font-weight: 600; font-size: 17px; line-height: 1.2; overflow-wrap: anywhere; }
+.tile small { color: var(--ink-soft); font-weight: 700; font-size: 13px; }
+.empty { text-align: center; display: flex; flex-direction: column; gap: 12px; align-items: center; padding: 22px 10px; }
+.empty img { width: 96px; height: 96px; }
+.settings { display: flex; flex-direction: column; gap: 12px; }
+.field { display: flex; flex-direction: column; gap: 6px; font-weight: 800; font-size: 15px; }
+.field input, .field textarea { border: 2px solid var(--line); border-radius: 12px; padding: 10px 12px; background: var(--paper); font-weight: 700; width: 100%; min-width: 0; }
+.field textarea { min-height: 90px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+.note { margin: 0; color: var(--ink-soft); font-weight: 700; font-size: 14px; }
+.danger { border-color: var(--danger); color: var(--danger); }
+
+.toast {
+  position: fixed; left: 50%; translate: -50% 0; z-index: 20;
+  bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  background: var(--ink); color: #fff; font-weight: 800; padding: 10px 18px; border-radius: 999px;
+  box-shadow: var(--shadow); opacity: 0; transition: opacity .2s; pointer-events: none; max-width: calc(100% - 32px);
+}
+.toast.show { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .toast { transition: none; } }
+@media (min-width: 520px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <h1 class="title" id="title" aria-label="My Monster Book"></h1>
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button class="tab" role="tab" id="tabMake" aria-selected="true">Make a monster</button>
+      <button class="tab" role="tab" id="tabLib" aria-selected="false">My monsters<span class="count" id="libCount">0</span></button>
+    </nav>
+  </header>
+
+  <!-- MAKE -->
+  <section id="make" class="stack" aria-label="Make a monster">
+    <div class="book" id="book">
+      <svg class="coil" id="coil" aria-hidden="true"></svg>
+    </div>
+    <p class="match" id="match" aria-live="polite"></p>
+    <div class="controls">
+      <button class="btn" id="shuffle"><svg viewBox="0 0 24 24"><path d="M3 7h3c5 0 7 10 12 10h3M18 14l3 3-3 3M3 17h3c1.6 0 2.8-1 3.8-2.4M14.2 9.4C15.2 8 16.4 7 18 7h3M18 4l3 3-3 3"/></svg>Shuffle</button>
+      <button class="btn" id="typeCodes" aria-expanded="false" aria-controls="codes"><svg viewBox="0 0 24 24"><path d="M5 9h14M5 15h14M10 4 8 20M16 4l-2 16"/></svg>Type codes</button>
+    </div>
+    <form class="codes" id="codes" hidden novalidate>
+      <p>Each strip in the book has a code in the corner, like H12. Type the numbers from your book.</p>
+      <div class="code-row">
+        <label for="cH">Head<span class="box"><b>H</b><input id="cH" inputmode="numeric" maxlength="3" autocomplete="off" placeholder="1"></span></label>
+        <label for="cB">Body<span class="box"><b>B</b><input id="cB" inputmode="numeric" maxlength="3" autocomplete="off" placeholder="2"></span></label>
+        <label for="cL">Legs<span class="box"><b>L</b><input id="cL" inputmode="numeric" maxlength="3" autocomplete="off" placeholder="3"></span></label>
+      </div>
+      <p class="err" id="codeErr" role="alert"></p>
+      <button class="btn" type="submit">Show my monster</button>
+    </form>
+    <button class="btn primary" id="toMeet">Meet your monster
+      <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+  </section>
+
+  <!-- MEET -->
+  <section id="meet" class="stack" hidden aria-label="Meet your monster">
+    <div class="panel">
+      <div class="meet-top">
+        <canvas id="meetPic" width="300" height="480" aria-label="Your monster"></canvas>
+        <div class="stack">
+          <h2 class="h2">Meet your monster!</h2>
+          <p class="lede" id="meetParts"></p>
+        </div>
+      </div>
+      <div class="stack" id="questions"></div>
+      <button class="linkish" id="makeName" type="button">Stuck? Make up a name</button>
+    </div>
+    <button class="btn primary" id="toCard">Make their card</button>
+    <button class="btn quiet" id="backFlip">Back to flipping</button>
+  </section>
+
+  <!-- CARD -->
+  <section id="card" class="stack" hidden aria-label="Monster card">
+    <div class="card-wrap"><img class="card-img" id="cardImg" alt=""></div>
+    <p class="hint" id="saveHint">Press and hold the card to save the picture.</p>
+    <button class="btn primary" id="saveLib">Save to My monsters</button>
+    <div class="row2">
+      <button class="btn" id="dl" hidden>Save picture</button>
+      <button class="btn" id="share" hidden>Share</button>
+    </div>
+    <div class="row2">
+      <button class="btn quiet" id="editAns">Change answers</button>
+      <button class="btn quiet" id="another">Make another</button>
+    </div>
+    <button class="btn quiet danger" id="del" hidden>Delete this monster</button>
+  </section>
+
+  <!-- LIBRARY -->
+  <section id="library" class="stack" hidden aria-label="My monsters">
+    <div class="grid" id="grid"></div>
+    <div class="panel empty" id="empty" hidden>
+      <img src="faces/F17.webp" alt="">
+      <h2 class="h2">No monsters saved yet</h2>
+      <p class="lede">Make a monster, answer the four questions, then tap Save to My monsters. They'll all live here.</p>
+      <button class="btn primary" id="emptyMake">Make a monster</button>
+    </div>
+    <div class="panel settings">
+      <h2 class="h2">Whose book is this?</h2>
+      <label class="field" for="owner">Name on the book and cards
+        <input id="owner" maxlength="20" autocomplete="off" placeholder="e.g. Sam"></label>
+      <p class="note">Your monsters are saved on this device only. Nothing you type is sent anywhere.</p>
+      <div class="row2">
+        <button class="btn" id="backup">Back up</button>
+        <button class="btn" id="restoreBtn">Restore</button>
+      </div>
+      <input type="file" id="restoreFile" accept=".json,application/json" hidden>
+      <div class="stack" id="backupBox" hidden>
+        <label class="field" for="backupText">Backup code (keep it somewhere safe, or paste one here and tap Restore)
+          <textarea id="backupText" spellcheck="false"></textarea></label>
+        <button class="btn" id="restoreText">Restore from this code</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</div>
+
+<script>
+// ---------------------------------------------------------------- data ----
+const DEFAULT_OWNER = '';   // gift copies: change this, or link with ?for=Name
+const DATA = {"geometry":{"pxPerMm":5,"width":925,"heights":{"H":600,"B":330,"L":555}},"monsters":[{"code":"01","name":"Unicorn","colour":"purple","texture":"furry","dot":[168,128,214]},{"code":"02","name":"Dinosaur","colour":"green","texture":"scaly","dot":[104,178,66]},{"code":"03","name":"Ballerina","colour":"pink","texture":"furry","dot":[236,106,168]},{"code":"04","name":"Penguin","colour":"blue","texture":"feathery","dot":[84,166,226]},{"code":"05","name":"Octopus","colour":"orange","texture":"slimy","dot":[244,136,44]},{"code":"06","name":"Banana","colour":"yellow","texture":"woolly","dot":[242,200,40]},{"code":"07","name":"Mermaid","colour":"pink","texture":"scaly","dot":[236,106,168]},{"code":"08","name":"Owl","colour":"purple","texture":"feathery","dot":[168,128,214]},{"code":"09","name":"Yeti","colour":"blue","texture":"furry","dot":[84,166,226]},{"code":"10","name":"Frog","colour":"green","texture":"slimy","dot":[104,178,66]},{"code":"11","name":"Bumblebee","colour":"yellow","texture":"furry","dot":[242,200,40]},{"code":"12","name":"Pumpkin","colour":"orange","texture":"woolly","dot":[244,136,44]},{"code":"13","name":"Flamingo","colour":"pink","texture":"feathery","dot":[236,106,168]},{"code":"14","name":"Bat","colour":"purple","texture":"woolly","dot":[168,128,214]},{"code":"15","name":"Shark","colour":"blue","texture":"scaly","dot":[84,166,226]},{"code":"16","name":"Forest Troll","colour":"green","texture":"furry","dot":[104,178,66]},{"code":"17","name":"Chick","colour":"yellow","texture":"feathery","dot":[242,200,40]},{"code":"18","name":"Fox","colour":"orange","texture":"furry","dot":[244,136,44]},{"code":"19","name":"Axolotl","colour":"pink","texture":"slimy","dot":[236,106,168]},{"code":"20","name":"Chameleon","colour":"purple","texture":"scaly","dot":[168,128,214]},{"code":"21","name":"Snow Monster","colour":"blue","texture":"woolly","dot":[84,166,226]},{"code":"22","name":"Parrot","colour":"green","texture":"feathery","dot":[104,178,66]},{"code":"23","name":"Pineapple","colour":"yellow","texture":"scaly","dot":[242,200,40]},{"code":"24","name":"Dragon","colour":"orange","texture":"scaly","dot":[244,136,44]},{"code":"25","name":"Cupcake","colour":"pink","texture":"woolly","dot":[236,106,168]},{"code":"26","name":"Alien","colour":"purple","texture":"slimy","dot":[168,128,214]},{"code":"27","name":"Jellyfish","colour":"blue","texture":"slimy","dot":[84,166,226]},{"code":"28","name":"Cactus","colour":"green","texture":"woolly","dot":[104,178,66]},{"code":"29","name":"Snail","colour":"yellow","texture":"slimy","dot":[242,200,40]},{"code":"30","name":"Firebird","colour":"orange","texture":"feathery","dot":[244,136,44]}]};
+
+const N = DATA.monsters.length;
+const G = DATA.geometry;
+const PARTS = ['H', 'B', 'L'];
+const PART_WORD = { H: 'head', B: 'body', L: 'legs' };
+const COLOURS = { pink: '#EC6AA8', purple: '#A880D6', blue: '#54A6E2', green: '#68B242', yellow: '#F2C828', orange: '#F4882C' };
+const INK = '#3A2852', INK_SOFT = '#6E5C86', PAPER = '#FFF8EC';
+const QUESTIONS = [
+  { key: 'name',   q: "What's their name?",          face: '18', colour: 'orange', eg: 'e.g. Fuzzbert',     label: null },
+  { key: 'food',   q: "What's their favourite food?", face: '25', colour: 'pink',   eg: 'e.g. Spaghetti',    label: 'Favourite food' },
+  { key: 'friend', q: 'Who is their best friend?',    face: '17', colour: 'yellow', eg: 'e.g. A snail called Gary', label: 'Best friend' },
+  { key: 'grumpy', q: 'What makes them grumpy?',      face: '15', colour: 'blue',   eg: 'e.g. Bath time',     label: 'Gets grumpy about' },
+];
+const pad = n => String(n).padStart(2, '0');
+const mon = n => DATA.monsters[n - 1];
+const stripSrc = (p, n) => `strips/${p}${pad(n)}.webp`;
+const $ = id => document.getElementById(id);
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const framed = (() => { try { return window.self !== window.top; } catch (e) { return true; } })();
+// Saving files: the hosted site downloads normally; inside the Claude preview, its own save feature does it.
+let viewerDownloads = null;
+try { window.claude?.use?.('downloads').then(d => { viewerDownloads = d; refreshSaveUI(); }).catch(() => {}); } catch (e) {}
+const canSaveFiles = () => !framed || !!viewerDownloads;
+async function saveFile(filename, data) {
+  if (viewerDownloads) {
+    try { await viewerDownloads.save({ filename, data }); return true; }
+    catch (e) { if (e && e.code !== 'declined') toast("That file couldn't be saved here."); return false; }
+  }
+  if (framed) return false;
+  const url = URL.createObjectURL(data instanceof Blob ? data : new Blob([data]));
+  const a = document.createElement('a'); a.href = url; a.download = filename;
+  document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 4000);
+  return true;
+}
+function refreshSaveUI() {
+  if (!$('card').hidden) $('dl').hidden = !canSaveFiles();
+  $('saveHint').textContent = canSaveFiles() ? 'Save the picture to print it, or press and hold the card.' : 'Press and hold the card to save the picture.';
+}
+
+// ------------------------------------------------------------- storage ----
+const KEY = 'monster-book.v1';
+let storageOK = true;
+function load() {
+  try {
+    const raw = localStorage.getItem(KEY);
+    const d = raw ? JSON.parse(raw) : {};
+    return { owner: d.owner ?? null, monsters: Array.isArray(d.monsters) ? d.monsters : [] };
+  } catch (e) { storageOK = false; return { owner: null, monsters: [] }; }
+}
+function persist() {
+  try { localStorage.setItem(KEY, JSON.stringify(store)); }
+  catch (e) { storageOK = false; toast("This browser won't keep saved monsters. Use Back up to keep them."); }
+}
+const store = load();
+// a gift link (?for=Max) names the book on that device the first time it's opened
+try {
+  const f = new URLSearchParams(location.search).get('for');
+  if (f && !store.owner) { store.owner = f.trim().slice(0, 20); persist(); }
+} catch (e) {}
+function ownerName() {
+  let fromLink = null;
+  try { fromLink = new URLSearchParams(location.search).get('for'); } catch (e) {}
+  const n = (fromLink || store.owner || DEFAULT_OWNER || '').trim();
+  return n.slice(0, 20);
+}
+
+// ------------------------------------------------------------- helpers ----
+const imgCache = new Map();
+function loadImg(url) {
+  if (!imgCache.has(url)) imgCache.set(url, new Promise((res, rej) => {
+    const i = new Image(); i.decoding = 'async'; i.onload = () => res(i); i.onerror = rej; i.src = url;
+  }));
+  return imgCache.get(url);
+}
+let toastTimer;
+function toast(msg) {
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+}
+function possessive(name) { return name ? `${name}'s` : 'My'; }
+function niceDate(iso) {
+  try { return new Date(iso).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' }); }
+  catch (e) { return iso.slice(0, 10); }
+}
+
+// ------------------------------------------------------------- title ------
+function renderTitle() {
+  const text = `${possessive(ownerName())} Monster Book`;
+  const h = $('title'); h.setAttribute('aria-label', text); h.textContent = '';
+  const cycle = ['pink', 'orange', 'yellow', 'green', 'blue', 'purple'];
+  let k = 0;
+  text.split(' ').forEach((word, wi) => {
+    if (wi) h.append(' ');
+    const w = document.createElement('span'); w.style.display = 'inline-block';
+    w.style.transform = 'none'; w.style.webkitTextStroke = '0'; w.style.textShadow = 'none';
+    for (const ch of word) {
+      const s = document.createElement('span'); s.textContent = ch; s.setAttribute('aria-hidden', 'true');
+      s.style.color = COLOURS[cycle[k++ % cycle.length]];
+      w.append(s);
+    }
+    h.append(w);
+  });
+  document.title = text;
+}
+
+// ------------------------------------------------------------- flip book --
+const state = { H: 1, B: 2, L: 3 };   // Sam's three picks, as on the how-to page
+const strips = {};
+const CHEV = d => `<svg viewBox="0 0 24 24"><path d="${d}"/></svg>`;
+function buildBook() {
+  const book = $('book');
+  for (const p of PARTS) {
+    const el = document.createElement('div');
+    el.className = 'strip'; el.dataset.part = p; el.setAttribute('role', 'group');
+    el.innerHTML = `<img class="under" alt=""><img class="over" alt="" hidden>
+      <button class="arrow prev" aria-label="Previous ${PART_WORD[p]}">${CHEV('M15 5l-7 7 7 7')}</button>
+      <button class="arrow next" aria-label="Next ${PART_WORD[p]}">${CHEV('M9 5l7 7-7 7')}</button>
+      <span class="chip"><span class="dot"></span><span class="code"></span></span>`;
+    book.append(el);
+    const s = { el, under: el.querySelector('.under'), over: el.querySelector('.over'),
+                chipDot: el.querySelector('.dot'), chipCode: el.querySelector('.code'), anim: null, busy: Promise.resolve() };
+    strips[p] = s;
+    s.under.src = stripSrc(p, state[p]);
+    el.querySelector('.prev').addEventListener('click', () => flip(p, -1));
+    el.querySelector('.next').addEventListener('click', () => flip(p, +1));
+    // swipe like turning a page: swipe left for the next strip, right to go back
+    let x0 = null, y0 = null;
+    el.addEventListener('pointerdown', e => { if (e.target.closest('.arrow')) return; x0 = e.clientX; y0 = e.clientY; });
+    el.addEventListener('pointerup', e => {
+      if (x0 === null) return;
+      const dx = e.clientX - x0, dy = e.clientY - y0; x0 = null;
+      if (Math.abs(dx) > 36 && Math.abs(dx) > Math.abs(dy) * 1.2) flip(p, dx < 0 ? +1 : -1);
+    });
+    el.addEventListener('pointercancel', () => { x0 = null; });
+  }
+  drawCoil();
+  updateChips();
+  addEventListener('resize', drawCoil);
+}
+function drawCoil() {
+  const svg = $('coil'), h = svg.getBoundingClientRect().height || 400;
+  const pitch = 13, n = Math.floor(h / pitch);
+  let out = '';
+  for (let i = 0; i < n; i++) {
+    const y = 6 + i * pitch;
+    out += `<circle cx="26" cy="${y + 3}" r="2.2" fill="#E6DFEA"/>` +
+           `<path d="M27 ${y + 4} C 18 ${y - 3}, 4 ${y - 3}, 6 ${y + 5}" stroke="#2E2834" stroke-width="2.6" fill="none" stroke-linecap="round"/>`;
+  }
+  svg.innerHTML = out;
+}
+function flip(p, dir) { goTo(p, ((state[p] - 1 + dir + N) % N) + 1, dir); }
+function goTo(p, n, dir) {
+  const s = strips[p];
+  s.busy = s.busy.then(() => turn(p, n, dir)).catch(() => {});
+  return s.busy;
+}
+async function turn(p, n, dir) {
+  const s = strips[p], old = state[p];
+  if (n === old) return;
+  state[p] = n; updateChips();
+  const next = stripSrc(p, n);
+  try { await (await loadImg(next)).decode?.(); } catch (e) {}
+  preload(p, n);
+  if (reduced) { s.under.src = next; return; }
+  const dur = 380, easing = 'cubic-bezier(.45,.05,.55,.95)';
+  if (dir > 0) {               // the current strip lifts and turns over to the left, revealing the next
+    s.over.src = stripSrc(p, old); s.over.hidden = false; s.under.src = next;
+    s.anim = s.over.animate([{ transform: 'rotateY(0deg)', filter: 'brightness(1)' }, { transform: 'rotateY(-90deg)', filter: 'brightness(.8)' }], { duration: dur, easing });
+  } else {                     // the previous strip turns back over from the left on top
+    s.over.src = next; s.over.hidden = false;
+    s.anim = s.over.animate([{ transform: 'rotateY(-90deg)', filter: 'brightness(.8)' }, { transform: 'rotateY(0deg)', filter: 'brightness(1)' }], { duration: dur, easing });
+  }
+  await s.anim.finished.catch(() => {});
+  s.under.src = next; s.over.hidden = true; s.anim = null;
+}
+function preload(p, n) { [n % N + 1, (n - 2 + N) % N + 1].forEach(k => loadImg(stripSrc(p, k)).catch(() => {})); }
+function updateChips() {
+  for (const p of PARTS) {
+    const m = mon(state[p]), s = strips[p];
+    s.chipDot.style.background = COLOURS[m.colour];
+    s.chipCode.textContent = `${p}${pad(state[p])} ${m.name}`;
+    s.el.setAttribute('aria-label', `${m.name} ${PART_WORD[p]}, code ${p}${pad(state[p])}`);
+  }
+  const [h, b, l] = PARTS.map(p => mon(state[p]));
+  let msg = '';
+  if (h === b && b === l) msg = `That's the whole ${h.name}!`;
+  else if (h.colour === b.colour && b.colour === l.colour) msg = `All ${h.colour}! A real ${h.colour} monster.`;
+  else if (h.texture === b.texture && b.texture === l.texture) msg = `All ${h.texture}!`;
+  $('match').textContent = msg;
+}
+async function shuffle() {
+  const pick = () => 1 + Math.floor(Math.random() * N);
+  for (const [i, p] of PARTS.entries()) {
+    let n = pick(); while (n === state[p]) n = pick();
+    setTimeout(() => goTo(p, n, +1), i * 120);
+  }
+}
+
+// ------------------------------------------------------------- codes -----
+function parseCode(v) {
+  const m = String(v).match(/\d+/); if (!m) return null;
+  const n = parseInt(m[0], 10); return n >= 1 && n <= N ? n : null;
+}
+function openCodes() {
+  const f = $('codes'); const open = f.hidden;
+  f.hidden = !open; $('typeCodes').setAttribute('aria-expanded', String(open));
+  if (open) { PARTS.forEach(p => { $('c' + p).value = state[p]; }); $('codeErr').textContent = ''; $('cH').focus(); $('cH').select(); }
+}
+function submitCodes(e) {
+  e.preventDefault();
+  const vals = PARTS.map(p => parseCode($('c' + p).value));
+  const bad = PARTS.filter((p, i) => vals[i] === null);
+  if (bad.length) { $('codeErr').textContent = `Codes go from 1 to ${N}. Check the ${bad.map(p => PART_WORD[p]).join(' and ')} number.`; return; }
+  $('codeErr').textContent = '';
+  PARTS.forEach((p, i) => goTo(p, vals[i], +1));
+  $('codes').hidden = true; $('typeCodes').setAttribute('aria-expanded', 'false');
+}
+
+// ------------------------------------------------------------- drawing ---
+async function monsterCanvas(h, b, l) {
+  const [ih, ib, il] = await Promise.all([loadImg(stripSrc('H', h)), loadImg(stripSrc('B', b)), loadImg(stripSrc('L', l))]);
+  const W = G.width, H = G.heights.H + G.heights.B + G.heights.L;
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const x = c.getContext('2d');
+  x.drawImage(ih, 0, 0); x.drawImage(ib, 0, G.heights.H); x.drawImage(il, 0, G.heights.H + G.heights.B);
+  // trim to the monster
+  const d = x.getImageData(0, 0, W, H).data;
+  let x0 = W, x1 = 0, y0 = H, y1 = 0;
+  for (let yy = 0; yy < H; yy += 2) for (let xx = 0; xx < W; xx += 2) {
+    if (d[(yy * W + xx) * 4 + 3] > 40) { if (xx < x0) x0 = xx; if (xx > x1) x1 = xx; if (yy < y0) y0 = yy; if (yy > y1) y1 = yy; }
+  }
+  if (x1 <= x0) return c;
+  const t = document.createElement('canvas'); t.width = x1 - x0 + 4; t.height = y1 - y0 + 4;
+  t.getContext('2d').drawImage(c, x0 - 2, y0 - 2, t.width, t.height, 0, 0, t.width, t.height);
+  return t;
+}
+function roundRect(x, X, Y, w, h, r) { x.beginPath(); x.roundRect ? x.roundRect(X, Y, w, h, r) : x.rect(X, Y, w, h); }
+function fitFont(x, text, family, weight, start, min, maxW) {
+  let s = start; x.font = `${weight} ${s}px ${family}`;
+  while (s > min && x.measureText(text).width > maxW) { s -= 2; x.font = `${weight} ${s}px ${family}`; }
+  return s;
+}
+function wrap(x, text, maxW) {
+  const words = text.split(/\s+/); const lines = [];
+  let line = '';
+  for (const w of words) {
+    const t = line ? line + ' ' + w : w;
+    if (x.measureText(t).width <= maxW || !line) line = t; else { lines.push(line); line = w; }
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+function seeded(seed) { let s = seed % 2147483647 || 7; return () => (s = s * 16807 % 2147483647) / 2147483647; }
+const DISPLAY = "Fredoka, 'Arial Rounded MT Bold', sans-serif";
+const BODY = "Nunito, system-ui, sans-serif";
+async function fontsReady() {
+  try { await Promise.all(['700 80px Fredoka', '600 40px Fredoka', '900 40px Nunito', '800 30px Nunito'].map(f => document.fonts.load(f))); } catch (e) {}
+}
+async function renderCard(rec) {
+  await fontsReady();
+  const W = 1200, H = 1600;
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const x = c.getContext('2d');
+  // paper and confetti
+  x.fillStyle = PAPER; x.fillRect(0, 0, W, H);
+  const rnd = seeded(rec.h * 961 + rec.b * 31 + rec.l);
+  const cols = Object.values(COLOURS);
+  for (let i = 0; i < 40; i++) {
+    const px = 40 + rnd() * (W - 80), py = 40 + rnd() * (H - 80);
+    if (py > 260 && py < 1520 && px > 70 && px < 1130) continue;
+    x.globalAlpha = .55; x.fillStyle = cols[i % 6]; x.beginPath(); x.arc(px, py, 6 + rnd() * 9, 0, 7); x.fill();
+  }
+  x.globalAlpha = 1;
+  // white card
+  x.save(); x.shadowColor = 'rgba(58,40,82,.16)'; x.shadowBlur = 30; x.shadowOffsetY = 10;
+  roundRect(x, 60, 260, W - 120, 1260, 44); x.fillStyle = '#fff'; x.fill(); x.restore();
+  // name in rainbow letters
+  const name = (rec.name || 'My monster').trim();
+  const size = fitFont(x, name, DISPLAY, 700, 150, 64, W - 160);
+  x.font = `700 ${size}px ${DISPLAY}`; x.textBaseline = 'alphabetic'; x.lineJoin = 'round';
+  const cycle = ['pink', 'orange', 'yellow', 'green', 'blue', 'purple'];
+  let cx = (W - x.measureText(name).width) / 2, k = 0;
+  for (const ch of name) {
+    const w = x.measureText(ch).width;
+    if (ch.trim()) {
+      x.save(); x.translate(cx + w / 2, 200); x.rotate((k % 2 ? 3 : -3) * Math.PI / 180);
+      x.lineWidth = Math.max(10, size * .11); x.strokeStyle = INK; x.strokeText(ch, -w / 2, 0);
+      x.fillStyle = COLOURS[cycle[k % 6]]; x.fillText(ch, -w / 2, 0); x.restore(); k++;
+    }
+    cx += w;
+  }
+  // which parts it's made of
+  const [mh, mb, ml] = [mon(rec.h), mon(rec.b), mon(rec.l)];
+  x.font = `800 34px ${BODY}`; x.fillStyle = INK_SOFT; x.textAlign = 'center';
+  const parts = rec.h === rec.b && rec.b === rec.l ? `The whole ${mh.name}` : `${mh.name} head, ${mb.name} body, ${ml.name} legs`;
+  x.fillText(parts, W / 2, 320, W - 200);
+  x.textAlign = 'left';
+  // the monster
+  const m = await monsterCanvas(rec.h, rec.b, rec.l);
+  const boxW = 900, boxH = 740, top = 350;
+  const s = Math.min(boxW / m.width, boxH / m.height);
+  const mw = m.width * s, mhh = m.height * s;
+  x.save(); x.shadowColor = 'rgba(58,40,82,.18)'; x.shadowBlur = 18; x.shadowOffsetY = 10;
+  x.drawImage(m, (W - mw) / 2, top + (boxH - mhh), mw, mhh); x.restore();
+  // answers
+  const faces = await Promise.all(QUESTIONS.slice(1).map(q => loadImg(`faces/F${q.face}.webp`)));
+  let y = 1120;
+  QUESTIONS.slice(1).forEach((q, i) => {
+    const rh = 112, rx = 110, rw = W - 220;
+    roundRect(x, rx, y, rw, rh, rh / 2); x.fillStyle = '#fff'; x.fill();
+    x.lineWidth = 7; x.strokeStyle = COLOURS[q.colour]; x.stroke();
+    x.drawImage(faces[i], rx + 18, y + 12, 88, 88);
+    x.fillStyle = INK_SOFT; x.font = `800 26px ${BODY}`; x.fillText(q.label, rx + 128, y + 42);
+    const ans = (rec[q.key] || '').trim() || 'Not sure yet';
+    x.fillStyle = INK;
+    let fs = fitFont(x, ans, BODY, 900, 44, 30, rw - 170);
+    x.font = `900 ${fs}px ${BODY}`;
+    const line = wrap(x, ans, rw - 170)[0];
+    x.fillText(line === ans ? ans : line.replace(/\s*\S*$/, '') + '…', rx + 128, y + 90, rw - 160);
+    y += rh + 20;
+  });
+  // footer: who made it, when, and the codes
+  x.font = `800 30px ${BODY}`; x.fillStyle = INK_SOFT;
+  const who = ownerName();
+  x.fillText(`${who ? 'Made by ' + who + ' · ' : ''}${niceDate(rec.created)}`, 80, H - 38, 640);
+  let fx = W - 80;
+  x.textAlign = 'right';
+  for (const [p, n] of [['L', rec.l], ['B', rec.b], ['H', rec.h]]) {
+    const code = `${p}${pad(n)}`; x.fillStyle = INK_SOFT; x.fillText(code, fx, H - 38);
+    const tw = x.measureText(code).width;
+    x.fillStyle = COLOURS[mon(n).colour]; x.beginPath(); x.arc(fx - tw - 18, H - 49, 10, 0, 7); x.fill();
+    fx -= tw + 52;
+  }
+  x.textAlign = 'left';
+  return c;
+}
+
+// ------------------------------------------------------------- screens ---
+const screens = ['make', 'meet', 'card', 'library'];
+function show(id) {
+  screens.forEach(s => { $(s).hidden = s !== id; });
+  const lib = id === 'library';
+  $('tabMake').setAttribute('aria-selected', String(!lib));
+  $('tabLib').setAttribute('aria-selected', String(lib));
+  scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
+}
+let draft = null;      // the monster being made: {h,b,l,name,food,friend,grumpy}
+let viewing = null;    // a saved monster being viewed
+let cardURL = null, cardBlob = null;
+
+function buildQuestions() {
+  const box = $('questions');
+  for (const q of QUESTIONS) {
+    const row = document.createElement('div'); row.className = 'q'; row.style.setProperty('--qc', COLOURS[q.colour]);
+    row.innerHTML = `<img src="faces/F${q.face}.webp" alt=""><div><label for="q_${q.key}"></label><input id="q_${q.key}" maxlength="${q.key === 'name' ? 24 : 40}" autocomplete="off"></div>`;
+    row.querySelector('label').textContent = q.q;
+    row.querySelector('input').placeholder = q.eg;
+    box.append(row);
+  }
+}
+async function openMeet(keep) {
+  const same = draft && draft.h === state.H && draft.b === state.B && draft.l === state.L;
+  if (!keep && !same) draft = { h: state.H, b: state.B, l: state.L, name: '', food: '', friend: '', grumpy: '' };
+  QUESTIONS.forEach(q => { $('q_' + q.key).value = draft[q.key] || ''; });
+  const [mh, mb, ml] = [mon(draft.h), mon(draft.b), mon(draft.l)];
+  $('meetParts').textContent = draft.h === draft.b && draft.b === draft.l
+    ? `The whole ${mh.name}. Ask these four questions and type the answers.`
+    : `${mh.name} head, ${mb.name} body and ${ml.name} legs. Ask these four questions and type the answers.`;
+  viewing = null;
+  show('meet');
+  const m = await monsterCanvas(draft.h, draft.b, draft.l);
+  const pc = $('meetPic'), x = pc.getContext('2d');
+  x.clearRect(0, 0, pc.width, pc.height);
+  const s = Math.min(pc.width / m.width, pc.height / m.height);
+  x.drawImage(m, (pc.width - m.width * s) / 2, pc.height - m.height * s, m.width * s, m.height * s);
+}
+function readAnswers() { QUESTIONS.forEach(q => { draft[q.key] = $('q_' + q.key).value.trim(); }); }
+function silly() {
+  const parts = [mon(draft.h).name, mon(draft.b).name, mon(draft.l).name].map(s => s.replace(/\s.*/, ''));
+  const ends = ['bert', 'ella', 'bop', 'kins', 'boo', 'ster', 'ina', 'wump', 'doodle', 'pop'];
+  const a = parts[0].slice(0, Math.min(4, Math.max(3, Math.ceil(parts[0].length / 2))));
+  const b = parts[2].toLowerCase().slice(-3);
+  return (a + b + ends[Math.floor(Math.random() * ends.length)]).replace(/^./, c => c.toUpperCase());
+}
+async function openCard(rec, saved) {
+  viewing = saved ? rec : null;
+  show('card');
+  $('cardImg').alt = '';
+  $('cardImg').removeAttribute('src');
+  const c = await renderCard(rec);
+  cardBlob = await new Promise(r => c.toBlob(r, 'image/png'));
+  if (cardURL) URL.revokeObjectURL(cardURL);
+  cardURL = URL.createObjectURL(cardBlob);
+  $('cardImg').src = cardURL;
+  $('cardImg').alt = `${rec.name || 'My monster'}: a monster card with their favourite food, best friend and what makes them grumpy.`;
+  const stored = store.monsters.find(m => m.id === rec.id);
+  const same = stored && ['h', 'b', 'l', ...QUESTIONS.map(q => q.key)].every(k => stored[k] === rec[k]);
+  $('saveLib').hidden = saved;
+  $('saveLib').disabled = !!same;
+  $('saveLib').textContent = same ? 'Saved in My monsters' : stored ? 'Save changes' : 'Save to My monsters';
+  $('del').hidden = !saved; $('del').textContent = 'Delete this monster'; delArmed = false;
+  $('another').textContent = saved ? 'Back to My monsters' : 'Make another';
+  $('dl').hidden = !canSaveFiles();
+  let canShare = false;
+  try { canShare = !framed && !!navigator.canShare && navigator.canShare({ files: [new File([cardBlob], 'monster.png', { type: 'image/png' })] }); } catch (e) {}
+  $('share').hidden = !canShare;
+  refreshSaveUI();
+}
+function fileName(rec) { return `${(rec.name || 'monster').replace(/[^\w\- ]+/g, '').trim() || 'monster'}.png`; }
+
+// ------------------------------------------------------------- library ---
+function renderLibrary() {
+  $('libCount').textContent = store.monsters.length;
+  $('owner').value = store.owner ?? '';
+  $('owner').placeholder = DEFAULT_OWNER ? `e.g. ${DEFAULT_OWNER}` : 'e.g. Sam';
+  const grid = $('grid'); grid.textContent = '';
+  $('empty').hidden = store.monsters.length > 0;
+  [...store.monsters].reverse().forEach(rec => {
+    const b = document.createElement('button'); b.className = 'tile';
+    const cv = document.createElement('canvas'); cv.width = 300; cv.height = 400;
+    const nm = document.createElement('b'); nm.textContent = rec.name || 'My monster';
+    const dt = document.createElement('small'); dt.textContent = niceDate(rec.created);
+    b.append(cv, nm, dt);
+    b.setAttribute('aria-label', `${rec.name || 'My monster'}, made ${niceDate(rec.created)}`);
+    b.addEventListener('click', () => openCard(rec, true));
+    grid.append(b);
+    thumb(rec).then(t => cv.getContext('2d').drawImage(t, 0, 0)).catch(() => {});
+  });
+}
+const thumbs = new Map();
+function thumb(rec) {
+  const key = JSON.stringify([rec.h, rec.b, rec.l, rec.name, rec.food, rec.friend, rec.grumpy, rec.created, ownerName()]);
+  if (!thumbs.has(key)) thumbs.set(key, renderCard(rec).then(c => {
+    const t = document.createElement('canvas'); t.width = 300; t.height = 400;
+    t.getContext('2d').drawImage(c, 0, 0, 300, 400); return t;
+  }));
+  return thumbs.get(key);
+}
+let delArmed = false, delTimer;
+function backupText() { return JSON.stringify({ app: 'monster-book', version: 1, owner: store.owner, monsters: store.monsters }); }
+function restoreFrom(text) {
+  let d;
+  try { d = JSON.parse(text); } catch (e) { toast("That isn't a monster backup."); return; }
+  if (!d || d.app !== 'monster-book' || !Array.isArray(d.monsters)) { toast("That isn't a monster backup."); return; }
+  const have = new Set(store.monsters.map(m => m.id));
+  const valid = d.monsters.filter(m => m && m.id && [m.h, m.b, m.l].every(n => Number.isInteger(n) && n >= 1 && n <= N));
+  const added = valid.filter(m => !have.has(m.id));
+  store.monsters.push(...added);
+  store.monsters.sort((a, b) => String(a.created).localeCompare(String(b.created)));
+  if (!store.owner && d.owner) store.owner = d.owner;
+  persist(); renderTitle(); renderLibrary();
+  toast(added.length ? `Restored ${added.length} monster${added.length > 1 ? 's' : ''}.` : 'Those monsters are already here.');
+}
+
+// ------------------------------------------------------------- wiring ----
+function init() {
+  renderTitle(); buildBook(); buildQuestions(); renderLibrary();
+  PARTS.forEach(p => preload(p, state[p]));
+  $('tabMake').addEventListener('click', () => show('make'));
+  $('tabLib').addEventListener('click', () => { renderLibrary(); show('library'); });
+  $('emptyMake').addEventListener('click', () => show('make'));
+  $('shuffle').addEventListener('click', shuffle);
+  $('typeCodes').addEventListener('click', openCodes);
+  $('codes').addEventListener('submit', submitCodes);
+  $('toMeet').addEventListener('click', () => openMeet(false));
+  $('backFlip').addEventListener('click', () => { readAnswers(); show('make'); });
+  $('makeName').addEventListener('click', () => { $('q_name').value = silly(); $('q_name').focus(); });
+  $('toCard').addEventListener('click', () => {
+    readAnswers();
+    if (!draft.created) draft.created = new Date().toISOString();
+    if (!draft.id) draft.id = (crypto.randomUUID?.() || String(Date.now()) + Math.random().toString(16).slice(2));
+    openCard({ ...draft }, false);
+  });
+  $('editAns').addEventListener('click', () => {
+    if (viewing) { draft = { ...viewing }; }
+    openMeet(true);
+  });
+  $('another').addEventListener('click', () => {
+    if (viewing) { renderLibrary(); show('library'); return; }
+    draft = null; show('make');
+  });
+  $('saveLib').addEventListener('click', () => {
+    if (!draft) return;
+    const i = store.monsters.findIndex(m => m.id === draft.id);
+    if (i >= 0) store.monsters[i] = { ...draft }; else store.monsters.push({ ...draft });
+    persist(); renderLibrary();
+    $('saveLib').disabled = true; $('saveLib').textContent = 'Saved in My monsters';
+    toast(`${draft.name || 'Your monster'} is in My monsters.`);
+  });
+  $('del').addEventListener('click', () => {
+    if (!viewing) return;
+    if (!delArmed) {
+      delArmed = true; $('del').textContent = 'Tap again to delete';
+      clearTimeout(delTimer); delTimer = setTimeout(() => { delArmed = false; $('del').textContent = 'Delete this monster'; }, 3500);
+      return;
+    }
+    store.monsters = store.monsters.filter(m => m.id !== viewing.id);
+    persist(); toast(`${viewing.name || 'Monster'} deleted.`); viewing = null; renderLibrary(); show('library');
+  });
+  $('dl').addEventListener('click', () => { if (cardBlob) saveFile(fileName(viewing || draft || {}), cardBlob); });
+  $('share').addEventListener('click', async () => {
+    const rec = viewing || draft || {};
+    try { await navigator.share({ files: [new File([cardBlob], fileName(rec), { type: 'image/png' })], title: rec.name || 'My monster' }); } catch (e) {}
+  });
+  $('owner').addEventListener('change', () => {
+    store.owner = $('owner').value.trim().slice(0, 20) || null; persist(); renderTitle(); toast('Name saved.');
+  });
+  $('backup').addEventListener('click', async () => {
+    const text = backupText();
+    if (canSaveFiles()) {
+      const name = `${(ownerName() || 'my').toLowerCase().replace(/[^a-z0-9]+/g, '-')}-monsters-${new Date().toISOString().slice(0, 10)}.json`;
+      if (await saveFile(name, new Blob([text], { type: 'application/json' }))) toast('Backup saved.');
+      return;
+    }
+    $('backupBox').hidden = false; $('backupText').value = text; $('backupText').select();
+    try { await navigator.clipboard.writeText(text); toast('Backup code copied.'); } catch (e) { toast('Copy the backup code below.'); }
+  });
+  $('restoreBtn').addEventListener('click', () => {
+    if (framed) { $('backupBox').hidden = false; $('backupText').value = ''; $('backupText').focus(); }
+    $('restoreFile').click();
+  });
+  $('restoreFile').addEventListener('change', async e => {
+    const f = e.target.files[0]; if (!f) return;
+    restoreFrom(await f.text()); e.target.value = '';
+  });
+  $('restoreText').addEventListener('click', () => restoreFrom($('backupText').value));
+}
+init();
+</script>
+</body>
+</html>
