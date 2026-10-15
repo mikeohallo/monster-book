@@ -51,21 +51,28 @@ with sync_playwright() as pw:
     # 2. opening #match goes straight to the game
     p.goto(BASE + '#match'); p.wait_for_timeout(700)
     check('#match opens the game', p.is_visible('#matchgame') and not p.is_visible('#make') and p.eval_on_selector_all('.mcard', 'e => e.length') == 12)
-    check('#match: Match tab selected', p.get_attribute('#tabMatch', 'aria-selected') == 'true')
+    check('#match: Games tab selected', p.get_attribute('#tabGames', 'aria-selected') == 'true')
     p.screenshot(path=OUT / 'direct_match.png')
     # 3. tabs update the address
     p.click('#tabMake'); p.wait_for_timeout(300)
     check('Make tab clears the hash', p.evaluate('location.hash') == '')
     p.click('#tabLib'); p.wait_for_timeout(300)
     check('My monsters tab sets #monsters', p.evaluate('location.hash') == '#monsters')
-    p.click('#tabMatch'); p.wait_for_timeout(300)
-    check('Match tab sets #match', p.evaluate('location.hash') == '#match')
+    p.click('#tabGames'); p.wait_for_timeout(300)
+    check('Games tab sets #games', p.evaluate('location.hash') == '#games')
+    for tile, h in (('#playMatch', '#match'), ('#playWhack', '#whack'), ('#playBed', '#bedtime')):
+        p.click('#tabGames'); p.click(tile); p.wait_for_timeout(300)
+        check(f'{tile} sets {h}', p.evaluate('location.hash') == h)
+    for h, sec in (('#whack', '#whackgame'), ('#bedtime', '#bedgame'), ('#games', '#games')):
+        p.evaluate(f"location.hash = '{h}'"); p.wait_for_timeout(300)
+        check(f'typing {h} shows {sec}', p.is_visible(sec))
+    p.click('#tabGames'); p.click('#playMatch'); p.wait_for_timeout(300)
     # 4. game survives a reload on #match (new board, but still on the game)
     p.reload(); p.wait_for_timeout(700)
     check('reload on #match stays on the game', p.is_visible('#matchgame'))
     # 5. back button still leaves the site rather than stepping through tabs
     hist = p.evaluate('history.length')
-    p.click('#tabMake'); p.click('#tabMatch'); p.wait_for_timeout(200)
+    p.click('#tabMake'); p.click('#tabGames'); p.click('#playWhack'); p.wait_for_timeout(200)
     check('tab switches do not pile up history', p.evaluate('history.length') == hist)
     # 6. a gift link keeps its name with #match
     p.goto(BASE + '?for=Alex#match'); p.wait_for_timeout(700)

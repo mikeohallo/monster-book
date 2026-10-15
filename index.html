@@ -214,6 +214,180 @@ button { cursor: pointer; }
 .best { font-weight: 800; color: var(--ink-soft); font-size: 15px; }
 @media (prefers-reduced-motion: reduce) { .mcard > div { transition: none; } .mcard.matched .face, .win .faces img { animation: none; } }
 
+/* ---------- games hub ---------- */
+.ticon.pad { width: 40px; height: 34px; }
+.gamelist { display: flex; flex-direction: column; gap: 12px; }
+.gametile {
+  display: grid; grid-template-columns: 96px 1fr; gap: 14px; align-items: center; text-align: left;
+  border: 0; background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 12px 14px 12px 12px;
+}
+.gametile b { display: block; font-family: var(--font-display); font-weight: 700; font-size: 22px; line-height: 1.15; }
+.gametile small { display: block; color: var(--ink-soft); font-weight: 700; font-size: 15px; margin-top: 3px; line-height: 1.3; }
+.gametile:active { translate: 0 1px; }
+.gpic { width: 96px; height: 96px; border-radius: 16px; position: relative; overflow: hidden; display: block; }
+.gpic.pairs { background: var(--paper-deep); display: flex; align-items: center; justify-content: center; gap: 6px; }
+.gpic.pairs img { width: 36px; height: 48px; object-fit: contain; background: #fff; border-radius: 8px; box-shadow: 0 0 0 2px var(--ink-soft); padding: 2px; }
+.gpic.pairs img:first-child { transform: rotate(-8deg); }
+.gpic.pairs img + img { transform: rotate(8deg); }
+.gpic.whackpic { background: #8CCB5E; }
+.gpic.whackpic::before { content: ''; position: absolute; left: 14px; right: 14px; bottom: 12px; height: 24px; border-radius: 50%; background: #2A1C3E; box-shadow: 0 3px 0 rgba(255,255,255,.35); }
+.gpic.whackpic .peek { position: absolute; left: 0; right: 0; top: 0; bottom: 24px; overflow: hidden; }
+.gpic.whackpic img { position: absolute; left: 20px; width: 56px; bottom: -16px; }
+.gpic.bedpic { background: linear-gradient(#2E2660, #4B3D7A); }
+.gmoon { position: absolute; top: 10px; right: 14px; width: 20px; height: 20px; border-radius: 50%; box-shadow: -6px 3px 0 0 #FFE58A; }
+.gpillow { position: absolute; left: 18px; right: 18px; top: 46px; height: 20px; border-radius: 50%; background: #fff; }
+.gpic.bedpic img { position: absolute; left: 25px; width: 46px; top: 26px; }
+.gblanket { position: absolute; left: 8px; right: 8px; top: 62px; bottom: -6px; border-radius: 12px 12px 0 0; background: #54A6E2; border: 3px solid #3A2852; box-shadow: inset 0 7px 0 #fff; }
+.gz { position: absolute; left: 66px; top: 14px; font-family: var(--font-display); font-weight: 700; font-size: 18px; color: #fff; line-height: 1; }
+.gz small { font-size: 12px; margin-left: 1px; }
+.gamebar { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: -6px; }
+.back { display: inline-flex; align-items: center; gap: 4px; border: 0; background: none; padding: 6px 2px; font-family: var(--font-display); font-weight: 600; font-size: 17px; color: var(--ink-soft); }
+.back svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 3; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.mute { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--line); background: var(--card); display: grid; place-items: center; }
+.mute svg { width: 22px; height: 22px; fill: none; stroke: var(--ink); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.mute svg .cone { fill: var(--ink); }
+.levels.three { grid-template-columns: repeat(3, 1fr); }
+
+/* ---------- whack-a-monster ---------- */
+.wdots { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin: -4px 0; }
+.wdots i { width: 12px; height: 12px; border-radius: 50%; background: var(--line); transition: background .2s; }
+.wdots i.hit { background: var(--green); }
+.wdots i.miss { background: #F3C7DA; }
+.wboard {
+  position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px; padding: 10px 8px 8px;
+  border-radius: var(--radius); box-shadow: var(--shadow);
+  background-color: #8CCB5E;
+  background-image: radial-gradient(circle at 20% 30%, rgba(255,255,255,.16) 0 5px, transparent 6px), radial-gradient(circle at 70% 75%, rgba(58,40,82,.07) 0 7px, transparent 8px);
+  background-size: 56px 56px, 74px 74px;
+  touch-action: manipulation; user-select: none; -webkit-user-select: none;
+}
+.whole { position: relative; aspect-ratio: 1; border: 0; padding: 0; background: none; cursor: pointer; -webkit-touch-callout: none; }
+.whole::before {   /* the hole */
+  content: ''; position: absolute; left: 9%; right: 9%; bottom: 8%; height: 25%; border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 30%, #241838 0 55%, #3E2C58 75%); box-shadow: 0 3px 0 rgba(255,255,255,.4), inset 0 -3px 0 rgba(0,0,0,.15);
+}
+.whole .pit { position: absolute; left: 0; right: 0; top: -12%; bottom: 20.5%; overflow: hidden; pointer-events: none; }
+.whole .mon {
+  position: absolute; left: 13%; width: 74%; bottom: 0; transform-origin: 50% 100%;
+  transform: translateY(106%); transition: transform .17s ease-out; -webkit-user-drag: none;
+}
+.whole.up .mon { transform: translateY(4%); }
+.whole.hit .mon { animation: squash .33s ease-in forwards; }
+.whole.sleepy .mon { filter: saturate(.5) brightness(.82); }
+.whole.grumpy .mon { filter: sepia(.8) saturate(3) hue-rotate(-35deg) brightness(.95); animation: shake .45s ease; }
+.whole .zz {
+  position: absolute; right: 2%; top: -4%; font-family: var(--font-display); font-weight: 700; font-size: 20px; line-height: 1;
+  color: #fff; -webkit-text-stroke: 4px var(--ink); paint-order: stroke fill; opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.whole.sleepy.up .zz { opacity: 1; animation: zfloat 1.6s ease-in-out infinite; }
+.whole.grumpy .zz { opacity: 0; }
+@keyframes squash { 0% { transform: translateY(4%) scale(1); } 30% { transform: translateY(14%) scale(1.18, .72); } 100% { transform: translateY(106%) scale(1, .9); } }
+@keyframes shake { 0%, 100% { transform: translateY(4%) rotate(0); } 20% { transform: translateY(4%) rotate(-9deg); } 40% { transform: translateY(4%) rotate(8deg); } 60% { transform: translateY(4%) rotate(-6deg); } 80% { transform: translateY(4%) rotate(4deg); } }
+@keyframes zfloat { 0%, 100% { translate: 0 0; } 50% { translate: 2px -6px; } }
+.spark { position: absolute; left: 50%; top: 42%; font-size: 22px; line-height: 1; pointer-events: none; z-index: 2; color: #FFD23F; -webkit-text-stroke: 1.5px var(--ink); paint-order: stroke fill; }
+.wstart { position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; border-radius: inherit; background: rgba(255, 248, 236, .45); }
+.playbtn {
+  display: flex; flex-direction: column; align-items: center; gap: 4px; border: 0; background: var(--ink); color: #fff;
+  width: 128px; height: 128px; border-radius: 50%; justify-content: center; box-shadow: 0 6px 0 rgba(58, 40, 82, .35), 0 12px 26px rgba(58, 40, 82, .25);
+  font-family: var(--font-display); font-weight: 700; font-size: 22px;
+}
+.playbtn svg { width: 46px; height: 46px; fill: #fff; margin-left: 6px; }
+.playbtn:active { translate: 0 3px; }
+.stars { display: flex; gap: 8px; justify-content: center; }
+.stars svg { width: 54px; height: 54px; }
+.stars svg.on { animation: bounce .6s ease both; }
+@media (prefers-reduced-motion: reduce) { .whole .mon { transition: none; } .whole.hit .mon, .whole.grumpy .mon, .whole.sleepy.up .zz, .stars svg.on { animation: none; } .whole.hit .mon { transform: translateY(106%); } }
+
+/* ---------- bedtime ---------- */
+.room {
+  position: relative; height: 480px; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow);
+  background: linear-gradient(#8C70B6, #7558A3); touch-action: manipulation; user-select: none; -webkit-user-select: none;
+}
+.room .wall { position: absolute; left: 0; right: 0; top: 0; height: 226px; background: linear-gradient(#433774, #5C4B91); border-bottom: 6px solid #3A2852; }
+.room .frame { position: absolute; left: 20px; top: 24px; width: 66px; height: 66px; border-radius: 10px; background: #FFF3DC; border: 5px solid #E2A86B; display: grid; place-items: center; box-shadow: 0 3px 0 rgba(0,0,0,.2); }
+.room .frame img { width: 50px; height: 50px; }
+.room .window {
+  position: absolute; right: 20px; top: 18px; width: 100px; height: 84px; z-index: 3; border-radius: 12px 12px 6px 6px;
+  border: 6px solid #FFF3DC; box-shadow: 0 3px 0 rgba(0,0,0,.2);
+  background: radial-gradient(circle at 20% 70%, #fff 0 1.2px, transparent 2px), radial-gradient(circle at 45% 30%, #fff 0 1px, transparent 1.8px),
+              radial-gradient(circle at 80% 80%, #fff 0 1.2px, transparent 2px), radial-gradient(circle at 15% 25%, #fff 0 .9px, transparent 1.6px), #1E1A45;
+}
+.room .window::after { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 4px; translate: -50% 0; background: #FFF3DC; }
+.room .moon { position: absolute; right: 12px; top: 10px; width: 24px; height: 24px; border-radius: 50%; box-shadow: -7px 4px 0 0 #FFE58A; z-index: 1; }
+.room .rug { position: absolute; left: 6%; right: 6%; top: 232px; height: 36px; border-radius: 50%; background: repeating-linear-gradient(90deg, #F3B5D3 0 14px, #F8CFE2 14px 28px); opacity: .9; }
+.waiting { position: absolute; left: 8px; right: 8px; top: 102px; height: 150px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.waiter { border: 0; background: none; padding: 0; display: flex; align-items: flex-end; justify-content: center; transition: opacity .25s, transform .25s; }
+.waiter canvas { display: block; max-height: 146px; max-width: 100%; width: auto; height: auto; filter: drop-shadow(0 4px 0 rgba(30, 20, 60, .25)); animation: idle 2.4s ease-in-out infinite; transform-origin: 50% 100%; }
+.waiter:nth-child(2) canvas { animation-delay: -.8s; }
+.waiter:nth-child(3) canvas { animation-delay: -1.6s; }
+.waiter.gone { opacity: 0; transform: scale(.6) translateY(-20px); pointer-events: none; }
+.waiter.nudge canvas { animation: hop .5s ease; }
+@keyframes idle { 0%, 100% { transform: translateY(0) scale(1, 1); } 50% { transform: translateY(-5px) scale(1.02, .98); } }
+@keyframes hop { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(-18px); } }
+.beds { position: absolute; left: 8px; right: 8px; bottom: 10px; height: 196px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.bed { position: relative; }
+.bed .glow { position: absolute; left: 50%; top: 18px; width: 170px; height: 170px; translate: -50% -50%; border-radius: 50%; background: radial-gradient(circle, rgba(255, 222, 130, .55), rgba(255, 222, 130, 0) 68%); transition: opacity .5s; pointer-events: none; }
+.bed .head { position: absolute; left: 7%; right: 7%; top: 40px; height: 96px; border-radius: 26px 26px 8px 8px; background: var(--bc); border: 3px solid var(--ink); }
+.bed .head::after { content: ''; position: absolute; left: 22%; right: 22%; top: 14px; height: 10px; border-radius: 6px; background: rgba(255,255,255,.45); }
+.bed .pillow { position: absolute; left: 16%; right: 16%; top: 96px; height: 30px; border-radius: 50%; background: #fff; border: 2.5px solid #C9BCD8; }
+.bed .slot { position: absolute; left: 50%; top: 48px; width: min(76px, 74%); aspect-ratio: 1; translate: -50% 0; }
+.bed .slot img { width: 100%; height: 100%; display: block; transform: scale(0); transform-origin: 50% 80%; transition: transform .35s cubic-bezier(.3, 1.6, .5, 1); }
+.bed.in .slot img { transform: scale(1); }
+.bed .blanket {
+  position: absolute; left: 2%; right: 2%; top: 114px; bottom: 30px; border-radius: 16px 16px 10px 10px;
+  border: 3px solid var(--ink); background-color: var(--blk); box-shadow: inset 0 10px 0 #fff, inset 0 13px 0 rgba(58,40,82,.15);
+  transform: translateY(26px); transition: transform .45s cubic-bezier(.3, 1.3, .5, 1);
+}
+.bed.in .blanket { transform: translateY(0); }
+.bed .foot { position: absolute; left: 0; right: 0; bottom: 0; height: 34px; border-radius: 10px; background: var(--bc); border: 3px solid var(--ink); }
+.tex-furry { background-image: radial-gradient(circle at 30% 30%, rgba(255,255,255,.35) 0 2.5px, transparent 3.5px), radial-gradient(circle at 75% 70%, rgba(255,255,255,.25) 0 2.5px, transparent 3.5px); background-size: 13px 13px; }
+.tex-scaly { background-image: radial-gradient(circle at 50% 0, transparent 0 5px, rgba(255,255,255,.4) 5.5px 7px, transparent 7.5px); background-size: 14px 9px; }
+.tex-feathery { background-image: repeating-linear-gradient(135deg, rgba(255,255,255,.3) 0 4px, transparent 4px 12px); }
+.tex-slimy { background-image: radial-gradient(circle, rgba(255,255,255,.4) 0 3.5px, transparent 4.5px), radial-gradient(circle, rgba(255,255,255,.22) 0 2px, transparent 3px); background-size: 18px 18px, 18px 18px; background-position: 0 0, 9px 9px; }
+.tex-woolly { background-image: repeating-linear-gradient(45deg, rgba(255,255,255,.25) 0 3px, transparent 3px 8px), repeating-linear-gradient(-45deg, rgba(255,255,255,.25) 0 3px, transparent 3px 8px); }
+.lamp { position: absolute; left: 50%; top: 0; translate: -50% 0; width: 52px; height: 46px; border: 0; background: none; padding: 0; z-index: 2; }
+.lamp .shade { position: absolute; left: 10px; top: 4px; width: 32px; height: 20px; background: #FFD55A; clip-path: polygon(22% 0, 78% 0, 100% 100%, 0 100%); transition: background .3s; }
+.lamp .shade::after { content: ''; position: absolute; inset: 0; }
+.lamp .stem { position: absolute; left: 24px; top: 24px; width: 4px; height: 12px; background: var(--ink); }
+.lamp .base { position: absolute; left: 16px; top: 34px; width: 20px; height: 6px; border-radius: 4px; background: var(--ink); }
+.lamp .outline { position: absolute; left: 8px; top: 2px; width: 36px; height: 24px; background: var(--ink); clip-path: polygon(22% 0, 78% 0, 100% 100%, 0 100%); }
+.bed.in:not(.asleep) .lamp { animation: pulse 1.1s ease-in-out infinite; }
+@keyframes pulse { 0%, 100% { scale: 1; } 50% { scale: 1.16; } }
+.bed.asleep .glow { opacity: 0; }
+.bed.asleep .shade { background: #8F82A6; }
+.bed .zzz { position: absolute; right: 2px; top: 20px; z-index: 3; pointer-events: none; font-family: var(--font-display); font-weight: 700; color: #fff; -webkit-text-stroke: 4px var(--ink); paint-order: stroke fill; }
+.bed .zzz span { position: absolute; opacity: 0; font-size: 16px; }
+.bed .zzz span:nth-child(2) { font-size: 20px; }
+.bed .zzz span:nth-child(3) { font-size: 25px; }
+.bed.asleep .zzz span { animation: zup 3s ease-in infinite; }
+.bed.asleep .zzz span:nth-child(2) { animation-delay: 1s; }
+.bed.asleep .zzz span:nth-child(3) { animation-delay: 2s; }
+@keyframes zup { 0% { opacity: 0; transform: translate(-18px, 36px); } 20% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; transform: translate(4px, -10px); } }
+.night { position: absolute; inset: 0; z-index: 2; background: rgba(12, 8, 38, .62); opacity: 0; transition: opacity 1.8s ease; pointer-events: none; }
+.rstars {
+  position: absolute; left: 0; right: 0; top: 0; height: 226px; z-index: 2; opacity: 0; transition: opacity 2s ease 1s; pointer-events: none;
+  background: radial-gradient(circle at 12% 70%, #FFF6C8 0 1.6px, transparent 2.4px), radial-gradient(circle at 30% 22%, #fff 0 1.2px, transparent 2px),
+              radial-gradient(circle at 42% 58%, #FFF6C8 0 1.8px, transparent 2.6px), radial-gradient(circle at 58% 18%, #fff 0 1.4px, transparent 2.2px),
+              radial-gradient(circle at 66% 66%, #fff 0 1.2px, transparent 2px), radial-gradient(circle at 8% 30%, #fff 0 1.4px, transparent 2.2px),
+              radial-gradient(circle at 50% 85%, #fff 0 1px, transparent 1.8px), radial-gradient(circle at 25% 48%, #FFF6C8 0 1.2px, transparent 2px);
+}
+.room.dark .night { opacity: 1; }
+.room.dark .rstars { opacity: 1; animation: twinkle 2.6s ease-in-out 3s infinite; }
+.room.dark .window { box-shadow: 0 0 30px rgba(255, 229, 138, .45), 0 3px 0 rgba(0,0,0,.2); }
+@keyframes twinkle { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(.55); } }
+.goodnight {
+  position: absolute; left: 16px; right: 16px; top: 120px; z-index: 4; margin: 0; text-align: center; text-wrap: balance;
+  font-family: var(--font-display); font-weight: 700; font-size: 25px; line-height: 1.2; color: #FFF3C4; text-shadow: 0 2px 10px rgba(0,0,0,.4);
+  animation: fadein 1.6s ease both;
+}
+@keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+.flyer { position: fixed; z-index: 30; pointer-events: none; transform-origin: 0 0; }
+@media (prefers-reduced-motion: reduce) {
+  .waiter canvas, .bed.in:not(.asleep) .lamp, .room.dark .rstars, .bed.asleep .zzz span { animation: none; }
+  .bed.asleep .zzz span { opacity: 1; transform: none; position: static; }
+  .bed .slot img, .bed .blanket, .night, .rstars { transition: none; }
+}
+
 /* ---------- library ---------- */
 .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .tile { border: 0; padding: 0; background: none; text-align: left; display: flex; flex-direction: column; gap: 6px; }
@@ -246,7 +420,7 @@ button { cursor: pointer; }
     <h1 class="title" id="title" aria-label="My Monster Book"></h1>
     <nav class="tabs" role="tablist" aria-label="Sections">
       <button class="tab" role="tab" id="tabMake" aria-selected="true"><img class="ticon" src="faces/F01.webp" alt=""><span class="tlabel">Make</span></button>
-      <button class="tab" role="tab" id="tabMatch" aria-selected="false"><span class="ticon pair" aria-hidden="true"><img src="faces/F05.webp" alt=""><img src="faces/F05.webp" alt=""></span><span class="tlabel">Match</span></button>
+      <button class="tab" role="tab" id="tabGames" aria-selected="false"><svg class="ticon pad" viewBox="0 0 40 34" aria-hidden="true"><path d="M11 7h18c5.5 0 8.6 4.6 9.3 10.4.7 5.9-1 10.6-5 10.6-3 0-4.6-2.9-6.6-5H13.3c-2 2.1-3.6 5-6.6 5-4 0-5.7-4.7-5-10.6C2.4 11.6 5.5 7 11 7z" fill="#A880D6" stroke="#3A2852" stroke-width="2.4" stroke-linejoin="round"/><path d="M8.5 16.5h7M12 13v7" stroke="#fff" stroke-width="3" stroke-linecap="round"/><circle cx="27" cy="14.5" r="2.4" fill="#EC6AA8"/><circle cx="31.5" cy="19" r="2.4" fill="#F2C828"/></svg><span class="tlabel">Games</span></button>
       <button class="tab" role="tab" id="tabLib" aria-selected="false"><span class="ticon heartwrap" aria-hidden="true"><svg class="heart" viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.2 0 3.7 1.2 5.3 3.1 1.6-1.9 3.1-3.1 5.3-3.1 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z"/></svg><span class="count" id="libCount">0</span></span><span class="tlabel">My monsters</span></button>
     </nav>
   </header>
@@ -308,8 +482,24 @@ button { cursor: pointer; }
     <button class="btn quiet danger" id="del" hidden>Delete this monster</button>
   </section>
 
+  <!-- GAMES -->
+  <section id="games" class="stack" hidden aria-label="Games">
+    <div class="gamelist">
+      <button class="gametile" id="playMatch" type="button">
+        <span class="gpic pairs" aria-hidden="true"><img src="faces/F05.webp" alt=""><img src="faces/F05.webp" alt=""></span>
+        <span><b>Monster match</b><small>Find the pairs</small></span></button>
+      <button class="gametile" id="playWhack" type="button">
+        <span class="gpic whackpic" aria-hidden="true"><span class="peek"><img src="faces/F10.webp" alt=""></span></span>
+        <span><b>Whack-a-monster</b><small>Bop them when they pop up</small></span></button>
+      <button class="gametile" id="playBed" type="button">
+        <span class="gpic bedpic" aria-hidden="true"><span class="gmoon"></span><span class="gpillow"></span><img src="faces/F21.webp" alt=""><span class="gblanket"></span><span class="gz">z<small>z</small></span></span>
+        <span><b>Monster bedtime</b><small>Tuck them in and say goodnight</small></span></button>
+    </div>
+  </section>
+
   <!-- MATCH -->
   <section id="matchgame" class="stack" hidden aria-label="Monster match">
+    <div class="gamebar"><button class="back" type="button" data-go="games"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>All games</button></div>
     <div class="panel">
       <h2 class="h2">Monster match</h2>
       <p class="lede">Turn over two cards. If the monsters are the same, they stay. Find them all!</p>
@@ -324,6 +514,48 @@ button { cursor: pointer; }
       <button class="btn primary" id="again">Play again</button>
     </div>
     <button class="btn quiet" id="newGame">New game</button>
+  </section>
+
+  <!-- WHACK -->
+  <section id="whackgame" class="stack" hidden aria-label="Whack-a-monster">
+    <div class="gamebar"><button class="back" type="button" data-go="games"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>All games</button><button class="mute" type="button"></button></div>
+    <div class="panel">
+      <h2 class="h2">Whack-a-monster</h2>
+      <p class="lede">Tap the monsters when they pop up! On Hard, leave the sleepy ones alone.</p>
+      <div class="levels three" id="wLevels" role="group" aria-label="How fast"></div>
+    </div>
+    <div class="status"><span>Bopped: <b id="wScore">0</b> of <b>20</b></span><span id="wBest" class="best"></span></div>
+    <div class="wdots" id="wDots" aria-hidden="true"></div>
+    <div class="wboard" id="wBoard">
+      <div class="wstart" id="wStart"><button class="playbtn" id="wGo" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg><span>Start</span></button></div>
+    </div>
+    <div class="panel win" id="wWin" hidden>
+      <div class="stars" id="wStars" aria-hidden="true"></div>
+      <h2 class="h2" id="wWinTitle">Great bopping!</h2>
+      <p class="lede" id="wWinText"></p>
+      <button class="btn primary" id="wAgain">Play again</button>
+    </div>
+  </section>
+
+  <!-- BEDTIME -->
+  <section id="bedgame" class="stack" hidden aria-label="Monster bedtime">
+    <div class="gamebar"><button class="back" type="button" data-go="games"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>All games</button><button class="mute" type="button"></button></div>
+    <div class="panel">
+      <h2 class="h2">Monster bedtime</h2>
+      <p class="lede">Tap a monster to put it to bed. Then tap its lamp to turn off the light.</p>
+    </div>
+    <div class="room" id="room">
+      <div class="wall"></div>
+      <div class="frame" aria-hidden="true"><img src="faces/F17.webp" alt=""></div>
+      <div class="window" aria-hidden="true"><span class="moon"></span></div>
+      <div class="rug" aria-hidden="true"></div>
+      <div class="waiting" id="waiting"></div>
+      <div class="beds" id="beds"></div>
+      <div class="night" aria-hidden="true"></div>
+      <div class="rstars" aria-hidden="true"></div>
+      <p class="goodnight" id="goodnight" hidden></p>
+    </div>
+    <button class="btn primary" id="morning" hidden>Good morning!</button>
   </section>
 
   <!-- LIBRARY -->
@@ -698,25 +930,39 @@ async function renderCard(rec) {
 }
 
 // ------------------------------------------------------------- screens ---
-const screens = ['make', 'meet', 'card', 'matchgame', 'library'];
+const screens = ['make', 'meet', 'card', 'games', 'matchgame', 'whackgame', 'bedgame', 'library'];
+const GAME_SCREENS = ['games', 'matchgame', 'whackgame', 'bedgame'];
+const HASHES = { games: '#games', matchgame: '#match', whackgame: '#whack', bedgame: '#bedtime', library: '#monsters' };
 function show(id) {
+  if (id !== 'whackgame') stopWhack();
+  if (id !== 'bedgame') bedQuiet();
   screens.forEach(s => { $(s).hidden = s !== id; });
   $('tabMake').setAttribute('aria-selected', String(['make', 'meet', 'card'].includes(id)));
-  $('tabMatch').setAttribute('aria-selected', String(id === 'matchgame'));
+  $('tabGames').setAttribute('aria-selected', String(GAME_SCREENS.includes(id)));
   $('tabLib').setAttribute('aria-selected', String(id === 'library'));
-  // keep the address in step, so #match (or #monsters) can be bookmarked or saved to a home screen
+  // keep the address in step, so #match, #whack, #bedtime or #monsters can be bookmarked or saved to a home screen
   try {
-    const h = { matchgame: '#match', library: '#monsters' }[id] || '';
+    const h = HASHES[id] || '';
     if (location.hash !== h) history.replaceState(null, '', location.pathname + location.search + h);
   } catch (e) {}
   scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
 }
+function openGame(id) {
+  if (id === 'matchgame') { if (!game.started) newGame(); show('matchgame'); }
+  else if (id === 'whackgame') { show('whackgame'); resetWhack(); }
+  else if (id === 'bedgame') openBedtime();
+  else show('games');
+  preloadFaces();
+}
 function route(fromHashChange) {
   const h = location.hash.toLowerCase();
-  if (h === '#match') { if (!game.started) newGame(); show('matchgame'); }
-  else if (h === '#monsters') { renderLibrary(); show('library'); }
+  const id = Object.keys(HASHES).find(k => HASHES[k] === h);
+  if (id === 'library') { renderLibrary(); show('library'); }
+  else if (id) openGame(id);
   else if (fromHashChange) show('make');
 }
+let facesLoaded = false;
+function preloadFaces() { if (facesLoaded) return; facesLoaded = true; for (let n = 1; n <= N; n++) loadImg(`faces/F${pad(n)}.webp`).catch(() => {}); }
 let draft = null;      // the monster being made: {h,b,l,name,food,friend,grumpy}
 let viewing = null;    // a saved monster being viewed
 let cardURL = null, cardBlob = null;
@@ -861,6 +1107,344 @@ function finishGame() {
   updateStatus();
 }
 
+// ------------------------------------------------------------- sound -----
+// Every sound is made in the browser (no audio files). Off switch is remembered on the device.
+const sound = (() => {
+  let ctx = null, master = null, noiseBuf = null, lull = null;
+  let on = true; try { on = localStorage.getItem('monster-book.sound') !== 'off'; } catch (e) {}
+  function ac() {
+    if (!on) return null;
+    try {
+      if (!ctx) {
+        const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null;
+        ctx = new AC(); master = ctx.createGain(); master.gain.value = .9; master.connect(ctx.destination);
+      }
+      if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+      return ctx;
+    } catch (e) { return null; }
+  }
+  function noiseSrc() {
+    if (!noiseBuf) {
+      noiseBuf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
+      const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    }
+    const s = ctx.createBufferSource(); s.buffer = noiseBuf; s.loop = true; return s;
+  }
+  function env(g, t, vol, attack, dur) {
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + attack); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  }
+  function tone({ f0, f1 = f0, dur = .15, type = 'sine', vol = .1, at = 0, attack = .008, out = null }) {
+    const c = ac(); if (!c) return;
+    const t = c.currentTime + at, o = c.createOscillator(), g = c.createGain();
+    o.type = type; o.frequency.setValueAtTime(f0, t);
+    if (f1 !== f0) o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+    env(g, t, vol, attack, dur); o.connect(g); g.connect(out || master); o.start(t); o.stop(t + dur + .05);
+  }
+  function hiss({ dur = .2, kind = 'bandpass', f0 = 1000, f1 = f0, q = 1, vol = .05, at = 0, attack = .01, out = null }) {
+    const c = ac(); if (!c) return;
+    const t = c.currentTime + at, s = noiseSrc(), f = c.createBiquadFilter(), g = c.createGain();
+    f.type = kind; f.Q.value = q; f.frequency.setValueAtTime(f0, t); if (f1 !== f0) f.frequency.exponentialRampToValueAtTime(f1, t + dur);
+    env(g, t, vol, attack, dur); s.connect(f); f.connect(g); g.connect(out || master); s.start(t); s.stop(t + dur + .05);
+  }
+  const NOTES = { C: 523.25, D: 587.33, E: 659.25, F: 698.46, G: 783.99, A: 880 };
+  function musicBox(freq, t, out) {
+    [[1, .09], [2, .018], [3, .006]].forEach(([m, v]) => {
+      const o = ctx.createOscillator(), g = ctx.createGain(); o.type = 'sine'; o.frequency.value = freq * m;
+      env(g, t, v, .012, 1.7); o.connect(g); g.connect(out); o.start(t); o.stop(t + 1.8);
+    });
+  }
+  return {
+    get on() { return on; },
+    set(v) { on = v; try { localStorage.setItem('monster-book.sound', v ? 'on' : 'off'); } catch (e) {} if (!v) this.stopLullaby(); else ac(); },
+    unlock() { ac(); },
+    pop() { tone({ f0: 480, f1: 820, dur: .09, vol: .06 }); },
+    boing() { tone({ f0: 760, f1: 170, dur: .26, type: 'triangle', vol: .16 }); hiss({ dur: .06, kind: 'lowpass', f0: 900, vol: .12, attack: .002 }); },
+    grr() {
+      const c = ac(); if (!c) return;
+      const t = c.currentTime, o = c.createOscillator(), f = c.createBiquadFilter(), g = c.createGain(), lfo = c.createOscillator(), lg = c.createGain();
+      o.type = 'sawtooth'; o.frequency.setValueAtTime(120, t); o.frequency.linearRampToValueAtTime(85, t + .45);
+      f.type = 'lowpass'; f.frequency.value = 520; lfo.frequency.value = 22; lg.gain.value = .5;
+      env(g, t, .14, .03, .5); lfo.connect(lg); lg.connect(g.gain); o.connect(f); f.connect(g); g.connect(master);
+      o.start(t); lfo.start(t); o.stop(t + .55); lfo.stop(t + .55);
+    },
+    start() { tone({ f0: 392, dur: .14, type: 'triangle', vol: .1 }); tone({ f0: 523.25, dur: .22, type: 'triangle', vol: .12, at: .16 }); },
+    jingle() { [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => tone({ f0: f, dur: i === 3 ? .5 : .16, type: 'triangle', vol: .12, at: i * .13 })); },
+    hop() { tone({ f0: 300, f1: 640, dur: .18, vol: .1 }); },
+    fwip() { hiss({ dur: .32, f0: 700, f1: 2600, q: .8, vol: .07, attack: .05 }); },
+    click() { tone({ f0: 2100, dur: .02, type: 'square', vol: .04, attack: .001 }); hiss({ dur: .03, kind: 'highpass', f0: 3000, vol: .05, attack: .001 }); },
+    snore(pan = 0) {
+      const c = ac(); if (!c) return;
+      const t = c.currentTime, s = noiseSrc(), f = c.createBiquadFilter(), g = c.createGain(), rattle = c.createGain(), lfo = c.createOscillator(), lg = c.createGain();
+      f.type = 'lowpass'; f.frequency.value = 480; lfo.frequency.value = 26; lg.gain.value = .45; rattle.gain.value = .55;
+      g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.07, t + .9); g.gain.exponentialRampToValueAtTime(.0001, t + 1.5);
+      let out = master;
+      if (c.createStereoPanner) { const p = c.createStereoPanner(); p.pan.value = pan; p.connect(master); out = p; }
+      s.connect(f); f.connect(g); g.connect(rattle); lfo.connect(lg); lg.connect(rattle.gain); rattle.connect(out);
+      s.start(t); lfo.start(t); s.stop(t + 1.6); lfo.stop(t + 1.6);
+      hiss({ dur: 1, kind: 'bandpass', f0: 1400, f1: 900, q: .7, vol: .018, at: 1.7, attack: .3, out });   // the soft breath out
+    },
+    lullaby() {   // Twinkle Twinkle Little Star, on a little music box
+      const c = ac(); if (!c) return 0;
+      this.stopLullaby();
+      lull = c.createGain(); lull.gain.value = 1; lull.connect(master);
+      const tune = 'C C G G A A G2 F F E E D D C2 G G F F E E D2 G G F F E E D2 C C G G A A G2 F F E E D D C2'.split(' ');
+      const beat = .55; let t = c.currentTime + .15;
+      for (const n of tune) { musicBox(NOTES[n[0]], t, lull); t += beat * (n[1] === '2' ? 2 : 1); }
+      return t - c.currentTime + 1.5;
+    },
+    stopLullaby() {
+      if (!lull || !ctx) return;
+      const g = lull; lull = null;
+      try { g.gain.setTargetAtTime(0, ctx.currentTime, .12); setTimeout(() => g.disconnect(), 800); } catch (e) {}
+    },
+    morning() { [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((f, i) => tone({ f0: f, dur: .25, vol: .1, at: i * .09 })); },
+  };
+})();
+const SPEAKER_ON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path class="cone" d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18.2 6.5a7.6 7.6 0 0 1 0 11"/></svg>';
+const SPEAKER_OFF = '<svg viewBox="0 0 24 24" aria-hidden="true"><path class="cone" d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg>';
+function syncMute() {
+  document.querySelectorAll('.mute').forEach(b => {
+    b.innerHTML = sound.on ? SPEAKER_ON : SPEAKER_OFF;
+    b.setAttribute('aria-label', sound.on ? 'Sound is on. Tap to turn it off' : 'Sound is off. Tap to turn it on');
+    b.setAttribute('aria-pressed', String(!sound.on));
+  });
+}
+
+// ------------------------------------------------------------- whack-a-monster -
+const WLEVELS = [
+  { name: 'Easy', sub: 'Slow', up: 1900, gap: [650, 1050], max: 1, sleepy: 0 },
+  { name: 'Medium', sub: 'Faster', up: 1300, gap: [420, 760], max: 2, sleepy: 0 },
+  { name: 'Hard', sub: 'Sleepy ones', up: 1050, gap: [360, 640], max: 2, sleepy: .28 },
+];
+const WROUND = 20;
+const wh = { level: 0, running: false, timers: new Set(), holes: [], spawned: 0, score: 0, last: -1 };
+const rand = ([a, b]) => a + Math.random() * (b - a);
+function wLater(fn, ms) { const t = setTimeout(() => { wh.timers.delete(t); fn(); }, ms); wh.timers.add(t); return t; }
+function wKey(l) { return `monster-book.whack.${l}`; }
+function wGetBest(l) { try { return parseInt(localStorage.getItem(wKey(l)) || '0', 10) || 0; } catch (e) { return 0; } }
+function buildWhack() {
+  const lv = $('wLevels'); lv.textContent = '';
+  WLEVELS.forEach((L, i) => {
+    const b = document.createElement('button'); b.className = 'level'; b.type = 'button';
+    b.innerHTML = '<span></span><small></small>'; b.firstChild.textContent = L.name; b.lastChild.textContent = L.sub;
+    b.addEventListener('click', () => { wh.level = i; resetWhack(); });
+    lv.append(b);
+  });
+  const board = $('wBoard');
+  for (let i = 0; i < 9; i++) {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'whole'; b.setAttribute('aria-label', 'Empty hole');
+    b.innerHTML = '<span class="pit"><img class="mon" alt="" draggable="false"></span><span class="zz" aria-hidden="true">Zzz</span>';
+    b.addEventListener('pointerdown', e => { e.preventDefault(); bop(i); });
+    b.addEventListener('click', e => { if (e.detail === 0) bop(i); });   // keyboard
+    board.insertBefore(b, $('wStart'));
+    wh.holes.push({ el: b, img: b.querySelector('.mon'), state: 'idle', n: 0, sleepy: false, idx: -1, timer: null });
+  }
+  const dots = $('wDots');
+  for (let i = 0; i < WROUND; i++) dots.append(document.createElement('i'));
+}
+function stopWhack() {
+  wh.running = false;
+  wh.timers.forEach(clearTimeout); wh.timers.clear();
+}
+function resetWhack() {
+  stopWhack();
+  wh.spawned = 0; wh.score = 0; wh.last = -1;
+  wh.holes.forEach(h => { h.state = 'idle'; h.el.className = 'whole'; h.el.setAttribute('aria-label', 'Empty hole'); });
+  [...$('wDots').children].forEach(d => { d.className = ''; });
+  document.querySelectorAll('#wLevels .level').forEach((b, i) => b.setAttribute('aria-pressed', String(i === wh.level)));
+  $('wStart').hidden = false; $('wBoard').hidden = false; $('wDots').hidden = false; $('wWin').hidden = true;
+  wStatus();
+}
+function wStatus() {
+  $('wScore').textContent = wh.score;
+  const best = wGetBest(wh.level);
+  $('wBest').textContent = best ? `Best: ${best}` : '';
+}
+function startWhack() {
+  sound.unlock(); sound.start();
+  resetWhack();
+  wh.running = true; $('wStart').hidden = true;
+  wLater(spawn, 750);
+}
+function spawn() {
+  if (!wh.running) return;
+  const L = WLEVELS[wh.level];
+  const active = wh.holes.filter(h => h.state !== 'idle').length;
+  if (wh.spawned < WROUND && active < L.max) {
+    const free = wh.holes.map((h, i) => (h.state === 'idle' && i !== wh.last ? i : -1)).filter(i => i >= 0);
+    if (free.length) popUp(free[Math.floor(Math.random() * free.length)], L.sleepy > 0 && Math.random() < L.sleepy);
+  }
+  if (wh.spawned < WROUND) wLater(spawn, rand(L.gap));
+}
+function popUp(i, sleepy) {
+  const h = wh.holes[i], L = WLEVELS[wh.level];
+  let n; do { n = 1 + Math.floor(Math.random() * N); } while (wh.holes.some(o => o.state !== 'idle' && o.n === n));
+  wh.last = i; h.n = n; h.sleepy = sleepy; h.state = 'up'; h.idx = sleepy ? -1 : wh.spawned++;
+  h.img.src = `faces/F${pad(n)}.webp`;
+  h.el.classList.remove('hit', 'grumpy'); h.el.classList.toggle('sleepy', sleepy);
+  requestAnimationFrame(() => requestAnimationFrame(() => { if (h.state === 'up') h.el.classList.add('up'); }));
+  h.el.setAttribute('aria-label', sleepy ? `Sleepy ${mon(n).name}. Leave it alone` : `${mon(n).name}! Tap it`);
+  if (!sleepy) sound.pop();
+  h.timer = wLater(() => duck(i, false), sleepy ? L.up * 1.6 : L.up);
+}
+function bop(i) {
+  const h = wh.holes[i];
+  if (!wh.running || h.state !== 'up') return;
+  clearTimeout(h.timer); wh.timers.delete(h.timer);
+  h.el.classList.add('up');
+  if (h.sleepy) {
+    h.state = 'grumpy'; h.el.classList.add('grumpy'); wh.score = Math.max(0, wh.score - 1); sound.grr();
+    try { navigator.vibrate?.(120); } catch (e) {}
+    wLater(() => duck(i, true), 600);
+  } else {
+    h.state = 'hit'; h.el.classList.add('hit'); wh.score++; $('wDots').children[h.idx].className = 'hit'; sound.boing(); sparks(h.el);
+    wLater(() => duck(i, true), 340);
+  }
+  wStatus();
+}
+function duck(i, handled) {
+  const h = wh.holes[i];
+  if (h.state === 'idle' || h.state === 'leaving') return;
+  if (!handled && !h.sleepy) $('wDots').children[h.idx].className = 'miss';
+  h.state = 'leaving'; h.el.classList.remove('up');
+  wLater(() => {
+    h.state = 'idle'; h.el.classList.remove('hit', 'grumpy', 'sleepy'); h.el.setAttribute('aria-label', 'Empty hole');
+    if (wh.running && wh.spawned >= WROUND && wh.holes.every(o => o.state === 'idle')) wLater(finishWhack, 350);
+  }, 260);
+}
+function sparks(el) {
+  if (reduced) return;
+  for (let k = 0; k < 6; k++) {
+    const s = document.createElement('span'); s.className = 'spark'; s.textContent = '★';
+    s.style.color = ['#FFD23F', '#EC6AA8', '#54A6E2'][k % 3];
+    el.append(s);
+    const a = (k / 6) * Math.PI * 2 + Math.random() * .5, r = 34 + Math.random() * 14;
+    s.animate([{ transform: 'translate(-50%,-50%) scale(.4)', opacity: 1 }, { transform: `translate(calc(-50% + ${Math.cos(a) * r}px), calc(-50% + ${Math.sin(a) * r}px)) scale(1)`, opacity: 0 }],
+      { duration: 480, easing: 'ease-out' }).finished.then(() => s.remove(), () => s.remove());
+  }
+}
+const STAR = on => `<svg viewBox="0 0 24 24" class="${on ? 'on' : ''}"><path d="M12 2.6l2.9 6 6.5.8-4.8 4.5 1.2 6.5L12 17.2l-5.8 3.2 1.2-6.5L2.6 9.4l6.5-.8z" fill="${on ? '#FFD23F' : '#E4D9EC'}" stroke="#3A2852" stroke-width="1.6" stroke-linejoin="round"/></svg>`;
+function finishWhack() {
+  if (!wh.running) return;
+  stopWhack();
+  const best = wGetBest(wh.level), record = wh.score > best;
+  if (record) { try { localStorage.setItem(wKey(wh.level), String(wh.score)); } catch (e) {} }
+  const stars = wh.score >= 17 ? 3 : wh.score >= 10 ? 2 : 1;
+  $('wStars').innerHTML = [0, 1, 2].map(k => STAR(k < stars)).join('');
+  [...$('wStars').children].forEach((s, k) => { s.style.animationDelay = `${k * 150}ms`; });
+  $('wWinTitle').textContent = record && best ? 'New best!' : stars === 3 ? 'Amazing bopping!' : 'Great bopping!';
+  $('wWinText').textContent = `You bopped ${wh.score} of ${WROUND} monsters.` + (best && !record ? ` Your best is ${best}.` : '');
+  $('wBoard').hidden = true; $('wDots').hidden = true; $('wWin').hidden = false;
+  sound.jingle(); wStatus();
+}
+
+// ------------------------------------------------------------- bedtime ---
+const BED_COLOURS = ['#F7C6DD', '#BFE0F7', '#CDEBB5'];
+const bed = { state: 'new', picks: [], beds: [], snores: [], timers: [] };
+function bedPicks() {
+  const picks = shuffleArr([...store.monsters]).slice(0, 3).map(m => ({ h: m.h, b: m.b, l: m.l, name: (m.name || '').trim() || 'My monster' }));
+  while (picks.length < 3) {
+    let n; do { n = 1 + Math.floor(Math.random() * N); } while (picks.some(p => p.h === n));
+    picks.push({ h: n, b: n, l: n, name: mon(n).name });
+  }
+  return shuffleArr(picks);
+}
+function bedLater(fn, ms) { bed.timers.push(setTimeout(fn, ms)); }
+function bedQuiet() { bed.snores.forEach(clearTimeout); bed.snores = []; sound.stopLullaby(); }
+function openBedtime() {
+  show('bedgame');
+  if (bed.state === 'new') setupBed();
+  else bed.beds.forEach((B, i) => { if (B.state === 'asleep' && bed.state === 'play') startSnore(i); });
+}
+function setupBed() {
+  bedQuiet(); bed.timers.forEach(clearTimeout); bed.timers = [];
+  bed.state = 'play'; bed.picks = bedPicks();
+  $('room').classList.remove('dark'); $('goodnight').hidden = true; $('morning').hidden = true;
+  const wait = $('waiting'), beds = $('beds'); wait.textContent = ''; beds.textContent = '';
+  bed.beds = bed.picks.map((p, i) => {
+    const m = mon(p.b);
+    const w = document.createElement('button'); w.type = 'button'; w.className = 'waiter';
+    w.setAttribute('aria-label', `Put ${p.name} to bed`);
+    w.addEventListener('click', () => tuck(i));
+    wait.append(w);
+    monsterCanvas(p.h, p.b, p.l).then(c => { c.setAttribute('aria-hidden', 'true'); w.append(c); }).catch(() => {});
+    const el = document.createElement('div'); el.className = 'bed';
+    el.style.setProperty('--bc', BED_COLOURS[i]); el.style.setProperty('--blk', COLOURS[m.colour]);
+    el.innerHTML = `<span class="glow"></span>
+      <button class="lamp" type="button"><span class="outline"></span><span class="shade"></span><span class="stem"></span><span class="base"></span></button>
+      <span class="head"></span><span class="pillow"></span>
+      <span class="slot"><img alt="" draggable="false"></span>
+      <span class="blanket tex-${m.texture}"></span><span class="foot"></span>
+      <span class="zzz" aria-hidden="true"><span>z</span><span>z</span><span>Z</span></span>`;
+    el.querySelector('.slot img').src = `faces/F${pad(p.h)}.webp`;
+    el.querySelector('.lamp').setAttribute('aria-label', `Turn off ${p.name}'s lamp`);
+    el.querySelector('.lamp').addEventListener('click', () => lampOff(i));
+    beds.append(el);
+    return { el, waiter: w, slot: el.querySelector('.slot'), state: 'empty' };
+  });
+}
+async function tuck(i) {
+  const B = bed.beds[i], p = bed.picks[i];
+  if (bed.state !== 'play' || B.state !== 'empty') return;
+  B.state = 'hopping'; sound.unlock(); sound.hop();
+  const from = (B.waiter.querySelector('canvas') || B.waiter).getBoundingClientRect();
+  const to = B.slot.getBoundingClientRect();
+  B.waiter.classList.add('gone');
+  if (!reduced && from.width && to.width) {
+    const size = Math.min(from.width, to.width * 1.15);
+    const fly = new Image(); fly.className = 'flyer'; fly.alt = ''; fly.src = `faces/F${pad(p.h)}.webp`;
+    const x0 = from.left + (from.width - size) / 2, y0 = from.top;
+    Object.assign(fly.style, { left: `${x0}px`, top: `${y0}px`, width: `${size}px`, height: `${size}px` });
+    document.body.append(fly);
+    const dx = to.left - x0, dy = to.top - y0, s = to.width / size;
+    try {
+      await fly.animate([
+        { transform: 'translate(0, 0) scale(1) rotate(0deg)' },
+        { transform: `translate(${dx * .5}px, ${dy * .5 - 70}px) scale(${(1 + s) / 2}) rotate(-12deg)`, offset: .5 },
+        { transform: `translate(${dx}px, ${dy}px) scale(${s}) rotate(0deg)` },
+      ], { duration: 720, easing: 'ease-in-out', fill: 'forwards' }).finished;
+    } catch (e) {}
+    fly.remove();
+  }
+  if (bed.state !== 'play') return;
+  B.el.classList.add('in'); B.state = 'in'; sound.fwip();
+}
+function lampOff(i) {
+  const B = bed.beds[i];
+  if (bed.state !== 'play') return;
+  if (B.state === 'empty') {   // nobody in bed yet: the monster waiting for this bed gives a little hop
+    B.waiter.classList.remove('nudge'); void B.waiter.offsetWidth; B.waiter.classList.add('nudge');
+    setTimeout(() => B.waiter.classList.remove('nudge'), 600); return;
+  }
+  if (B.state !== 'in') return;
+  B.state = 'asleep'; B.el.classList.add('asleep'); sound.click();
+  B.el.querySelector('.lamp').setAttribute('aria-label', `${bed.picks[i].name} is asleep`);
+  startSnore(i);
+  if (bed.beds.every(b => b.state === 'asleep')) bedLater(lightsOut, 1100);
+}
+function startSnore(i) {
+  clearTimeout(bed.snores[i]);
+  const tick = () => {
+    if (bed.state !== 'play' || bed.beds[i]?.state !== 'asleep' || $('bedgame').hidden) return;
+    sound.snore((i - 1) * .6);
+    bed.snores[i] = setTimeout(tick, 3700 + i * 300);
+  };
+  bed.snores[i] = setTimeout(tick, 500 + i * 1100);
+}
+function lightsOut() {
+  if (bed.state !== 'play') return;
+  bed.state = 'night'; bedQuiet();
+  $('room').classList.add('dark');
+  const names = bed.picks.map(p => p.name);
+  $('goodnight').textContent = `Goodnight, ${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}!`;
+  $('goodnight').hidden = false; $('morning').hidden = false;
+  bedLater(() => { if (bed.state === 'night' && !$('bedgame').hidden) sound.lullaby(); }, 900);
+}
+function goodMorning() {
+  sound.unlock(); sound.stopLullaby(); sound.morning();
+  setupBed();
+}
+
 // ------------------------------------------------------------- library ---
 function renderLibrary() {
   $('libCount').textContent = store.monsters.length;
@@ -912,7 +1496,17 @@ function init() {
   PARTS.forEach(p => preload(p, state[p]));
   $('tabMake').addEventListener('click', () => show('make'));
   $('tabLib').addEventListener('click', () => { renderLibrary(); show('library'); });
-  $('tabMatch').addEventListener('click', () => { if (!game.started) newGame(); show('matchgame'); });
+  $('tabGames').addEventListener('click', () => openGame('games'));
+  $('playMatch').addEventListener('click', () => openGame('matchgame'));
+  $('playWhack').addEventListener('click', () => openGame('whackgame'));
+  $('playBed').addEventListener('click', () => openGame('bedgame'));
+  document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => openGame(b.dataset.go)));
+  document.querySelectorAll('.mute').forEach(b => b.addEventListener('click', () => { sound.set(!sound.on); syncMute(); if (!sound.on) bedQuiet(); }));
+  syncMute();
+  buildWhack();
+  $('wGo').addEventListener('click', startWhack);
+  $('wAgain').addEventListener('click', () => { resetWhack(); startWhack(); });
+  $('morning').addEventListener('click', goodMorning);
   $('again').addEventListener('click', newGame);
   $('newGame').addEventListener('click', newGame);
   buildLevels();
