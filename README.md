@@ -23,13 +23,18 @@ The site does the same thing as the book, on a phone:
 
 A gift copy of the book gets a link like `?for=Max`, and the site becomes Max's Monster Book.
 
-Then it got things the book can't do: a **Games** tab, with three games made from the same 30 monsters.
+Then it got things the book can't do: a **Games** tab, with games made from the same 30 monsters.
 
 - **Monster match.** A memory game. Cards start face down; turn two over, and if they're the same monster they stay. Four levels, from 6 pairs up to all 30 (60 cards).
 - **Whack-a-monster.** Monsters pop up out of holes and you bop them. A round is 20 monsters, not a countdown. Hard adds sleepy monsters you have to leave alone, or they wake up grumpy.
 - **Monster bedtime.** Your own saved monsters go to bed. Tap one and it hops onto a pillow, under a blanket in the colour and texture of its body; tap its lamp and it starts snoring. When they're all asleep the lights go down, the stars come out and Twinkle Twinkle plays on a music box. No score, no way to lose.
 
-Each game has its own link (`/#match`, `/#whack`, `/#bedtime`), and best scores are kept on the device.
+For Halloween, two spooky ones:
+
+- **Torch hunt.** The bedroom's lights are off and monsters are hiding behind the couch, in the toy box, under the bed and behind the curtains. Drag a finger to shine the torch; hold it on a monster and it pops out with a friendly "boo!" and a giggle. Find them all and the lights come on. Easy hides 3, Hard hides 8.
+- **Pumpkin face maker.** Tap the pumpkin's eyes, nose or mouth to change them, light it up, save the picture. Then print the face as a carving stencil on A4, at a real size (a 12, 15 or 18 cm face), with a 5 cm bar to check the printer didn't shrink it.
+
+Each game has its own link (`/#match`, `/#whack`, `/#bedtime`, `/#torch`, `/#pumpkin`), and best scores are kept on the device.
 
 A small hub page, [play.mikeohalloran.au](https://play.mikeohalloran.au/), links this site and its sister project, a seek-and-find book ([seek-book](https://github.com/mikeohallo/seek-book)); a "More to play" button at the bottom of each site goes back to it.
 
@@ -51,9 +56,10 @@ That was the main design decision. The obvious version of this site has user acc
 - **White tummies.** Cutting the monsters out of the print files by colour left the white tummies transparent. The fix was to build a solid silhouette of each monster first, then use that as the alpha mask. Same trick for the printed cut lines that cross pale tummies at the joins.
 - **iPhones delete site data.** Safari removes a site's saved data if you don't open it for seven days of Safari use. Adding the site to the Home Screen avoids that. It's why there's a backup button.
 - **Nothing to type.** A four-year-old can't type H12, but she can swipe. The codes are the parent's shortcut; the swipe is hers.
-- **Nothing to read, either.** Each tab has a picture above its label (a monster for Make, a game controller for Games, a heart for My monsters), and the games page is three big pictures, so she can find a game herself. The address follows the tabs, so a reload keeps her where she was.
+- **Nothing to read, either.** Each tab has a picture above its label (a monster for Make, a game controller for Games, a heart for My monsters), and the games page is a set of big pictures, so she can find a game herself. The address follows the tabs, so a reload keeps her where she was.
 - **Sounds without sound files.** The boings, the snores and the lullaby are all made in the browser with the Web Audio API, so the site is still one HTML file and the images. There's a mute button, and it's remembered.
 - **One link for the book.** The printed book's QR code still opens on Make. The games are a tab, not the front door, so nobody coming from the book has an extra tap.
+- **A stencil has to be carvable.** A pumpkin face that looks fine on screen can fall apart under a knife. Every eye, nose and mouth combination (144 of them) is checked: teeth, fangs and tongues stay joined to the pumpkin, and no two holes come closer than 9 mm, even on the smallest stencil. The stencil also keeps each face the size it is on the pumpkin: the first version stretched every face to the chosen width, so a one-eyed "Ooh" face came out bigger than the page.
 
 ## What's in this repo
 
@@ -66,6 +72,7 @@ That was the main design decision. The obvious version of this site has user acc
 | `tools/test_match.py` | Plays the match game: a wrong pair flips back, a full game ends in a win, the best score sticks, every level fits a phone |
 | `tools/test_links.py` | The tab bar fits at 360–430 px, and the `#games`, `#match`, `#whack`, `#bedtime` and `#monsters` links and gift links work |
 | `tools/test_games.py` | Plays Whack-a-monster and Monster bedtime with the page clock fast-forwarded: a perfect round, an empty round, a sleepy monster on Hard, a full bedtime from tuck-in to Good morning |
+| `tools/test_spooky.py` | Plays Torch hunt at every level by moving the torch onto each monster, and the Pumpkin face maker: changing parts, lighting it, saving the picture, measuring each printed stencil (12, 15 and 18 cm, and the 5 cm bar), and checking all 144 faces fit the page at every size |
 | `docs/` | Screenshots |
 
 The monster images aren't in the repo; they're the book. Everything else is.
