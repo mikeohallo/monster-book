@@ -31,6 +31,8 @@ Then it got things the book can't do: a **Games** tab, with three games made fro
 
 Each game has its own link (`/#match`, `/#whack`, `/#bedtime`), and best scores are kept on the device.
 
+A small hub page, [play.mikeohalloran.au](https://play.mikeohalloran.au/), links this site and its sister project, a seek-and-find book ([seek-book](https://github.com/mikeohallo/seek-book)); a "More to play" button at the bottom of each site goes back to it.
+
 ## How it's built
 
 **It's one HTML file and 120 images.** No framework, no build step, no server, no database, no accounts, no analytics. Hosting is Cloudflare Pages on the free plan, and it will stay free however many families use it.
@@ -41,6 +43,7 @@ That was the main design decision. The obvious version of this site has user acc
 - **The card is drawn in the browser** on a canvas: 1200 × 1600 px, with the same fonts and colours as the printed book. Saving it is just saving a PNG.
 - **The library lives in `localStorage`.** Each saved monster is three codes, four answers and a date, a couple of hundred bytes. The card is redrawn from the strips every time, so nothing bulky is stored. Backup and restore move the library between devices as a small JSON file.
 - **Nothing anyone types leaves their phone.** The only outside request is Google Fonts.
+- **Not in search results.** A `noindex` tag keeps the site out of search engines. It's for families with the book, who arrive by QR code, gift link or home-screen icon.
 
 ### Things that turned out to matter
 
