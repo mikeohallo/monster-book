@@ -18,6 +18,7 @@ page = f"""<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#FFF8EC">
+<meta name="robots" content="noindex">
 <link rel="icon" href="faces/F01.webp" type="image/webp">
 <meta property="og:title" content="My Monster Book">
 <meta property="og:description" content="Flip a head, a body and some legs, meet your monster, and make its card.">
