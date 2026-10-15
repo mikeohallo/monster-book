@@ -1,0 +1,10 @@
+# The monster artwork is the book itself; it stays out of the repo.
+strips/
+faces/
+upload/
+
+# local bits
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
