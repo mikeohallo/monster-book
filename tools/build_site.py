@@ -1,10 +1,14 @@
-"""Wrap the page (app.html, the version written for the Claude preview) into a standalone index.html for hosting.
+"""Wrap the page (app.html, the version written for the Claude preview) into a standalone index.html for hosting,
+and build _worker.js (the Letters lock) with the key from letters_key.txt.
 Only needed if you edit app.html; index.html in this repo is the built result."""
 from pathlib import Path
 site = Path(__file__).resolve().parent.parent / 'site'
 body = (site / 'app.html').read_text(encoding='utf-8')
 # the hosted site is for everyone: the plain link says "My Monster Book"; gift links add ?for=Name
 body = body.replace("const DEFAULT_OWNER = 'Sam';", "const DEFAULT_OWNER = '';", 1)
+# Letters only for devices with the pass (see tools/_worker_src.js)
+assert "const LETTERS_GATED = false;" in body
+body = body.replace("const LETTERS_GATED = false;", "const LETTERS_GATED = true;", 1)
 body = body.replace("<title>Sam's Monster Book</title>", "<title>My Monster Book</title>", 1)
 body = body.replace('aria-label="Sam\'s Monster Book"', 'aria-label="My Monster Book"', 1)
 SITE_URL = 'https://monsters.mikeohalloran.au'
@@ -35,3 +39,14 @@ page = f"""<!doctype html>
 """
 (site / 'index.html').write_text(page, encoding='utf-8')
 print('wrote', site / 'index.html', len(page), 'bytes')
+
+# the gatekeeper Cloudflare runs in front of the site, with the secret key from letters_key.txt (never in the repo)
+import secrets
+keyfile = site.parent / 'letters_key.txt'
+if not keyfile.exists(): keyfile.write_text(secrets.token_urlsafe(18) + '\n')
+key = keyfile.read_text().strip()
+assert len(key) >= 20 and key.replace('-', '').replace('_', '').isalnum()
+worker = (Path(__file__).resolve().parent / '_worker_src.js').read_text(encoding='utf-8')
+assert worker.count('__LETTERS_KEY__') == 1
+(site / '_worker.js').write_text(worker.replace('__LETTERS_KEY__', key), encoding='utf-8')
+print('wrote', site / '_worker.js')
