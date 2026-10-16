@@ -40,15 +40,15 @@ A small hub page, [play.mikeohalloran.au](https://play.mikeohalloran.au/), links
 
 ## How it's built
 
-**It's one HTML file and 120 images.** No framework, no build step, no server, no database, no accounts, no analytics. Hosting is Cloudflare Pages on the free plan, and it will stay free however many families use it.
+**It's one HTML file and 120 images.** No framework, no build step, no server, no database, no accounts, no analytics. Hosting is Cloudflare Pages on the free plan, which comfortably covers the handful of families who have the book.
 
 That was the main design decision. The obvious version of this site has user accounts, cloud saves and an API. For a thing used by a handful of families, each of those is a cost, a privacy question and something to maintain. So instead:
 
 - **The monster is assembled in the browser.** The site holds 90 transparent strip images (30 heads, bodies and legs, about 3 MB in total), cut from the real print files so they match the book exactly. Three `<img>` tags stacked in a column are a monster.
 - **The card is drawn in the browser** on a canvas: 1200 × 1600 px, with the same fonts and colours as the printed book. Saving it is just saving a PNG.
 - **The library lives in `localStorage`.** Each saved monster is three codes, four answers and a date, a couple of hundred bytes. The card is redrawn from the strips every time, so nothing bulky is stored. Backup and restore move the library between devices as a small JSON file.
-- **Nothing anyone types leaves their phone.** The only outside request is Google Fonts.
-- **Not in search results.** A `noindex` tag keeps the site out of search engines. It's for families with the book, who arrive by QR code, gift link or home-screen icon.
+- **What anyone types stays on their phone.** Names, answers, saved monsters and scores are never sent anywhere. The site makes two kinds of outside request: Google Fonts, and the page itself. A gift link carries the child's first name in its address (`?for=Max`), so opening one, or following "More to play" from it, sends that name to the site's hosting as part of the page request. That is the only thing that leaves the phone, and only the name.
+- **Not meant for search.** A `noindex` tag asks search engines not to list the site. It's for families with the book, who arrive by QR code, gift link or home-screen icon.
 
 ### Things that turned out to matter
 
@@ -75,7 +75,7 @@ That was the main design decision. The obvious version of this site has user acc
 | `tools/test_spooky.py` | Plays Torch hunt at every level by moving the torch onto each monster, and the Pumpkin face maker: changing parts, lighting it, saving the picture, measuring each printed stencil (12, 15 and 18 cm, and the 5 cm bar), and checking all 144 faces fit the page at every size |
 | `docs/` | Screenshots |
 
-The monster images aren't in the repo; they're the book. Everything else is.
+The monster images aren't in the repo; they're the book. Nor is `site/app.html`, the working copy that `build_site.py` wraps into `index.html`, so that script won't run from a clean clone; `index.html` is its built result and is complete. The image tools and the tests are all here.
 
 ## Running it locally
 
