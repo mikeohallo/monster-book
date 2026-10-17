@@ -24,3 +24,8 @@ tools/letters/recorder.html
 tools/letters/letters_gen.py
 tools/letters/voices_gen.py
 tools/letters/work/
+# The maths games' narrator clips stay out too (the games fall back to the browser's voice)
+numbers/voices/
+tools/numbers/voices/
+tools/numbers/listen.html
+tools/numbers/log.txt

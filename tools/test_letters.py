@@ -74,7 +74,7 @@ with sync_playwright() as pw:
     # ---------------------------------------------------------------- phone, Sam's device
     ctx, p = page_at(b, 390, 844, voices=True)
     p.goto(BASE + '?for=Sam#games'); p.wait_for_timeout(700)
-    check('games page has 7 games, Letters among them', p.eval_on_selector_all('.gametile', 'e => e.length') == 7 and p.is_visible('#playLetters'))
+    check('games page has 9 games, Letters among them', p.eval_on_selector_all('.gametile', 'e => e.length') == 9 and p.is_visible('#playLetters'))
     p.click('#playLetters'); p.wait_for_timeout(400)
     check('Letters tile opens #letters on Trace', p.evaluate('location.hash') == '#letters' and p.is_visible('#traceBox') and not p.is_visible('#spellBox'))
     check('it starts by showing how ("Watch me first.")', p.evaluate('LT.demoing') and 'Watch me first' in p.text_content('#lSay'))

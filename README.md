@@ -29,6 +29,11 @@ Then it got things the book can't do: a **Games** tab, with games made from the 
 - **Whack-a-monster.** Monsters pop up out of holes and you bop them. A round is 20 monsters, not a countdown. Hard adds sleepy monsters you have to leave alone, or they wake up grumpy.
 - **Monster bedtime.** Your own saved monsters go to bed. Tap one and it hops onto a pillow, under a blanket in the colour and texture of its body; tap its lamp and it starts snoring. When they're all asleep the lights go down, the stars come out and Twinkle Twinkle plays on a music box. No score, no way to lose.
 
+A series of maths games, under Numbers:
+
+- **Monster count.** A field of different monsters. Tap each one to count it: it gets a number badge and the narrator counts along, and tapping one twice doesn't count it again. After the last one, "How many monsters?" and three numbers to choose from; a wrong answer lights up the last badge, because the last number you count is how many there are. Up to 5, 10 or 20.
+- **Quick look.** A few of the same monster pop up for a moment, then duck behind a bush. How many were there? Seeing a small amount at a glance without counting is called subitising, and it's one of the building blocks of early maths. Dice patterns first, then mixed up, then two groups side by side (four and three make seven).
+
 For Halloween, three spooky ones:
 
 - **Torch hunt.** The bedroom's lights are off and monsters are hiding behind the couch, in the toy box, under the bed and behind the curtains. Drag a finger to shine the torch; hold it on a monster and it pops out with a friendly "boo!" and a giggle. Find them all and the lights come on. Easy hides 3, Hard hides 8.
@@ -39,13 +44,13 @@ And one for learning, which only Sam's phone gets:
 
 - **Letters.** *Trace* shows a lowercase letter in NSW Foundation Style, the handwriting NSW schools teach, and a ghost finger draws it first. Then only the right start point, direction and stroke order count; the line gets stricter as she gets better. *Spell* gives her a picture and letter tiles; each tile says its sound when she taps it, and a finished word is sounded out ("f… o… x… fox!"). Levels go from three-letter words with the letters showing, to four letters, to picking the right tiles from extras. *Sounds* plays a letter sound and she taps the letter that makes it: three letters that are hard to mix up, or four with one near miss (b or d?). *First sound* shows a picture, says the word, and she taps the letter it starts with. The voices are her mum's (the letter sounds) and her dad's (everything else).
 
-Each game has its own link (`/#match`, `/#whack`, `/#bedtime`, `/#torch`, `/#pumpkin`, `/#masks`, and `/#letters` on Sam's phone), and best scores are kept on the device.
+Each game has its own link (`/#match`, `/#whack`, `/#bedtime`, `/#count`, `/#quick`, `/#torch`, `/#pumpkin`, `/#masks`, and `/#letters` on Sam's phone), and best scores are kept on the device.
 
 A small hub page, [play.mikeohalloran.au](https://play.mikeohalloran.au/), links this site and its sister project, a seek-and-find book ([seek-book](https://github.com/mikeohallo/seek-book)); a "More to play" button at the bottom of each site goes back to it.
 
 ## How it's built
 
-**It's one HTML file and 120 images**, plus the Letters game's pictures and voice clips. No framework, no build step, no server, no database, no accounts, no analytics. Hosting is Cloudflare Pages on the free plan, which comfortably covers the handful of families who have the book.
+**It's one HTML file and 120 images**, plus the Letters game's pictures and voice clips and the maths narrator's clips. No framework, no build step, no server, no database, no accounts, no analytics. Hosting is Cloudflare Pages on the free plan, which comfortably covers the handful of families who have the book.
 
 That was the main design decision. The obvious version of this site has user accounts, cloud saves and an API. For a thing used by a handful of families, each of those is a cost, a privacy question and something to maintain. So instead:
 
@@ -63,8 +68,9 @@ That was the main design decision. The obvious version of this site has user acc
 - **iPhones delete site data.** Safari removes a site's saved data if you don't open it for seven days of Safari use. Adding the site to the Home Screen avoids that. It's why there's a backup button.
 - **Nothing to type.** A young child can't type H12, but she can swipe. The codes are the parent's shortcut; the swipe is hers.
 - **Nothing to read, either.** Each tab has a picture above its label (a monster for Make, a game controller for Games, a heart for My monsters), and the games page is a set of big pictures, so she can find a game herself. The address follows the tabs, so a reload keeps her where she was.
-- **Sounds without sound files.** The boings, the snores and the lullaby are all made in the browser with the Web Audio API, so the games need nothing but the HTML file and the images. There's a mute button, and it's remembered. The only recorded sounds are the Letters voices.
+- **Sounds without sound files.** The boings, the snores and the lullaby are all made in the browser with the Web Audio API, so the games need nothing but the HTML file and the images. There's a mute button, and it's remembered. The only recorded sounds are the voices.
 - **Letter sounds need a person.** The plan was to skip recording 113 clips and use text-to-speech. It reads words and sentences well, but a letter's sound on its own (a short "b", lips popping, nothing after it) came out as "bee" or "buh" in every voice and every spelling we tried. That extra "uh" is exactly what teachers train out, because "buh-a-tuh" doesn't blend into "bat". So the 26 sounds were recorded by a person, one short clip each. The words and sayings could have gone either way, and were recorded too.
+- **But numbers don't.** Number words are whole words, which is what text-to-speech does well, so the maths games have a narrator made that way: one Australian teacher's voice from Google's library, 32 lines (one to twenty, the questions and the praise), made in about five minutes and checked by ear. New games add lines to the list and re-run the same script. Until a clip exists the game uses the browser's own voice, or shows the words.
 - **One sound per letter, for now.** Every spelling word is a short word in which each letter makes its most common sound: fox, crab, nest, never cake, ship or city. That's how phonics starts at school. Words used only for their first sound (cupcake, queen) are never spelled.
 - **One link for the book.** The printed book's QR code still opens on Make. The games are a tab, not the front door, so nobody coming from the book has an extra tap.
 - **A stencil has to be carvable.** A pumpkin face that looks fine on screen can fall apart under a knife. Every eye, nose and mouth combination (144 of them) is checked: teeth, fangs and tongues stay joined to the pumpkin, and no two holes come closer than 9 mm, even on the smallest stencil. The stencil also keeps each face the size it is on the pumpkin: the first version stretched every face to the chosen width, so a one-eyed "Ooh" face came out bigger than the page.
@@ -82,13 +88,15 @@ That was the main design decision. The obvious version of this site has user acc
 | `tools/test_games.py` | Plays Whack-a-monster and Monster bedtime with the page clock fast-forwarded: a perfect round, an empty round, a sleepy monster on Hard, a full bedtime from tuck-in to Good morning |
 | `tools/test_letters.py` | Traces every letter a to z the way a finger would, then tries the wrong start, the wrong direction and going off the line; spells every level, including a name; plays Sounds and First sound at both levels; checks the page and its sizes on phones, a folding phone and a laptop, and that a device without the pass gets no Letters tile |
 | `tools/test_spooky.py` | Plays Torch hunt at every level by moving the torch onto each monster, and the Pumpkin face maker: changing parts, lighting it, saving the picture, measuring each printed stencil (12, 15 and 18 cm, and the 5 cm bar), and checking all 144 faces fit the page at every size; prints masks at both sizes and checks the eye-hole spacing, and that all 30 heads fit the page with the eye holes and elastic dots on the monster |
+| `tools/test_numbers.py` | Plays Monster count and Quick look: counting, counting twice, wrong and right answers, peeking, full rounds; every amount from 1 to 20 laid out 60 times at four screen sizes with no monster overlapping or cut off; the narrator's clips, the browser-voice fallback and mute; and the voice maker against a fake API |
 | `tools/_worker_src.js` | The Letters lock that Cloudflare Pages runs in front of the site (the key is filled in at build time and isn't in the repo) |
 | `tools/test_worker.mjs` | Tests the lock with fake requests: blocked without a pass (including disguised addresses), the secret link, renewing the pass, and `?letters=off` |
 | `tools/letters/` | The Letters tools: tracing paths from the font, the word list, a recording page, and the picture and voice tools ([its own README](tools/letters/README.md)) |
+| `tools/numbers/` | The maths games' narrator: the lines, the text-to-speech maker and the clip processing ([its own README](tools/numbers/README.md)) |
 | `letters/` | The Edu NSW ACT Foundation font the tracing game uses (Open Font Licence) |
 | `docs/` | Screenshots |
 
-The monster images aren't in the repo; they're the book. Neither are the Letters game's pictures and voices. Nor is `site/app.html`, the working copy that `build_site.py` wraps into `index.html`, so that script won't run from a clean clone; `index.html` is its built result and is complete. The image tools and the tests are all here.
+The monster images aren't in the repo; they're the book. Neither are the Letters game's pictures and voices, or the maths narrator's clips. Nor is `site/app.html`, the working copy that `build_site.py` wraps into `index.html`, so that script won't run from a clean clone; `index.html` is its built result and is complete. The image tools and the tests are all here.
 
 ## Running it locally
 
