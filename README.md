@@ -1,6 +1,6 @@
 # Monster Lab
 
-A tiny website for a young child. Flip a monster's head, body and legs, answer four questions about the monster you made, and get a card to print. Then play games with the monsters.
+A tiny website for young children. Flip a monster's head, body and legs, answer four questions about the monster you made, and get a card to print. Then play games with the monsters.
 
 **Try it:** [monsters.mikeohalloran.au](https://monsters.mikeohalloran.au/)
 
@@ -12,7 +12,7 @@ Built with [Claude](https://claude.ai) in a day, alongside the printed book it g
 
 I made my daughter a mix-and-match flip book: 30 monsters, each page cut into three strips, so she can flip heads, bodies and legs independently. That's 27,000 monsters in one coil-bound book. The art came from Google AI Studio, the page layout and print files from Python, and the printing from Officeworks.
 
-The book's last page asks four questions about the monster you just made: What's their name? What's their favourite food? Who is their best friend? What makes them grumpy? Sam's answers deserved somewhere to live, so the book got a website.
+The book's last page asks four questions about the monster you just made: What's their name? What's their favourite food? Who is their best friend? What makes them grumpy? Her answers deserved somewhere to live, so the book got a website.
 
 The site does the same thing as the book, on a phone:
 
@@ -50,7 +50,7 @@ That was the main design decision. The obvious version of this site has user acc
 - **The monster is assembled in the browser.** The site holds 90 transparent strip images (30 heads, bodies and legs, about 3 MB in total), cut from the real print files so they match the book exactly. Three `<img>` tags stacked in a column are a monster.
 - **The card is drawn in the browser** on a canvas: 1200 × 1600 px, with the same fonts and colours as the printed book. Saving it is just saving a PNG.
 - **The library lives in `localStorage`.** Each saved monster is three codes, four answers and a date, a couple of hundred bytes. The card is redrawn from the strips every time, so nothing bulky is stored. Backup and restore move the library between devices as a small JSON file.
-- **What anyone types stays on their phone.** Names, answers, saved monsters and scores are never sent anywhere. The site makes two kinds of outside request: Google Fonts, and the page itself. A gift link carries the child's first name in its address (`?for=Max`), so opening one, or following "More to play" from it, sends that name to the site's hosting as part of the page request. That is the only thing that leaves the phone, and only the name. (One more thing moves, once, on a device set up for Sam: the first time the Learning Lab opens there, this site hands her saved Letters progress across in the part of the address after the `#`, which browsers never send to a server.)
+- **Privacy.** Answers, saved monsters and scores stay in this browser unless you export or share them. The display name is included in personalised links between the sites (a gift link like `?for=Max`, and "More to play" once a name is set), so the hosting service receives it when those links are opened. The page also loads its fonts from Google Fonts. (One more thing moves, once, in a browser set up for the Learning Lab's Letters game: the first time the Learning Lab opens there, this site hands the old saved Letters progress across in the part of the address after the `#`, which browsers don't send to a server.)
 - **Not meant for search.** A `noindex` tag asks search engines not to list the site. It's for families with the book, who arrive by QR code, gift link or home-screen icon.
 
 ### Things that turned out to matter
@@ -61,7 +61,7 @@ That was the main design decision. The obvious version of this site has user acc
 - **Nothing to type.** A young child can't type H12, but she can swipe. The codes are the parent's shortcut; the swipe is hers.
 - **Nothing to read, either.** Each tab has a picture above its label (a game controller for Play, a monster for Make, a heart for My monsters), and the games page is a set of big pictures, so she can find a game herself. The address follows the tabs, so a reload keeps her where she was.
 - **Sounds without sound files.** The boings, the snores and the lullaby are all made in the browser with the Web Audio API, so the games need nothing but the HTML file and the images. There's a mute button, and it's remembered.
-- **Make first, then play.** The front page is the games page, but Make a monster is its first and biggest tile, showing whatever monster is on the flip book. Someone arriving from the book is one tap from flipping, and Sam, who comes back for the games, lands on them.
+- **Make first, then play.** The front page is the games page, but Make a monster is its first and biggest tile, showing whatever monster is on the flip book. Someone arriving from the book is one tap from flipping, and a child who comes back for the games lands on them.
 - **A stencil has to be carvable.** A pumpkin face that looks fine on screen can fall apart under a knife. Every eye, nose and mouth combination (144 of them) is checked: teeth, fangs and tongues stay joined to the pumpkin, and no two holes come closer than 9 mm, even on the smallest stencil. The stencil also keeps each face the size it is on the pumpkin: the first version stretched every face to the chosen width, so a one-eyed "Ooh" face came out bigger than the page.
 
 ## What's in this repo
@@ -71,7 +71,7 @@ That was the main design decision. The obvious version of this site has user acc
 | `index.html` | The whole site: markup, styles and script in one file |
 | `tools/make_web_strips.py` | Cuts the 90 strip images and 30 face icons from the book's print pages |
 | `tools/build_site.py` | Wraps the page for hosting and sets the generic title |
-| `tools/test_site.py` | Drives the site in Chromium at phone size: flipping, swiping, codes, saving, backup, restore |
+| `tools/test_site.py` | Drives the site in Chromium at phone size: flipping, swiping, codes, saving, deleting, backup, restore, no sideways scroll; any failed step or page error fails the run |
 | `tools/test_match.py` | Plays the match game: a wrong pair flips back, a full game ends in a win, the best score sticks, every level fits a phone |
 | `tools/test_links.py` | The tab bar fits at 360–430 px; the plain link opens on the games page with Make a monster first; the `#make`, `#match`, `#whack`, `#bedtime` and `#monsters` links and gift links work; and the old Letters and Numbers links go to the Learning Lab |
 | `tools/test_games.py` | Plays Whack-a-monster and Monster bedtime with the page clock fast-forwarded: a perfect round, an empty round, a sleepy monster on Hard, a full bedtime from tuck-in to Good morning |
@@ -82,7 +82,7 @@ The monster images aren't in the repo; they're the book. Nor is `site/app.html`,
 
 ## Running it locally
 
-The page needs to be served, not opened from a file, because browsers block images from `file://` pages.
+Serve the page rather than opening the file directly. Browsers treat `file://` pages differently from one another (saving to the device and drawing the card can both behave differently or fail), and a local server gives reliable browser behaviour, the same as the real site.
 
 ```
 python3 -m http.server 8000

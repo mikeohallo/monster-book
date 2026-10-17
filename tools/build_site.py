@@ -1,13 +1,17 @@
 """Wrap the page (app.html, the version written for the Claude preview) into a standalone index.html for hosting.
 Only needed if you edit app.html; index.html in this repo is the built result."""
+import re
 from pathlib import Path
 site = Path(__file__).resolve().parent.parent / 'site'
 body = (site / 'app.html').read_text(encoding='utf-8')
-# the hosted site is for everyone: the plain link says "My Monster Lab"; gift links add ?for=Name
-body = body.replace("const DEFAULT_OWNER = 'Sam';", "const DEFAULT_OWNER = '';", 1)
-assert "<title>Sam's Monster Lab</title>" in body
-body = body.replace("<title>Sam's Monster Lab</title>", "<title>My Monster Lab</title>", 1)
-body = body.replace('aria-label="Sam\'s Monster Lab"', 'aria-label="My Monster Lab"', 1)
+def sub1(pattern, repl):   # exactly one match, or stop
+    global body
+    body, n = re.subn(pattern, lambda m: repl, body, count=1)
+    assert n == 1, pattern
+# the hosted site is for everyone: no name built in, so the plain link says "My Monster Lab"; gift links add ?for=Name
+sub1(r"const DEFAULT_OWNER = '[^'\n]*';", "const DEFAULT_OWNER = '';")
+sub1(r"<title>[^<\n]*Monster Lab</title>", "<title>My Monster Lab</title>")
+sub1(r'aria-label="[^"\n]*Monster Lab"', 'aria-label="My Monster Lab"')
 SITE_URL = 'https://monsters.mikeohalloran.au'
 head_end = body.index('<style>')
 head, rest = body[:head_end], body[head_end:]
