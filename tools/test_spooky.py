@@ -1,4 +1,4 @@
-"""Play Torch hunt and the Pumpkin face maker at phone, folding-phone and laptop sizes.
+"""Play Torch hunt and the Pumpkin face maker, and print monster masks, at phone, folding-phone and laptop sizes.
     python3 tools/test_spooky.py OUTDIR"""
 import http.server, socketserver, sys, threading, functools
 from pathlib import Path
@@ -16,6 +16,7 @@ BASE = f'http://127.0.0.1:{PORT}/index.html'
 css = ("@font-face{font-family:'Fredoka';font-weight:300 700;src:url(http://127.0.0.1:%d/Fredoka.ttf)}"
        "@font-face{font-family:'Nunito';font-weight:200 1000;src:url(http://127.0.0.1:%d/Nunito.ttf)}") % (PORT, PORT)
 problems = []
+PX_CM = 300 / 2.54; PX_MM = PX_CM / 10
 def check(label, ok):
     print(('ok   ' if ok else 'FAIL ') + label)
     if not ok: problems.append(label)
@@ -43,7 +44,7 @@ with sync_playwright() as pw:
     # ---------------------------------------------------------------- phone: games page, torch hunt
     ctx, p = page_at(b, 390, 844)
     p.goto(BASE + '#games'); p.wait_for_timeout(900)
-    check('games page has 6 games, the 2 Halloween ones under Spooky', p.eval_on_selector_all('.gametile', 'e => e.length') == 6 and p.is_visible('.spooky-head'))
+    check('games page has 7 games, the 3 Halloween ones under Spooky', p.eval_on_selector_all('.gametile', 'e => e.length') == 7 and p.is_visible('.spooky-head') and p.is_visible('#playMask'))
     p.screenshot(path=OUT / 's1_games.png', full_page=True)
     p.click('#playTorch'); p.wait_for_timeout(1000)
     check('Torch tile opens #torch', p.evaluate('location.hash') == '#torch' and p.is_visible('#tRoom'))
@@ -137,10 +138,48 @@ with sync_playwright() as pw:
     check(f'all 144 faces fit the page at all 3 sizes{": " + str(bad[:3]) if bad else ""}', not bad)
     ctx.close()
 
+    # ---------------------------------------------------------------- monster masks
+    ctx, p = page_at(b, 390, 844)
+    p.goto(BASE + '#games'); p.wait_for_timeout(500)
+    p.click('#playMask'); p.wait_for_timeout(1200)
+    check('Monster masks opens #masks with 30 monsters and 2 sizes', p.evaluate('location.hash') == '#masks' and p.eval_on_selector_all('#mkPick button', 'e => e.length') == 30
+          and p.eval_on_selector_all('#mkSizes .level', 'e => e.length') == 2)
+    inked = p.evaluate("(() => { const c = $('mkPrev'), d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let n = 0; for (let i = 0; i < d.length; i += 16) if (d[i] < 200) n++; return n; })()")
+    check(f'the preview shows the mask ({inked} inked samples)', inked > 2000)
+    p.click('#mkPick button >> nth=0'); p.wait_for_timeout(700)
+    check('picking a monster changes the preview', p.evaluate('MK.n') == 1)
+    # the printed sheet: A4 at 300 ppi, the 5 cm bar, and the eye holes cut out white, 5 cm apart
+    for (size, nth, eyes) in (('kid', 0, 5.0), ('big', 1, 6.3)):
+        p.click(f'#mkSizes .level >> nth={nth}'); p.wait_for_timeout(400)
+        with p.expect_download() as d: p.click('#mkPrint')
+        fn = d.value.suggested_filename; path = OUT / fn; d.value.save_as(path)
+        a = np.asarray(Image.open(path).convert('L')).astype(int)
+        bar = np.where((a[int(268 * PX_MM) + 3:int(268 * PX_MM) + 18] < 120).all(axis=0))[0]; bar_cm = (bar.max() - bar.min() + 1) / PX_CM
+        L = p.evaluate(f"(async () => ({{ holes: maskLayout(await maskArt(MK.n), MASK_SIZES['{size}']).holes }}))()")
+        hx = [round(h['x'] * PX_MM) for h in L['holes']]; hy = round(L['holes'][0]['y'] * PX_MM); r = L['holes'][0]['r'] * PX_MM
+        white = all(a[hy - int(r * .6):hy + int(r * .6), x - int(r * .6):x + int(r * .6)].min() > 235 for x in hx)
+        check(f'mask {size}: {fn} {a.shape[::-1]}, bar {bar_cm:.2f} cm, eye holes {(hx[1] - hx[0]) / PX_CM:.2f} cm apart and white inside',
+              a.shape == (3508, 2480) and abs(bar_cm - 5) < .03 and abs((hx[1] - hx[0]) / PX_CM - eyes) < .02 and white and fn.startswith('monster-mask-'))
+    # every monster at both sizes: the art fits the page, the eye holes sit on the monster, the elastic dots are inside the cut line
+    bad = p.evaluate('''(async () => { const bad = [];
+      for (let n = 1; n <= 30; n++) { const info = await maskArt(n);
+        for (const key of Object.keys(MASK_SIZES)) { const S = MASK_SIZES[key], L = maskLayout(info, S);
+          const cxP = L.X(info.cx), onArt = (x, y) => info.on(Math.round(info.cx + (x - cxP) / L.k), Math.round(info.t + (y - MASK_TOP) / L.k));
+          const why = [];
+          if (L.art.l < MASK_SIDE - .01 || L.art.r > 210 - MASK_SIDE + .01 || L.art.t < MASK_TOP - .01 || L.art.b > 262) why.push('off the page');
+          for (const h of L.holes) if (!onArt(h.x, h.y) || !onArt(h.x - h.r, h.y) || !onArt(h.x + h.r, h.y)) why.push('hole off the monster');
+          for (const d of L.dots) { if (!onArt(d.x, d.y)) why.push('dot off the monster');
+            if (L.holes.some(h => Math.hypot(h.x - d.x, h.y - d.y) < h.r + d.r + 4)) why.push('dot too near a hole'); }
+          if (why.length) bad.push(mon(n).name + ' ' + key + ': ' + why.join(', ')); } }
+      return bad; })()''')
+    check(f'all 30 masks at both sizes: on the page, eye holes on the monster, elastic dots inside the cut line{": " + str(bad[:4]) if bad else ""}', not bad)
+    p.screenshot(path=OUT / 's8_masks.png', full_page=True)
+    ctx.close()
+
     # ---------------------------------------------------------------- other sizes
     for (w, h, touch, label) in ((360, 740, True, 'small phone'), (904, 1000, True, 'folding phone open'), (1280, 800, False, 'laptop')):
         ctx, p = page_at(b, w, h, touch)
-        for hsh in ('#torch', '#pumpkin', '#games'):
+        for hsh in ('#torch', '#pumpkin', '#masks', '#games'):
             p.goto(BASE + hsh); p.wait_for_timeout(700)
             check(f'{label} {w}px {hsh}: no sideways scroll', not p.evaluate('document.documentElement.scrollWidth > innerWidth'))
             if hsh == '#torch':

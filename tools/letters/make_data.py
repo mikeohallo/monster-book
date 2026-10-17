@@ -63,7 +63,9 @@ PROMPTS = {
  'name': "Let's spell your name.", 'another': "Let's do another one.",
  'well_done': 'Well done!', 'did_it': 'You did it!', 'great_writing': 'Great writing!', 'great_spelling': 'Amazing spelling!',
  'sound_out': 'Sound it out with me.', 'listen': 'Listen.',
+ 'which': 'Which letter makes this sound?', 'starts': 'What does it start with?',
 }
+OPTIONAL = {'which', 'starts'}   # nice to have recorded; until they are, the game shows the words instead
 
 # what each new picture should show (for the AI Studio runner)
 NEW_PICTURES = {
@@ -91,7 +93,7 @@ def clips(words, letters=True, prompts=True):
         out.append({'id': f'word_{w}', 'say': text, 'kind': 'word', 'tip': 'Say the word clearly, like reading it to her.'})
     if prompts:
         for k, text in PROMPTS.items():
-            out.append({'id': f'say_{k}', 'say': text, 'kind': 'prompt', 'tip': 'Warm and clear.'})
+            out.append({'id': f'say_{k}', 'say': text, 'kind': 'prompt', 'tip': 'Warm and clear.', **({'optional': True} if k in OPTIONAL else {})})
     return out
 
 def load_family():

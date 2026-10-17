@@ -397,6 +397,15 @@ button { cursor: pointer; }
 .gpic.torchpic .beam { position: absolute; inset: 0; background: radial-gradient(circle at 58px 52px, rgba(255, 226, 140, .12) 0 26px, rgba(21, 18, 46, .92) 40px); }
 .gpic.pumpkinpic { background: linear-gradient(#2E2660, #4B3D7A); display: grid; place-items: center; }
 .gpic.pumpkinpic svg { width: 84px; height: 84px; }
+.gpic.maskpic { background: #2E2660; display: grid; place-items: center; }
+.gpic.maskpic img { width: 76px; height: 76px; object-fit: contain; }
+.gpic.maskpic .mkeye { position: absolute; width: 15px; height: 11px; border-radius: 50%; background: #2E2660; box-shadow: 0 0 0 2px #fff; top: 38px; }
+.mkprev { display: block; width: min(100%, 340px); height: auto; margin: 0 auto; aspect-ratio: 210 / 297; background: #fff; border-radius: 6px; box-shadow: var(--shadow); }
+.mkpick { display: grid; grid-template-columns: repeat(auto-fill, minmax(58px, 1fr)); gap: 6px; }
+.mkpick button { aspect-ratio: 1; border: 2px solid var(--line); border-radius: 12px; background: var(--card); padding: 4px; }
+.mkpick button[aria-pressed="true"] { border-color: var(--ink); background: var(--paper-deep); }
+.mkpick img { width: 100%; height: 100%; object-fit: contain; }
+.mkhint { margin: 0; text-align: center; color: var(--ink-soft); font-weight: 800; font-size: 15px; }
 
 /* ---------- torch hunt ---------- */
 .tray { display: flex; justify-content: center; gap: 8px; min-height: 48px; flex-wrap: wrap; }
@@ -522,7 +531,24 @@ button { cursor: pointer; }
 .tile.used { visibility: hidden; }
 .tile.nope { animation: shake2 .45s ease; }
 @keyframes shake2 { 0%, 100% { translate: 0 0; } 20% { translate: -8px 0; } 40% { translate: 8px 0; } 60% { translate: -5px 0; } 80% { translate: 5px 0; } }
-@media (prefers-reduced-motion: reduce) { .tsvg .start.pulse, .tsvg .pen.pulse, .slot.filled, .tile.nope, .lpic.pop img { animation: none; } .lsay { transition: none; } }
+/* Sound hunt and First sounds: hear a sound (or see a picture) and find its letter */
+.levels.two { grid-template-columns: repeat(2, 1fr); }
+.lmpic.spk { display: grid; place-items: center; background: #FFE9A8; }
+.lmpic.spk svg { width: 32px; height: 32px; fill: none; stroke: var(--ink); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.lmpic.first img { position: absolute; left: 2px; top: 4px; width: 34px; height: 34px; object-fit: contain; }
+.lmpic.first i { position: absolute; right: 2px; bottom: -2px; font-style: normal; font-family: 'NSW Foundation', var(--font-body); font-size: 28px; line-height: 1; width: 24px; height: 28px; text-align: center; border-radius: 6px; background: #B8E39A; }
+.hq { display: grid; place-items: center; min-height: 124px; }
+#huntBox.ended .hq { display: none; }
+.hear { width: 112px; height: 112px; border-radius: 50%; border: 0; background: #FFE9A8; box-shadow: 0 5px 0 rgba(58, 40, 82, .2); display: grid; place-items: center; }
+.hear svg { width: 60px; height: 60px; fill: none; stroke: var(--ink); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.hear:active { translate: 0 2px; box-shadow: 0 3px 0 rgba(58, 40, 82, .2); }
+.hear.talk svg .wave { animation: wave 1s ease infinite; }
+@keyframes wave { 50% { opacity: .25; } }
+.tile.yes { background: #9FDE84 !important; animation: bounce .5s ease both; }
+.tile.dim { opacity: .35; }
+.hend { text-align: center; display: grid; gap: 12px; justify-items: center; }
+.hend .wdots i { width: 20px; height: 20px; }
+@media (prefers-reduced-motion: reduce) { .tsvg .start.pulse, .tsvg .pen.pulse, .slot.filled, .tile.nope, .tile.yes, .lpic.pop img, .hear.talk svg .wave { animation: none; } .lsay { transition: none; } }
 </style>
 </head>
 <body>
@@ -615,6 +641,9 @@ button { cursor: pointer; }
       <button class="gametile" id="playPumpkin" type="button">
         <span class="gpic pumpkinpic" aria-hidden="true"><svg viewBox="0 0 100 100"><path d="M47 22c-1-6 1-11 6-14l4 3c-4 3-5 7-4 11z" fill="#6B8E3A" stroke="#3A2852" stroke-width="2.5" stroke-linejoin="round"/><ellipse cx="34" cy="58" rx="24" ry="33" fill="#E06C1A" stroke="#3A2852" stroke-width="3"/><ellipse cx="66" cy="58" rx="24" ry="33" fill="#E06C1A" stroke="#3A2852" stroke-width="3"/><ellipse cx="50" cy="58" rx="22" ry="36" fill="#F4882C" stroke="#3A2852" stroke-width="3"/><path d="M30 44l8 12H22zM70 44l8 12H62z" fill="#FFD85C"/><path d="M28 66q22 20 44 0q-22 9-44 0z" fill="#FFD85C"/></svg></span>
         <span><b>Pumpkin face maker</b><small>Make a jack-o'-lantern, then print a stencil to carve</small></span></button>
+      <button class="gametile" id="playMask" type="button">
+        <span class="gpic maskpic" aria-hidden="true"><img src="faces/F18.webp" alt=""><span class="mkeye" style="left:31px"></span><span class="mkeye" style="left:50px"></span></span>
+        <span><b>Monster masks</b><small>Print a monster face to wear</small></span></button>
     </div>
   </section>
 
@@ -707,9 +736,11 @@ button { cursor: pointer; }
   <!-- PUMPKIN FACE MAKER -->
   <section id="lettergame" class="stack" hidden aria-label="Letters">
     <div class="gamebar"><button class="back" type="button" data-go="games"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>All games</button><button class="mute" type="button"></button></div>
-    <div class="lmodes" role="group" aria-label="Trace or spell">
+    <div class="lmodes" role="group" aria-label="Letters games">
       <button class="lmode" id="lmTrace" type="button" aria-pressed="true"><span class="lmpic"><span class="lpa">a</span><span class="lpdot"></span></span><b>Trace</b></button>
       <button class="lmode" id="lmSpell" type="button" aria-pressed="false"><span class="lmpic tiles3"><i>c</i><i>a</i><i>t</i></span><b>Spell</b></button>
+      <button class="lmode" id="lmHunt" type="button" aria-pressed="false"><span class="lmpic spk"><svg viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path class="wave" d="M15.5 9.2a4 4 0 0 1 0 5.6"/><path class="wave" d="M18.3 6.6a7.6 7.6 0 0 1 0 10.8"/></svg></span><b>Sounds</b></button>
+      <button class="lmode" id="lmFirst" type="button" aria-pressed="false"><span class="lmpic first"><img src="faces/F18.webp" alt=""><i>f</i></span><b>First sound</b></button>
     </div>
     <div class="lsay" id="lSay" aria-live="polite"></div>
     <div class="panel lpanel" id="traceBox">
@@ -733,6 +764,30 @@ button { cursor: pointer; }
       <div class="ltiles" id="sTiles"></div>
       <button class="btn primary" id="sNext" type="button" hidden>Next word</button>
     </div>
+    <div class="panel lpanel" id="huntBox" hidden>
+      <div class="levels two" id="hLevels" role="group" aria-label="How hard"></div>
+      <div class="hq">
+        <button class="hear" id="hHear" type="button" aria-label="Hear it again"><svg viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path class="wave" d="M15.5 9.2a4 4 0 0 1 0 5.6"/><path class="wave" d="M18.3 6.6a7.6 7.6 0 0 1 0 10.8"/></svg></button>
+        <button class="lpic big" id="hPic" type="button" aria-label="Hear the word again" hidden><img alt=""></button>
+      </div>
+      <div class="ltiles" id="hTiles"></div>
+      <div class="wdots" id="hDots" aria-hidden="true"></div>
+      <div class="hend" id="hEnd" hidden>
+        <div class="lword" id="hEndWord">Well done!</div>
+        <div class="wdots" id="hEndDots" aria-hidden="true"></div>
+        <button class="btn primary" id="hAgain" type="button">Play again</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="maskgame" class="stack" hidden aria-label="Monster masks">
+    <div class="gamebar"><button class="back" type="button" data-go="games"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>All games</button></div>
+    <canvas class="mkprev" id="mkPrev" width="630" height="891" role="img" aria-label="The mask, as it will print"></canvas>
+    <div class="levels two" id="mkSizes" role="group" aria-label="Mask size"></div>
+    <button class="btn primary" id="mkPrint" type="button">Print mask</button>
+    <p class="mkhint" id="mkHint">Prints on A4 at real size. Card or thick paper is best.</p>
+    <h2 class="h2">Pick a monster</h2>
+    <div class="mkpick" id="mkPick" role="group" aria-label="Monsters"></div>
   </section>
 
   <section id="pumpkingame" class="stack" hidden aria-label="Pumpkin face maker">
@@ -1139,9 +1194,9 @@ async function renderCard(rec) {
 }
 
 // ------------------------------------------------------------- screens ---
-const screens = ['make', 'meet', 'card', 'games', 'matchgame', 'whackgame', 'bedgame', 'lettergame', 'torchgame', 'pumpkingame', 'library'];
-const GAME_SCREENS = ['games', 'matchgame', 'whackgame', 'bedgame', 'lettergame', 'torchgame', 'pumpkingame'];
-const HASHES = { games: '#games', matchgame: '#match', whackgame: '#whack', bedgame: '#bedtime', lettergame: '#letters', torchgame: '#torch', pumpkingame: '#pumpkin', library: '#monsters' };
+const screens = ['make', 'meet', 'card', 'games', 'matchgame', 'whackgame', 'bedgame', 'lettergame', 'torchgame', 'pumpkingame', 'maskgame', 'library'];
+const GAME_SCREENS = ['games', 'matchgame', 'whackgame', 'bedgame', 'lettergame', 'torchgame', 'pumpkingame', 'maskgame'];
+const HASHES = { games: '#games', matchgame: '#match', whackgame: '#whack', bedgame: '#bedtime', lettergame: '#letters', torchgame: '#torch', pumpkingame: '#pumpkin', maskgame: '#masks', library: '#monsters' };
 function show(id) {
   if (id !== 'whackgame') stopWhack();
   if (id !== 'bedgame') bedQuiet();
@@ -1165,6 +1220,7 @@ function openGame(id) {
   else if (id === 'lettergame') { if (lettersOK()) openLetters(); else show('games'); }
   else if (id === 'torchgame') { show('torchgame'); newTorch(); }
   else if (id === 'pumpkingame') { show('pumpkingame'); drawPumpkin(); }
+  else if (id === 'maskgame') openMasks();
   else show('games');
   preloadFaces();
 }
@@ -1992,6 +2048,110 @@ async function pumpkinStencil() {
   if (await saveFile(`pumpkin-stencil-${S.name.toLowerCase()}.jpg`, blob)) toast('Stencil saved. Print it on plain A4.');
 }
 
+// ------------------------------------------------------------- masks ----
+// A monster's head printed at face size: eye holes where a child's (or a grown-up's) eyes go, a grey cut line
+// around the monster, and two dots for elastic. Everything is in millimetres on an A4 page.
+const MASK_EYES = [415, 382, 368, 377, 345, 415, 354, 412, 335, 283, 410, 382, 281, 387, 392,
+                   362, 354, 374, 375, 336, 383, 357, 371, 368, 412, 333, 328, 360, 311, 395];   // each head's eye line, px from the top of its strip
+const MASK_SIZES = { kid: { name: 'Kid size', sub: 'Eyes 5 cm apart', eyes: 50, hole: 22, maxW: 170, maxH: 212 },
+                     big: { name: 'Grown-up size', sub: 'Eyes 6.3 cm apart', eyes: 63, hole: 25, maxW: 184, maxH: 228 } };
+const MASK_TOP = 26, MASK_PAD = 3.5, MASK_SIDE = 12;   // mm: where the art starts, how far the cut line sits outside it, and the side margin
+const MK = { n: 18, size: 'kid', token: 0 };
+const maskInfo = new Map();
+async function maskArt(n) {                     // the head strip, and where its picture is (in strip pixels, 5 to the mm)
+  if (maskInfo.has(n)) return maskInfo.get(n);
+  const img = await loadImg(`strips/H${pad(n)}.webp`);
+  const W = img.naturalWidth, H = img.naturalHeight, c = document.createElement('canvas'); c.width = W; c.height = H;
+  const x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(img, 0, 0);
+  const a = x.getImageData(0, 0, W, H).data, on = (X, Y) => a[(Y * W + X) * 4 + 3] > 40;
+  let l = W, r = 0, t = H, b = 0;
+  for (let Y = 0; Y < H; Y += 2) for (let X = 0; X < W; X += 2) if (on(X, Y)) { l = Math.min(l, X); r = Math.max(r, X); t = Math.min(t, Y); b = Math.max(b, Y); }
+  const span = Y => { let lo = W, hi = -1; for (let X = 0; X < W; X++) if (on(X, Y)) { lo = Math.min(lo, X); hi = Math.max(hi, X); } return [lo, hi]; };
+  const ey = MASK_EYES[n - 1], [el, er] = span(ey), [nl, nr] = span(H - 3);
+  const info = { img, W, H, l, r, t, b, ey, el, er, cx: nr >= 0 ? (nl + nr) / 2 : W / 2, on };   // centred on the neck, as in the book
+  maskInfo.set(n, info); return info;
+}
+function maskLayout(info, S) {                  // all in mm on the page
+  const f = Math.min(S.maxW / ((info.r - info.l) / 5), S.maxH / ((info.b - info.t) / 5));   // art scale
+  const k = f / 5;                                                                           // mm per strip pixel
+  // eyes centre on the neck, as the head sits in the book; slide the whole mask sideways if one side would reach the edge
+  const cxPage = Math.min(Math.max(105, MASK_SIDE + (info.cx - info.l) * k), 210 - MASK_SIDE - (info.r - info.cx) * k);
+  const X = px => cxPage + (px - info.cx) * k, Y = py => MASK_TOP + (py - info.t) * k;
+  const eyeY = Y(info.ey), holes = [cxPage - S.eyes / 2, cxPage + S.eyes / 2].map(x => ({ x, y: eyeY, r: S.hole / 2 }));
+  const sideL = X(info.el >= 0 && info.el < info.W ? info.el : info.l), sideR = X(info.er >= 0 ? info.er : info.r);
+  const dots = [{ x: sideL + 6, y: eyeY, r: 2.5 }, { x: sideR - 6, y: eyeY, r: 2.5 }];
+  return { f, k, X, Y, holes, dots, art: { l: X(info.l), r: X(info.r), t: Y(info.t), b: Y(info.b) } };
+}
+async function drawMaskSheet(cv, pxmm, n, sizeKey, forPrint) {
+  const S = MASK_SIZES[sizeKey], info = await maskArt(n), L = maskLayout(info, S), m = mon(n);
+  const W = Math.round(210 * pxmm), H = Math.round(297 * pxmm); cv.width = W; cv.height = H;
+  const x = cv.getContext('2d'), u = v => v * pxmm;
+  x.fillStyle = '#fff'; x.fillRect(0, 0, W, H);
+  // the art on its own layer, then a grey copy grown by MASK_PAD all round: its outer edge is the cut line
+  const art = document.createElement('canvas'); art.width = W; art.height = H;
+  const ax = art.getContext('2d'); ax.imageSmoothingQuality = 'high';
+  ax.drawImage(info.img, u(L.X(0)), u(L.Y(0)), u(info.W * L.k), u(info.H * L.k));
+  const sil = c => { const s = document.createElement('canvas'); s.width = W; s.height = H; const sx = s.getContext('2d');
+    sx.drawImage(art, 0, 0); sx.globalCompositeOperation = 'source-in'; sx.fillStyle = c; sx.fillRect(0, 0, W, H); return s; };
+  const grey = sil('#8F86A0'), white = sil('#ffffff');
+  const ring = (src, r) => { for (let i = 0; i < 24; i++) { const a = i / 24 * Math.PI * 2; x.drawImage(src, Math.cos(a) * u(r), Math.sin(a) * u(r)); } };
+  ring(grey, MASK_PAD); ring(white, MASK_PAD - .45); x.drawImage(art, 0, 0);
+  // eye holes and elastic dots: white, with a dashed line to cut along
+  x.lineWidth = u(.45); x.strokeStyle = '#3A2852';
+  for (const h of [...L.holes, ...L.dots]) {
+    x.beginPath(); x.arc(u(h.x), u(h.y), u(h.r), 0, Math.PI * 2); x.fillStyle = '#fff'; x.fill();
+    x.setLineDash(h.r > 5 ? [u(1.6), u(1.1)] : []); x.stroke(); x.setLineDash([]);
+  }
+  x.fillStyle = INK; x.textAlign = 'center'; x.font = `700 ${u(9)}px ${DISPLAY}`;
+  x.fillText(`${m.name} mask`, W / 2, u(13));
+  x.font = `800 ${u(4.2)}px ${BODY}`; x.fillStyle = INK_SOFT;
+  x.fillText(`${S.name}: the eye holes are ${S.eyes / 10} cm apart`, W / 2, u(20));
+  if (forPrint) {
+    const by = 268; x.fillStyle = INK; x.fillRect(u(15), u(by), u(50), u(1.8));
+    x.textAlign = 'left'; x.font = `800 ${u(3.4)}px ${BODY}`; x.fillStyle = INK_SOFT;
+    x.fillText('This bar should be 5 cm long', u(15), u(by + 6.5));
+    x.fillStyle = INK; x.font = `800 ${u(3.6)}px ${BODY}`;
+    ['1. Print on card, or glue the sheet onto a cereal box.',
+     '2. A grown-up cuts along the grey line and cuts out the two eye holes.',
+     '3. Make a hole at each small dot and tie on elastic, or tape a paddle-pop stick to one side.']
+      .forEach((t, i) => x.fillText(t, u(15), u(by + 13 + i * 5.4)));
+  }
+  return L;
+}
+function buildMasks() {
+  const pick = $('mkPick');
+  for (let n = 1; n <= N; n++) {
+    const b = document.createElement('button'); b.type = 'button'; b.dataset.n = n;
+    b.setAttribute('aria-label', mon(n).name); b.setAttribute('aria-pressed', String(n === MK.n));
+    const im = new Image(); im.alt = ''; im.loading = 'lazy'; im.src = `faces/F${pad(n)}.webp`; b.append(im);
+    b.addEventListener('click', () => { MK.n = n; [...pick.children].forEach(c => c.setAttribute('aria-pressed', String(c === b))); drawMaskPreview(); });
+    pick.append(b);
+  }
+  const sz = $('mkSizes');
+  for (const key of Object.keys(MASK_SIZES)) {
+    const S = MASK_SIZES[key], b = document.createElement('button'); b.className = 'level'; b.type = 'button'; b.dataset.size = key;
+    b.innerHTML = '<span></span><small></small>'; b.firstChild.textContent = S.name; b.lastChild.textContent = S.sub;
+    b.setAttribute('aria-pressed', String(key === MK.size));
+    b.addEventListener('click', () => { MK.size = key; [...sz.children].forEach(c => c.setAttribute('aria-pressed', String(c === b))); drawMaskPreview(); });
+    sz.append(b);
+  }
+  $('mkPrint').addEventListener('click', maskPrint);
+}
+async function drawMaskPreview() {
+  const my = ++MK.token, cv = document.createElement('canvas');
+  await fontsReady(); await drawMaskSheet(cv, 3, MK.n, MK.size, false);
+  if (my !== MK.token) return;
+  const out = $('mkPrev'); out.width = cv.width; out.height = cv.height; out.getContext('2d').drawImage(cv, 0, 0);
+}
+function openMasks() { show('maskgame'); drawMaskPreview(); }
+async function maskPrint() {
+  await fontsReady();
+  const cv = document.createElement('canvas'); await drawMaskSheet(cv, 300 / 25.4, MK.n, MK.size, true);
+  const blob = await new Promise(r => cv.toBlob(r, 'image/jpeg', .92));
+  const name = mon(MK.n).name.toLowerCase().replace(/[^a-z]+/g, '-');
+  if (await saveFile(`monster-mask-${name}-${MK.size === 'kid' ? 'kid' : 'grown-up'}.jpg`, blob)) toast('Mask saved. Print it on A4 at 100% (not "fit to page").');
+}
+
 // ------------------------------------------------------------- library ---
 function renderLibrary() {
   $('libCount').textContent = store.monsters.length;
@@ -2042,7 +2202,7 @@ function restoreFrom(text) {
 // y up: body 0-416, tall letters to 772, tails to -356. Each stroke runs in the direction NSW Foundation Style teaches.
 // Words, sounds and pictures come from letters/make_data.py. Both are pasted in by letters/inline_data.py.
 const LETTER_PATHS = /*LETTERS:paths*/{"a":{"advance":397,"strokes":[{"pts":[[246,386],[185,384],[149,376],[129,364],[100,334],[74,289],[54,236],[44,174],[43,121],[51,71],[63,47],[91,32],[108,28],[123,28],[143,34],[169,51],[191,70],[224,109],[265,138],[275,156],[287,198],[302,345],[302,362],[296,379],[289,385],[272,386],[290,385],[297,378],[301,365],[302,337],[289,216],[274,147],[273,87],[266,28]]}]},"b":{"advance":394,"strokes":[{"pts":[[120,748],[77,352],[74,269],[61,206],[48,93],[46,32],[48,87],[60,199],[74,258],[88,278],[126,304],[174,360],[208,380],[237,387],[260,382],[279,372],[292,354],[300,328],[306,281],[304,245],[296,188],[282,144],[253,87],[230,60],[198,40],[171,32],[108,29],[48,30]]}]},"c":{"advance":340,"strokes":[{"pts":[[284,382],[267,379],[213,384],[183,383],[149,374],[124,358],[94,326],[75,287],[58,236],[47,179],[43,119],[46,91],[53,68],[60,53],[73,41],[90,33],[111,29],[130,30],[145,34],[182,62],[220,108],[254,164]]}]},"d":{"advance":404,"strokes":[{"pts":[[246,386],[185,384],[149,376],[129,364],[100,334],[74,289],[54,236],[44,174],[43,121],[51,71],[63,47],[91,32],[121,29],[142,34],[172,53],[227,114],[261,137],[272,151],[288,206],[344,738],[290,220],[275,147],[274,86],[268,30]]}]},"e":{"advance":358,"strokes":[{"pts":[[48,170],[53,189],[64,199],[132,215],[182,236],[229,267],[262,296],[278,321],[284,349],[280,361],[274,367],[259,376],[240,382],[206,385],[161,375],[122,352],[101,330],[82,296],[68,260],[58,205],[50,185],[46,110],[53,71],[70,41],[89,31],[128,30],[158,36],[189,57],[220,88],[250,128]]}]},"f":{"advance":266,"strokes":[{"pts":[[290,736],[247,741],[228,740],[189,726],[180,720],[166,702],[149,664],[138,605],[78,30]]},{"pts":[[16,390],[190,388]]}]},"g":{"advance":398,"strokes":[{"pts":[[287,386],[170,382],[147,374],[124,359],[99,332],[74,293],[53,231],[44,177],[42,131],[46,89],[53,63],[64,48],[84,34],[105,29],[144,36],[163,48],[192,78],[228,124],[264,150],[276,168],[292,240],[301,338],[302,382],[301,338],[292,242],[276,158],[274,80],[253,-118],[240,-195],[223,-249],[205,-276],[185,-296],[157,-313],[132,-320],[93,-324],[60,-323],[32,-317],[-9,-302]]}]},"h":{"advance":404,"strokes":[{"pts":[[120,738],[112,691],[78,371],[73,264],[60,200],[38,32],[42,46],[60,206],[78,269],[89,282],[122,305],[159,350],[180,368],[211,383],[242,389],[269,380],[287,365],[299,338],[306,300],[303,249],[278,30]]}]},"i":{"advance":189,"strokes":[{"pts":[[88,392],[48,34]]},{"dot":[95,578]}]},"j":{"advance":204,"strokes":[{"pts":[[101,390],[44,-135],[33,-198],[17,-245],[1,-272],[-18,-293],[-38,-309],[-66,-318],[-106,-324],[-141,-324],[-176,-317],[-208,-305],[-222,-304]]},{"dot":[100,578]}]},"k":{"advance":374,"strokes":[{"pts":[[118,744],[78,376],[73,294],[63,238],[40,30],[64,247],[71,272],[80,287],[123,315],[182,367],[196,376],[220,384],[251,386],[276,376],[292,358],[298,337],[298,326],[289,295],[272,270],[247,250],[201,225],[235,242],[262,260],[279,278],[290,299],[296,324],[294,350],[283,370],[264,383],[231,385],[196,374],[171,358],[122,314],[83,290],[75,282],[69,267],[60,210],[66,256],[74,278],[84,292],[123,315],[181,366],[211,381],[242,386],[270,380],[281,372],[290,360],[295,346],[296,328],[288,294],[274,272],[248,250],[161,206],[153,197],[151,184],[155,169],[167,151],[272,38]]}]},"l":{"advance":206,"strokes":[{"pts":[[134,744],[58,36]]}]},"m":{"advance":612,"strokes":[{"pts":[[84,394],[75,340],[76,275],[59,199],[40,32],[60,209],[76,270],[86,286],[123,314],[172,367],[199,384],[222,387],[242,386],[257,380],[270,370],[284,346],[295,266],[282,198],[262,28],[284,213],[300,271],[309,283],[342,307],[379,352],[401,373],[422,383],[453,387],[476,382],[496,368],[505,350],[512,310],[511,244],[486,30]]}]},"n":{"advance":397,"strokes":[{"pts":[[84,392],[75,344],[73,265],[57,192],[38,33],[59,207],[78,270],[90,283],[121,305],[153,345],[179,370],[200,384],[227,387],[257,383],[277,368],[292,343],[296,317],[296,246],[268,30]]}]},"o":{"advance":373,"strokes":[{"pts":[[232,382],[207,384],[176,382],[152,376],[130,365],[102,337],[74,286],[52,214],[42,148],[42,124],[45,90],[54,64],[66,46],[84,32],[112,27],[126,30],[152,39],[174,56],[200,82],[226,114],[250,156],[273,203],[293,269],[297,310],[294,328],[288,343],[272,361],[256,372],[232,382]]}]},"p":{"advance":386,"strokes":[{"pts":[[84,386],[76,343],[74,266],[59,193],[45,45],[2,-326],[45,43],[59,198],[69,243],[79,272],[89,284],[123,308],[158,348],[188,374],[201,382],[222,386],[255,385],[270,379],[281,370],[291,355],[298,336],[306,287],[302,217],[293,167],[276,120],[254,82],[227,55],[191,37],[150,30],[49,30],[45,40]]}]},"q":{"advance":399,"strokes":[{"pts":[[286,386],[212,386],[158,380],[132,366],[103,338],[72,288],[53,229],[43,165],[46,97],[52,68],[66,46],[94,31],[108,28],[130,30],[146,37],[170,54],[195,79],[231,124],[268,152],[280,175],[292,223],[303,325],[306,382],[294,238],[278,159],[276,82],[245,-215],[244,-265],[248,-290],[261,-316],[278,-323],[301,-323],[320,-318],[334,-305],[354,-273],[365,-250],[364,-244]]}]},"r":{"advance":337,"strokes":[{"pts":[[78,390],[72,325],[73,272],[59,206],[36,28],[45,79],[59,212],[70,256],[81,280],[121,310],[171,366],[188,379],[199,383],[233,388],[258,384],[265,380],[277,365],[290,338],[290,330]]}]},"s":{"advance":352,"strokes":[{"pts":[[276,344],[251,362],[208,381],[177,385],[143,385],[112,380],[88,370],[75,352],[67,324],[70,293],[90,265],[118,242],[206,186],[240,148],[248,128],[250,103],[243,71],[230,50],[218,41],[190,32],[170,28],[138,29],[99,39],[38,73],[22,76]]}]},"t":{"advance":308,"strokes":[{"pts":[[186,744],[108,30]]},{"pts":[[20,390],[282,388]]}]},"u":{"advance":404,"strokes":[{"pts":[[78,390],[52,161],[49,107],[56,73],[67,50],[83,33],[107,27],[143,33],[170,46],[191,64],[227,106],[262,130],[272,142],[280,162],[289,200],[312,390],[289,204],[276,143],[275,72],[266,28]]}]},"v":{"advance":362,"strokes":[{"pts":[[82,380],[77,366],[51,99],[56,68],[62,51],[75,35],[92,29],[119,35],[152,55],[183,89],[214,134],[239,181],[264,238],[318,388]]}]},"w":{"advance":598,"strokes":[{"pts":[[82,392],[51,116],[51,93],[55,67],[63,47],[78,34],[95,29],[127,38],[145,50],[164,68],[206,129],[255,223],[267,235],[285,246],[294,244],[290,248],[290,256],[316,390],[293,268],[293,252],[299,224],[300,200],[290,109],[290,69],[302,43],[324,30],[336,30],[357,34],[384,50],[408,73],[438,110],[467,164],[506,254],[544,368],[554,388]]}]},"x":{"advance":340,"strokes":[{"pts":[[38,386],[240,30]]},{"pts":[[284,390],[-6,28]]}]},"y":{"advance":407,"strokes":[{"pts":[[82,388],[55,159],[53,103],[61,69],[72,48],[94,32],[117,26],[145,32],[174,47],[200,72],[229,111],[261,129],[275,144],[283,166],[293,209],[314,380],[295,218],[279,143],[279,71],[260,-107],[252,-166],[237,-226],[208,-278],[194,-295],[169,-311],[132,-321],[90,-324],[54,-321],[18,-310]]}]},"z":{"advance":333,"strokes":[{"pts":[[61,386],[248,384],[270,386],[258,384],[251,378],[223,319],[52,94],[38,70],[29,37],[32,30],[239,28]]}]}}/*END*/;
-const LETTER_DATA = /*LETTERS:data*/{"letters":{"a":{"word":"axolotl"},"b":{"word":"bat"},"c":{"word":"cupcake"},"d":{"word":"dragon"},"e":{"word":"egg"},"f":{"word":"fox"},"g":{"word":"goat"},"h":{"word":"hat"},"i":{"word":"igloo"},"j":{"word":"jellyfish"},"k":{"word":"kite"},"l":{"word":"log"},"m":{"word":"mermaid"},"n":{"word":"net"},"o":{"word":"octopus"},"p":{"word":"penguin"},"q":{"word":"queen"},"r":{"word":"rug"},"s":{"word":"snail"},"t":{"word":"tent"},"u":{"word":"umbrella"},"v":{"word":"van"},"w":{"word":"web"},"x":{"word":"box"},"y":{"word":"yeti"},"z":{"word":"zip"}},"words":{"axolotl":{"text":"axolotl","pic":"face:19"},"bat":{"text":"bat","pic":"face:14"},"cupcake":{"text":"cupcake","pic":"face:25"},"dragon":{"text":"dragon","pic":"face:24"},"egg":{"text":"egg","pic":"new:egg"},"fox":{"text":"fox","pic":"face:18"},"goat":{"text":"goat","pic":"new:goat"},"hat":{"text":"hat","pic":"new:hat"},"igloo":{"text":"igloo","pic":"new:igloo"},"jellyfish":{"text":"jellyfish","pic":"face:27"},"kite":{"text":"kite","pic":"new:kite"},"log":{"text":"log","pic":"new:log"},"mermaid":{"text":"mermaid","pic":"face:07"},"net":{"text":"net","pic":"new:net"},"octopus":{"text":"octopus","pic":"face:05"},"penguin":{"text":"penguin","pic":"face:04"},"queen":{"text":"queen","pic":"new:queen"},"rug":{"text":"rug","pic":"new:rug"},"snail":{"text":"snail","pic":"face:29"},"tent":{"text":"tent","pic":"new:tent"},"umbrella":{"text":"umbrella","pic":"new:umbrella"},"van":{"text":"van","pic":"new:van"},"web":{"text":"web","pic":"new:web"},"box":{"text":"box","pic":"new:box"},"yeti":{"text":"yeti","pic":"face:09"},"zip":{"text":"zip","pic":"new:zip"},"sun":{"text":"sun","pic":"new:sun"},"pig":{"text":"pig","pic":"new:pig"},"cup":{"text":"cup","pic":"new:cup"},"bus":{"text":"bus","pic":"new:bus"},"bed":{"text":"bed","pic":"new:bed"},"cat":{"text":"cat","pic":"new:cat"},"dog":{"text":"dog","pic":"new:dog"},"bug":{"text":"bug","pic":"new:bug"},"hen":{"text":"hen","pic":"new:hen"},"frog":{"text":"frog","pic":"face:10"},"crab":{"text":"crab","pic":"new:crab"},"drum":{"text":"drum","pic":"new:drum"},"flag":{"text":"flag","pic":"new:flag"},"nest":{"text":"nest","pic":"new:nest"}},"spell":{"1":["fox","bat","sun","pig","cup","net","rug","van","web","box","zip","hat","log","bus","bed","cat","dog","bug","hen"],"2":["frog","crab","drum","flag","nest","tent"]},"prompts":{"watch":"Watch me first.","trace":"Your turn. Trace the letter.","start":"Start at the green dot.","arrow":"Follow the arrow.","line":"Back to the line.","spell":"Let's spell it.","tap":"Tap the letters to spell it.","name":"Let's spell your name.","another":"Let's do another one.","well_done":"Well done!","did_it":"You did it!","great_writing":"Great writing!","great_spelling":"Amazing spelling!","sound_out":"Sound it out with me.","listen":"Listen."}}/*END*/;
+const LETTER_DATA = /*LETTERS:data*/{"letters":{"a":{"word":"axolotl"},"b":{"word":"bat"},"c":{"word":"cupcake"},"d":{"word":"dragon"},"e":{"word":"egg"},"f":{"word":"fox"},"g":{"word":"goat"},"h":{"word":"hat"},"i":{"word":"igloo"},"j":{"word":"jellyfish"},"k":{"word":"kite"},"l":{"word":"log"},"m":{"word":"mermaid"},"n":{"word":"net"},"o":{"word":"octopus"},"p":{"word":"penguin"},"q":{"word":"queen"},"r":{"word":"rug"},"s":{"word":"snail"},"t":{"word":"tent"},"u":{"word":"umbrella"},"v":{"word":"van"},"w":{"word":"web"},"x":{"word":"box"},"y":{"word":"yeti"},"z":{"word":"zip"}},"words":{"axolotl":{"text":"axolotl","pic":"face:19"},"bat":{"text":"bat","pic":"face:14"},"cupcake":{"text":"cupcake","pic":"face:25"},"dragon":{"text":"dragon","pic":"face:24"},"egg":{"text":"egg","pic":"new:egg"},"fox":{"text":"fox","pic":"face:18"},"goat":{"text":"goat","pic":"new:goat"},"hat":{"text":"hat","pic":"new:hat"},"igloo":{"text":"igloo","pic":"new:igloo"},"jellyfish":{"text":"jellyfish","pic":"face:27"},"kite":{"text":"kite","pic":"new:kite"},"log":{"text":"log","pic":"new:log"},"mermaid":{"text":"mermaid","pic":"face:07"},"net":{"text":"net","pic":"new:net"},"octopus":{"text":"octopus","pic":"face:05"},"penguin":{"text":"penguin","pic":"face:04"},"queen":{"text":"queen","pic":"new:queen"},"rug":{"text":"rug","pic":"new:rug"},"snail":{"text":"snail","pic":"face:29"},"tent":{"text":"tent","pic":"new:tent"},"umbrella":{"text":"umbrella","pic":"new:umbrella"},"van":{"text":"van","pic":"new:van"},"web":{"text":"web","pic":"new:web"},"box":{"text":"box","pic":"new:box"},"yeti":{"text":"yeti","pic":"face:09"},"zip":{"text":"zip","pic":"new:zip"},"sun":{"text":"sun","pic":"new:sun"},"pig":{"text":"pig","pic":"new:pig"},"cup":{"text":"cup","pic":"new:cup"},"bus":{"text":"bus","pic":"new:bus"},"bed":{"text":"bed","pic":"new:bed"},"cat":{"text":"cat","pic":"new:cat"},"dog":{"text":"dog","pic":"new:dog"},"bug":{"text":"bug","pic":"new:bug"},"hen":{"text":"hen","pic":"new:hen"},"frog":{"text":"frog","pic":"face:10"},"crab":{"text":"crab","pic":"new:crab"},"drum":{"text":"drum","pic":"new:drum"},"flag":{"text":"flag","pic":"new:flag"},"nest":{"text":"nest","pic":"new:nest"}},"spell":{"1":["fox","bat","sun","pig","cup","net","rug","van","web","box","zip","hat","log","bus","bed","cat","dog","bug","hen"],"2":["frog","crab","drum","flag","nest","tent"]},"prompts":{"watch":"Watch me first.","trace":"Your turn. Trace the letter.","start":"Start at the green dot.","arrow":"Follow the arrow.","line":"Back to the line.","spell":"Let's spell it.","tap":"Tap the letters to spell it.","name":"Let's spell your name.","another":"Let's do another one.","well_done":"Well done!","did_it":"You did it!","great_writing":"Great writing!","great_spelling":"Amazing spelling!","sound_out":"Sound it out with me.","listen":"Listen.","which":"Which letter makes this sound?","starts":"What does it start with?"}}/*END*/;
 const LXH = 416, LTOP = 805, LBOT = -385, LW = 1000;
 const LCOLS = ['#F7D96B', '#9ED3F5', '#F7B8D6', '#B8E39A', '#FFC48A', '#D3C2F2'];
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -2405,22 +2565,136 @@ async function lfinishWord() {
   if (my !== LS.round) return;
   LS.busy = false; $('sNext').hidden = false;
 }
+// ---- sound hunt ("hunt": hear a sound, find its letter) and first sounds ("first": see a picture, find its first letter)
+const LH = { mode: 'hunt', level: '1', round: 0, n: 0, res: [], queue: [], target: null, word: null, tries: 0, busy: false };
+const LH_ROUND = 10;
+const LH_SAME = { c: 'k', k: 'c' };                 // the same sound: never offered side by side
+const LH_NEAR = { b: 'dp', d: 'bt', p: 'b', m: 'n', n: 'm', f: 'v', v: 'f', s: 'z', z: 's', i: 'e', e: 'i', a: 'u', u: 'ao',
+                  o: 'u', g: 'c', c: 'g', k: 'g', t: 'd', w: 'r', r: 'w', l: 'r', j: 'g', h: 'f', q: 'k', x: 's', y: 'i' };
+function huntLevels() { return [{ key: '1', name: 'Easy', sub: '3 letters' }, { key: '2', name: 'Tricky', sub: 'b or d?' }]; }
+function buildHuntLevels() {
+  const box = $('hLevels'); box.textContent = '';
+  huntLevels().forEach(l => {
+    const b = document.createElement('button'); b.className = 'level'; b.type = 'button';
+    b.innerHTML = '<span></span><small></small>'; b.firstChild.textContent = l.name; b.lastChild.textContent = l.sub;
+    b.setAttribute('aria-pressed', String(l.key === LH.level));
+    b.addEventListener('click', () => { LH.level = l.key; lstore.hlevel = l.key; lsave(); buildHuntLevels(); newHuntRound(); });
+    box.append(b);
+  });
+}
+function huntChoices(t) {          // the answer plus 2 (Easy) or 3 (Tricky) others; Tricky always includes a look- or sound-alike
+  const n = LH.level === '2' ? 4 : 3, out = [t];
+  const clash = c => out.includes(c) || out.some(o => LH_SAME[o] === c) || c === 'x';
+  if (LH.level === '2') {
+    const near = [...(LH_NEAR[t] || '')].filter(c => !clash(c));
+    if (near.length) out.push(near[Math.floor(Math.random() * near.length)]);
+  }
+  const close = new Set([...(LH_NEAR[t] || '')]);
+  for (const k in LH_NEAR) if (LH_NEAR[k].includes(t)) close.add(k);
+  for (const c of shuffleArr('abcdefghijklmnopqrstuvwyz'.split(''))) {
+    if (out.length >= n) break;
+    if (clash(c) || close.has(c)) continue;
+    out.push(c);
+  }
+  return shuffleArr(out);
+}
+const huntWord = ch => ch === 'x' ? null : letterWord(ch).id;   // box starts with b, so x gets no word
+const lhClip = (prefix, id) => [prefix + id, ''];                // a clip with no words on screen (they'd give the answer away)
+function drawHuntDots(id = 'hDots') {
+  const box = $(id); box.textContent = '';
+  for (let i = 0; i < LH.queue.length; i++) { const d = document.createElement('i'); if (LH.res[i]) d.className = LH.res[i]; box.append(d); }
+}
+function newHuntRound() {
+  LH.n = 0; LH.res = []; $('hEnd').hidden = true; $('hTiles').hidden = false; $('hDots').hidden = false; $('huntBox').classList.remove('ended');
+  if (LH.mode === 'hunt') LH.queue = shuffleArr('abcdefghijklmnopqrstuvwxyz'.split('')).slice(0, LH_ROUND);
+  else {
+    const words = Object.keys(LETTER_DATA.words).filter(w => isEllie() || !LETTER_DATA.words[w].pic.startsWith('family:'));
+    const seen = new Set(); LH.queue = [];
+    for (const w of shuffleArr(words)) {
+      const c = LETTER_DATA.words[w].text[0].toLowerCase();
+      if (c === 'x' || seen.has(c)) continue;
+      seen.add(c); LH.queue.push(w); if (LH.queue.length === LH_ROUND) break;
+    }
+  }
+  drawHuntDots(); huntNext();
+}
+function huntNext() {
+  voice.stop(); voice.nextVoice();
+  const my = ++LH.round; LH.tries = 0; LH.busy = false;
+  if (LH.n >= LH.queue.length) return huntEnd();
+  if (LH.mode === 'hunt') { LH.target = LH.queue[LH.n]; LH.word = null; }
+  else { LH.word = { id: LH.queue[LH.n], ...LETTER_DATA.words[LH.queue[LH.n]] }; LH.target = LH.word.text[0].toLowerCase(); }
+  $('hHear').hidden = LH.mode !== 'hunt'; $('hPic').hidden = LH.mode !== 'first';
+  if (LH.word) { const img = $('hPic').querySelector('img'); img.src = picURL(LH.word.pic); $('hPic').classList.remove('pop'); }
+  const ch = huntChoices(LH.target), box = $('hTiles'); box.textContent = '';
+  const avail = Math.max(240, $('huntBox').clientWidth - 32);
+  let t = Math.floor((avail - (ch.length - 1) * 10) / ch.length), perRow = ch.length;
+  if (t < 84 && ch.length === 4) { perRow = 2; t = Math.floor((avail - 10) / 2); }   // a phone: 2 x 2, so each letter stays thumb-sized
+  t = Math.min(perRow === 2 ? 104 : 112, t);
+  box.style.setProperty('--t', t + 'px'); box.style.maxWidth = (perRow * t + (perRow - 1) * 10 + 2) + 'px'; box.style.marginInline = 'auto';
+  ch.forEach((c, i) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'tile'; b.textContent = c; b.dataset.ch = c;
+    b.style.background = LCOLS[i % LCOLS.length]; b.setAttribute('aria-label', `Letter ${c}`);
+    b.addEventListener('click', () => huntTap(b));
+    box.append(b);
+  });
+  const w = huntWord(LH.target);
+  voice.preload(['sound_' + LH.target, LH.word ? 'word_' + LH.word.id : '', w ? 'word_' + w : '', 'say_which', 'say_starts', 'say_well_done']);
+  lwait(300).then(() => my === LH.round && huntPrompt(LH.n === 0));
+}
+function huntPrompt(withQuestion) {      // the question (first one of a round only), then the sound or the word
+  const ask = LH.mode === 'hunt' ? SAY('which') : SAY('starts');
+  const it = LH.mode === 'hunt' ? lhClip('sound_', LH.target) : lhClip('word_', LH.word.id);
+  const hear = $('hHear'); hear.classList.add('talk');
+  return voice.say(withQuestion ? [ask, it] : [it]).then(() => hear.classList.remove('talk'));
+}
+function huntTap(btn) {
+  if (LH.busy || btn.classList.contains('yes')) return;
+  sound.unlock();
+  const c = btn.dataset.ch, my = LH.round;
+  if (c === LH.target) {
+    LH.busy = true; btn.classList.add('yes'); sound.pop();
+    [...$('hTiles').children].forEach(b => b !== btn && b.classList.add('dim'));
+    LH.res[LH.n] = LH.tries ? 'miss' : 'hit'; drawHuntDots();
+    if (LH.word) { $('hPic').classList.remove('pop'); void $('hPic').offsetWidth; $('hPic').classList.add('pop'); }
+    const w = LH.word ? LH.word.id : huntWord(c);
+    voice.say(w ? [SOUND(c), WORD(w)] : [SOUND(c)], 80).then(() => {
+      if (my !== LH.round) return;
+      LH.n++; lwait(350).then(() => my === LH.round && huntNext());
+    });
+  } else {
+    LH.tries++; btn.classList.remove('nope'); void btn.offsetWidth; btn.classList.add('nope');
+    lwait(450).then(() => my === LH.round && !LH.busy && huntPrompt(false));
+  }
+}
+function huntEnd() {
+  LH.busy = true;
+  $('hTiles').hidden = true; $('hDots').hidden = true; $('hHear').hidden = true; $('hPic').hidden = true; $('huntBox').classList.add('ended');
+  const hits = LH.res.filter(r => r === 'hit').length;
+  $('hEndWord').textContent = hits === LH.queue.length ? 'All first go!' : 'Well done!';
+  drawHuntDots('hEndDots'); $('hEnd').hidden = false;
+  sound.chime(); voice.say([SAY(LH.mode === 'hunt' ? 'well_done' : 'did_it')]);
+}
+
+const LMODES = { trace: 'lmTrace', spell: 'lmSpell', hunt: 'lmHunt', first: 'lmFirst' };
 function letterMode(m) {
+  if (!LMODES[m]) m = 'trace';
   lstore.mode = m; lsave();
-  $('lmTrace').setAttribute('aria-pressed', String(m === 'trace')); $('lmSpell').setAttribute('aria-pressed', String(m === 'spell'));
-  $('traceBox').hidden = m !== 'trace'; $('spellBox').hidden = m !== 'spell';
-  voice.stop(); LT.demoTok++; LT.demoing = false; LS.round++; LS.busy = false;
+  for (const k in LMODES) $(LMODES[k]).setAttribute('aria-pressed', String(m === k));
+  $('traceBox').hidden = m !== 'trace'; $('spellBox').hidden = m !== 'spell'; $('huntBox').hidden = m !== 'hunt' && m !== 'first';
+  voice.stop(); LT.demoTok++; LT.demoing = false; LS.round++; LS.busy = false; LH.round++; LH.busy = false;
   if (m === 'trace') setLetter(LT.ch || lstore.next || 'a');
-  else { buildSpellLevels(); newWord(); }
+  else if (m === 'spell') { buildSpellLevels(); newWord(); }
+  else { LH.mode = m; LH.level = lstore.hlevel === '2' ? '2' : '1'; buildHuntLevels(); newHuntRound(); }
 }
 async function openLetters() {
   show('lettergame');
   await Promise.all([voice.load(), loadFamily()]); voice.nextVoice();
   LT.ch = lstore.next || 'a'; LS.level = lstore.level || '1';
-  letterMode(lstore.mode === 'spell' ? 'spell' : 'trace');
+  letterMode(lstore.mode);
   setTimeout(() => { if (!$('lettergame').hidden) $('lettergame').querySelector('.lmodes').scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' }); }, 60);
 }
-function stopLetters() { voice.stop(); LT.demoTok++; LT.demoing = false; LT.down = false; LS.round++; LS.busy = false; }
+function stopLetters() { voice.stop(); LT.demoTok++; LT.demoing = false; LT.down = false; LS.round++; LS.busy = false; LH.round++; LH.busy = false; }
 function buildLetters() {
   const svg = $('tSvg');
   svg.addEventListener('pointerdown', ltraceDown);
@@ -2436,6 +2710,11 @@ function buildLetters() {
   $('sNext').addEventListener('click', newWord);
   $('lmTrace').addEventListener('click', () => letterMode('trace'));
   $('lmSpell').addEventListener('click', () => letterMode('spell'));
+  $('lmHunt').addEventListener('click', () => letterMode('hunt'));
+  $('lmFirst').addEventListener('click', () => letterMode('first'));
+  $('hHear').addEventListener('click', () => { sound.unlock(); if (!LH.busy) huntPrompt(false); });
+  $('hPic').addEventListener('click', () => { sound.unlock(); if (!LH.busy) huntPrompt(false); });
+  $('hAgain').addEventListener('click', () => { sound.unlock(); newHuntRound(); });
 }
 
 // ------------------------------------------------------------- wiring ----
@@ -2451,6 +2730,8 @@ function init() {
   $('playTorch').addEventListener('click', () => openGame('torchgame'));
   $('playPumpkin').addEventListener('click', () => openGame('pumpkingame'));
   $('playLetters').addEventListener('click', () => openGame('lettergame'));
+  $('playMask').addEventListener('click', () => openGame('maskgame'));
+  buildMasks();
   buildLetters();
   if (!lettersOK()) $('playLetters').style.display = 'none';
   buildTorch();

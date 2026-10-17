@@ -16,6 +16,8 @@ BASE = f'http://127.0.0.1:{PORT}/index.html'
 css = ("@font-face{font-family:'Fredoka';font-weight:300 700;src:url(http://127.0.0.1:%d/Fredoka.ttf)}"
        "@font-face{font-family:'Nunito';font-weight:200 1000;src:url(http://127.0.0.1:%d/Nunito.ttf)}") % (PORT, PORT)
 problems = []
+FAM_FILE = SITE / 'letters' / 'family.json'                # private: on the family's copy only, not in the repo
+FAM_IDS = set(json.loads(FAM_FILE.read_text())['words']) if FAM_FILE.exists() else set()
 def check(label, ok):
     print(('ok   ' if ok else 'FAIL ') + label)
     if not ok: problems.append(label)
@@ -72,7 +74,7 @@ with sync_playwright() as pw:
     # ---------------------------------------------------------------- phone, Ellie's device
     ctx, p = page_at(b, 390, 844, voices=True)
     p.goto(BASE + '?for=Ellie#games'); p.wait_for_timeout(700)
-    check('games page has 6 games, Letters among them', p.eval_on_selector_all('.gametile', 'e => e.length') == 6 and p.is_visible('#playLetters'))
+    check('games page has 7 games, Letters among them', p.eval_on_selector_all('.gametile', 'e => e.length') == 7 and p.is_visible('#playLetters'))
     p.click('#playLetters'); p.wait_for_timeout(400)
     check('Letters tile opens #letters on Trace', p.evaluate('location.hash') == '#letters' and p.is_visible('#traceBox') and not p.is_visible('#spellBox'))
     check('it starts by showing how ("Watch me first.")', p.evaluate('LT.demoing') and 'Watch me first' in p.text_content('#lSay'))
@@ -172,6 +174,60 @@ with sync_playwright() as pw:
     check('leaving Letters stops the voice and the demo', not p.evaluate('LT.demoing') and p.evaluate('LS.busy') in (False, None))
     p.goto(BASE + '?for=Ellie#letters'); p.wait_for_timeout(500)
     check('it remembers the mode (opens on Spell again)', p.is_visible('#spellBox'))
+
+    # ---------------------------------------------------------------- sound hunt and first sounds
+    def play_round(label, first_wrong=True):
+        for k in range(10):
+            p.wait_for_function(f"!LH.busy && LH.n === {k} && document.querySelectorAll('#hTiles .tile').length > 0", timeout=15000)
+            t = p.evaluate('LH.target')
+            if k == 0 and first_wrong:
+                wrong = p.evaluate("[...document.querySelectorAll('#hTiles .tile')].map(b => b.dataset.ch).find(c => c !== LH.target)")
+                p.click(f'#hTiles .tile[data-ch="{wrong}"]'); p.wait_for_timeout(120)
+                check(f'{label}: a wrong letter shakes and the question stays', p.evaluate('LH.n') == 0 and p.eval_on_selector_all('#hTiles .tile.nope', 'e => e.length') == 1 and not p.evaluate('LH.res[0]'))
+            p.click(f'#hTiles .tile[data-ch="{t}"]')
+        p.wait_for_function("!$('hEnd').hidden", timeout=20000)
+        res = p.evaluate('LH.res')
+        check(f'{label}: a round is 10, ending on "Play again" with the dots ({"".join("x" if r == "miss" else "o" for r in res)})',
+              len(res) == 10 and res[0] == ('miss' if first_wrong else 'hit') and all(r == 'hit' for r in res[1:]) and p.is_visible('#hAgain'))
+
+    p.click('#lmHunt'); p.wait_for_timeout(400)
+    check('Sounds: two levels, the speaker, 3 letters, 10 dots', p.is_visible('#huntBox') and p.eval_on_selector_all('#hLevels .level', 'e => e.length') == 2
+          and p.is_visible('#hHear') and not p.is_visible('#hPic') and p.eval_on_selector_all('#hTiles .tile', 'e => e.length') == 3 and p.eval_on_selector_all('#hDots i', 'e => e.length') == 10)
+    check('Sounds: the answer is there exactly once', p.evaluate("[...document.querySelectorAll('#hTiles .tile')].filter(b => b.dataset.ch === LH.target).length") == 1)
+    rules = p.evaluate('''() => { const out = { easy: [], tricky: [] }; const L = 'abcdefghijklmnopqrstuvwxyz'.split('');
+        for (const [lvl, key] of [['1', 'easy'], ['2', 'tricky']]) { LH.level = lvl;
+          for (let r = 0; r < 40; r++) for (const t of L) { const c = huntChoices(t);
+            const close = new Set([...(LH_NEAR[t] || '')]); for (const k in LH_NEAR) if (LH_NEAR[k].includes(t)) close.add(k);
+            const bad = new Set(c).size !== c.length || !c.includes(t) || (c.includes('c') && c.includes('k')) || c.some(x => x === 'x' && t !== 'x')
+              || c.length !== (lvl === '2' ? 4 : 3) || (lvl === '1' && c.some(x => x !== t && close.has(x)))
+              || (lvl === '2' && (LH_NEAR[t] || '').length && !c.some(x => (LH_NEAR[t] || '').includes(x) && x !== t) && ![...(LH_NEAR[t] || '')].every(x => x === 'x' || (LH_SAME[t] === x)));
+            if (bad) out[key].push(t + ':' + c.join('')); } }
+        LH.level = '1'; return out; }''')
+    check(f'Sounds, Easy: never a look- or sound-alike, never c with k (2 x 1040 rounds) {rules["easy"][:3]}', not rules['easy'])
+    check(f'Sounds, Tricky: 4 letters, always one look- or sound-alike, never c with k {rules["tricky"][:3]}', not rules['tricky'])
+    play_round('Sounds')
+    p.screenshot(path=OUT / 'l7_sounds_end.png')
+    p.click('#hAgain'); p.wait_for_timeout(300)
+    check('Play again starts a new round', p.evaluate('LH.n') == 0 and p.is_visible('#hTiles') and p.evaluate('LH.res.length') == 0)
+    p.click('#hLevels .level >> nth=1'); p.wait_for_timeout(300)
+    sz = p.evaluate("[...document.querySelectorAll('#hTiles .tile')].map(b => Math.round(b.getBoundingClientRect().width))")
+    rows = p.evaluate("new Set([...document.querySelectorAll('#hTiles .tile')].map(b => Math.round(b.getBoundingClientRect().top))).size")
+    check(f'Sounds, Tricky on a phone: 4 letters in a 2 x 2, each {sz[0] if sz else 0} px (2 cm is about 76)', len(sz) == 4 and min(sz) >= 84 and rows == 2)
+    p.screenshot(path=OUT / 'l8_sounds_tricky.png')
+
+    p.click('#lmFirst'); p.wait_for_timeout(400)
+    p.wait_for_function("$('hPic').querySelector('img').complete", timeout=5000)
+    check('First sound: a picture instead of the speaker', p.is_visible('#hPic') and not p.is_visible('#hHear') and p.evaluate("$('hPic').querySelector('img').naturalWidth") > 0)
+    q = p.evaluate("LH.queue.map(w => LETTER_DATA.words[w].text)")
+    firsts = [w[0].lower() for w in q]
+    check(f'First sound: 10 words with 10 different first letters, none on x ({", ".join(q)})', len(q) == 10 and len(set(firsts)) == 10 and 'x' not in firsts)
+    check('First sound: the answer is the word\'s first letter', p.evaluate("LH.target === LH.word.text[0].toLowerCase()"))
+    pool = p.evaluate("Object.keys(LETTER_DATA.words).filter(w => isEllie() || !LETTER_DATA.words[w].pic.startsWith('family:'))")
+    check('First sound on Ellie\'s phone can use the family words', not FAM_IDS or FAM_IDS <= set(pool))
+    play_round('First sound', first_wrong=False)
+    p.goto(BASE + '?for=Ellie&again=1#letters'); p.wait_for_function("!$('huntBox').hidden && LH.queue.length === 10", timeout=8000)
+    check('it remembers the mode (opens on First sound again)', p.is_visible('#huntBox') and p.is_visible('#hPic'))
+    p.screenshot(path=OUT / 'l9_first.png')
     ctx.close()
 
     # ---------------------------------------------------------------- a device without the pass
@@ -191,7 +247,7 @@ with sync_playwright() as pw:
         tools = SITE.parent / 'letters'
         all_ids = []
         for f in ('letters_data.json', 'letters_family.json'):
-            if (tools / f).exists(): all_ids += [c['id'] for c in json.loads((tools / f).read_text())['clips']]
+            if (tools / f).exists(): all_ids += [c['id'] for c in json.loads((tools / f).read_text())['clips'] if not c.get('optional')]
         missing = [i for i in all_ids if i not in idx['mum'] and i not in idx['dad']]
         check(f'real voices: every clip recorded by one of them ({len(all_ids) - len(missing)} of {len(all_ids)})', not missing)
         bad = p.evaluate('''async idx => { const out = []; for (const v of ['mum', 'dad']) for (const id of idx[v]) {
@@ -219,6 +275,11 @@ with sync_playwright() as pw:
     p.goto(BASE + '?for=Max#letters'); p.wait_for_timeout(500); skip_demo(p)
     check('no recorded voice: words show instead, nothing breaks', p.evaluate('voice.who') is None)
     p.evaluate('setLetter("d")'); skip_demo(p)
+    p.evaluate("letterMode('first')"); p.wait_for_timeout(300)
+    gq = p.evaluate("LH.queue")
+    no_fam = not set(gq) & FAM_IDS and not p.evaluate("LH.queue.some(w => LETTER_DATA.words[w].pic.startsWith('family:'))")
+    check(f'a gift copy\'s First sound has no family words ({", ".join(gq)})', no_fam and len(gq) == 10)
+    p.evaluate("letterMode('trace')"); p.wait_for_timeout(200)
     check('a gift copy never asks for the family words', not fam_reqs)
     check(f'for Max, d is for dragon (not Ellie\'s dad)', 'faces/F24' in p.get_attribute('#tPic img', 'src') and p.text_content('#tWord') == 'dragon')
     p.evaluate('setLetter("p")'); skip_demo(p)

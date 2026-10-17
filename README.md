@@ -29,16 +29,17 @@ Then it got things the book can't do: a **Games** tab, with games made from the 
 - **Whack-a-monster.** Monsters pop up out of holes and you bop them. A round is 20 monsters, not a countdown. Hard adds sleepy monsters you have to leave alone, or they wake up grumpy.
 - **Monster bedtime.** Your own saved monsters go to bed. Tap one and it hops onto a pillow, under a blanket in the colour and texture of its body; tap its lamp and it starts snoring. When they're all asleep the lights go down, the stars come out and Twinkle Twinkle plays on a music box. No score, no way to lose.
 
-For Halloween, two spooky ones:
+For Halloween, three spooky ones:
 
 - **Torch hunt.** The bedroom's lights are off and monsters are hiding behind the couch, in the toy box, under the bed and behind the curtains. Drag a finger to shine the torch; hold it on a monster and it pops out with a friendly "boo!" and a giggle. Find them all and the lights come on. Easy hides 3, Hard hides 8.
 - **Pumpkin face maker.** Tap the pumpkin's eyes, nose or mouth to change them, light it up, save the picture. Then print the face as a carving stencil on A4, at a real size (a 12, 15 or 18 cm face), with a 5 cm bar to check the printer didn't shrink it.
+- **Monster masks.** Pick any of the 30 monsters' heads and print it on A4 as a mask to wear: kid size (eye holes 5 cm apart) or grown-up size (6.3 cm), with a grey line to cut along, eye holes, two dots for elastic and the same 5 cm check bar.
 
 And one for learning, which only Ellie's phone gets:
 
-- **Letters.** *Trace* shows a lowercase letter in NSW Foundation Style, the handwriting NSW schools teach, and a ghost finger draws it first. Then only the right start point, direction and stroke order count; the line gets stricter as she gets better. *Spell* gives her a picture and letter tiles; each tile says its sound when she taps it, and a finished word is sounded out ("f… o… x… fox!"). Levels go from three-letter words with the letters showing, to four letters, to picking the right tiles from extras. The voices are her mum's (the letter sounds) and her dad's (everything else).
+- **Letters.** *Trace* shows a lowercase letter in NSW Foundation Style, the handwriting NSW schools teach, and a ghost finger draws it first. Then only the right start point, direction and stroke order count; the line gets stricter as she gets better. *Spell* gives her a picture and letter tiles; each tile says its sound when she taps it, and a finished word is sounded out ("f… o… x… fox!"). Levels go from three-letter words with the letters showing, to four letters, to picking the right tiles from extras. *Sounds* plays a letter sound and she taps the letter that makes it: three letters that are hard to mix up, or four with one near miss (b or d?). *First sound* shows a picture, says the word, and she taps the letter it starts with. The voices are her mum's (the letter sounds) and her dad's (everything else).
 
-Each game has its own link (`/#match`, `/#whack`, `/#bedtime`, `/#torch`, `/#pumpkin`, and `/#letters` on Ellie's phone), and best scores are kept on the device.
+Each game has its own link (`/#match`, `/#whack`, `/#bedtime`, `/#torch`, `/#pumpkin`, `/#masks`, and `/#letters` on Ellie's phone), and best scores are kept on the device.
 
 A small hub page, [play.mikeohalloran.au](https://play.mikeohalloran.au/), links this site and its sister project, a seek-and-find book ([seek-book](https://github.com/mikeohallo/seek-book)); a "More to play" button at the bottom of each site goes back to it.
 
@@ -79,8 +80,8 @@ That was the main design decision. The obvious version of this site has user acc
 | `tools/test_match.py` | Plays the match game: a wrong pair flips back, a full game ends in a win, the best score sticks, every level fits a phone |
 | `tools/test_links.py` | The tab bar fits at 360–430 px, and the `#games`, `#match`, `#whack`, `#bedtime` and `#monsters` links and gift links work |
 | `tools/test_games.py` | Plays Whack-a-monster and Monster bedtime with the page clock fast-forwarded: a perfect round, an empty round, a sleepy monster on Hard, a full bedtime from tuck-in to Good morning |
-| `tools/test_letters.py` | Traces every letter a to z the way a finger would, then tries the wrong start, the wrong direction and going off the line; spells every level, including a name; checks the page and its sizes on phones, a folding phone and a laptop, and that a device without the pass gets no Letters tile |
-| `tools/test_spooky.py` | Plays Torch hunt at every level by moving the torch onto each monster, and the Pumpkin face maker: changing parts, lighting it, saving the picture, measuring each printed stencil (12, 15 and 18 cm, and the 5 cm bar), and checking all 144 faces fit the page at every size |
+| `tools/test_letters.py` | Traces every letter a to z the way a finger would, then tries the wrong start, the wrong direction and going off the line; spells every level, including a name; plays Sounds and First sound at both levels; checks the page and its sizes on phones, a folding phone and a laptop, and that a device without the pass gets no Letters tile |
+| `tools/test_spooky.py` | Plays Torch hunt at every level by moving the torch onto each monster, and the Pumpkin face maker: changing parts, lighting it, saving the picture, measuring each printed stencil (12, 15 and 18 cm, and the 5 cm bar), and checking all 144 faces fit the page at every size; prints masks at both sizes and checks the eye-hole spacing, and that all 30 heads fit the page with the eye holes and elastic dots on the monster |
 | `tools/_worker_src.js` | The Letters lock that Cloudflare Pages runs in front of the site (the key is filled in at build time and isn't in the repo) |
 | `tools/test_worker.mjs` | Tests the lock with fake requests: blocked without a pass (including disguised addresses), the secret link, renewing the pass, and `?letters=off` |
 | `tools/letters/` | The Letters tools: tracing paths from the font, the word list, a recording page, and the picture and voice tools ([its own README](tools/letters/README.md)) |
