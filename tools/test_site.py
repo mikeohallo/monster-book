@@ -24,7 +24,7 @@ with sync_playwright() as pw:
     page.on('console', lambda m: m.type in ('error', 'warning') and problems.append(f'console {m.type}: {m.text}'))
     page.on('pageerror', lambda e: problems.append(f'page error: {e}'))
     page.on('requestfailed', lambda r: 'fonts.g' not in r.url and problems.append(f'failed: {r.url}'))
-    page.goto('http://127.0.0.1:8791/index.html')
+    page.goto('http://127.0.0.1:8791/index.html#make')
     page.wait_for_timeout(1500)
     page.screenshot(path=OUT / '1_make.png', full_page=True)
     # flip each strip forward and the head back

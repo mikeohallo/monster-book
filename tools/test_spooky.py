@@ -44,7 +44,7 @@ with sync_playwright() as pw:
     # ---------------------------------------------------------------- phone: games page, torch hunt
     ctx, p = page_at(b, 390, 844)
     p.goto(BASE + '#games'); p.wait_for_timeout(900)
-    check('games page has 9 games, the 3 Halloween ones under Spooky', p.eval_on_selector_all('.gametile', 'e => e.length') == 9 and p.is_visible('.spooky-head') and p.is_visible('#playMask'))
+    check('games page has 6 games, the 3 Halloween ones under Spooky', p.eval_on_selector_all('.gametile', 'e => e.length') == 6 and p.is_visible('.spooky-head') and p.is_visible('#playMask'))
     p.screenshot(path=OUT / 's1_games.png', full_page=True)
     p.click('#playTorch'); p.wait_for_timeout(1000)
     check('Torch tile opens #torch', p.evaluate('location.hash') == '#torch' and p.is_visible('#tRoom'))
