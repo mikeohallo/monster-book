@@ -549,6 +549,47 @@ button { cursor: pointer; }
 .hend { text-align: center; display: grid; gap: 12px; justify-items: center; }
 .hend .wdots i { width: 20px; height: 20px; }
 @media (prefers-reduced-motion: reduce) { .tsvg .start.pulse, .tsvg .pen.pulse, .slot.filled, .tile.nope, .tile.yes, .lpic.pop img, .hear.talk svg .wave { animation: none; } .lsay { transition: none; } }
+/* Numbers: Monster count and Quick look */
+.ghead { display: flex; align-items: center; gap: 8px; margin: 10px 0 -2px; font-size: 22px; }
+.ghead svg { width: 22px; height: 22px; }
+.ghead svg rect { fill: var(--purple); }
+.ghead svg circle { fill: #fff; }
+.gpic.countpic { background: radial-gradient(circle at 25% 20%, #D9F2C4 0 22%, transparent 23%), #BFE6A0; }
+.gpic.countpic img { position: absolute; width: 38px; height: 38px; object-fit: contain; }
+.gpic.countpic i { position: absolute; width: 19px; height: 19px; border-radius: 50%; background: var(--ink); color: #fff; font: 700 12px/19px var(--font-display); text-align: center; font-style: normal; box-shadow: 0 0 0 2px #fff; }
+.gpic.quickpic { background: #FFE9A8; display: grid; place-items: center; }
+.gpic.quickpic .die { width: 70px; height: 70px; border-radius: 16px; background: #fff; box-shadow: 0 3px 0 rgba(58, 40, 82, .2); position: relative; }
+.gpic.quickpic .die img { position: absolute; width: 25px; height: 25px; object-fit: contain; }
+.npanel .h2 { text-align: center; }
+.nword { font-family: var(--font-display); font-weight: 700; font-size: 32px; line-height: 1.1; color: var(--ink); }
+.npanel .lsay { min-height: 48px; display: grid; place-items: center; font-size: 20px; line-height: 1.2; text-wrap: balance; margin: -4px 0 -8px; }
+.cfield { position: relative; border-radius: 18px; overflow: hidden; touch-action: manipulation; background: linear-gradient(#C9EBAE, #ADDC8A); }
+.cmon { position: absolute; width: var(--m); height: var(--m); margin: calc(var(--m) / -2) 0 0 calc(var(--m) / -2); border: 0; padding: 0; background: none; border-radius: 50%; }
+.cmon::before { content: ''; position: absolute; inset: 4%; border-radius: 50%; transition: background .2s, box-shadow .2s; }
+.cmon.done::before { background: rgba(255, 255, 255, .6); box-shadow: 0 0 0 3px var(--green); }
+.cmon img { position: relative; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 3px 0 rgba(58, 40, 82, .16)); }
+.cmon.pop img { animation: bounce .45s ease both; }
+.cmon.again { animation: shake2 .45s ease; }
+.cmon b { position: absolute; right: -5px; top: -5px; min-width: calc(var(--m) * .44); height: calc(var(--m) * .44); padding: 0 3px; border-radius: 999px; background: var(--ink); color: #fff;
+  font: 700 calc(var(--m) * .3)/calc(var(--m) * .44) var(--font-display); text-align: center; box-shadow: 0 0 0 2px #fff; scale: 0; transition: scale .2s; }
+.cmon.done b { scale: 1; }
+.cmon b.hint { animation: hint 1s ease 2; }
+@keyframes hint { 50% { scale: 1.4; background: var(--green); } }
+.ntiles { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-inline: auto; }
+.ntile { width: var(--t, 92px); height: var(--t, 92px); border-radius: 18px; border: 0; box-shadow: 0 4px 0 rgba(58, 40, 82, .25); font-family: var(--font-display); font-weight: 700; font-size: calc(var(--t, 92px) * .54); line-height: 1; color: var(--ink); display: grid; place-items: center; }
+.ntile:active { translate: 0 2px; box-shadow: 0 2px 0 rgba(58, 40, 82, .25); }
+.ntile.nope { animation: shake2 .45s ease; }
+.ntile.yes { background: #9FDE84 !important; animation: bounce .5s ease both; }
+.ntile.dim { opacity: .35; }
+.qcard { position: relative; border-radius: 18px; overflow: hidden; background: linear-gradient(#FFF7DC, #FFE9A8); }
+.qcard.two::before { content: ''; position: absolute; left: 50%; top: 12%; bottom: 22%; width: 4px; margin-left: -2px; border-radius: 2px; background: rgba(58, 40, 82, .14); }
+.qmons { position: absolute; inset: 0; transition: transform .28s ease; }
+.qcard.hide .qmons { transform: translateY(102%); transition-timing-function: ease-in; }
+.qmon { position: absolute; width: var(--m); height: var(--m); margin: calc(var(--m) / -2) 0 0 calc(var(--m) / -2); object-fit: contain; filter: drop-shadow(0 3px 0 rgba(58, 40, 82, .16)); }
+.qbush { position: absolute; left: -6%; right: -6%; bottom: -1px; height: 20%; z-index: 1; pointer-events: none;
+  background: radial-gradient(ellipse at 10% 100%, #7DBF55 0 58%, transparent 60%), radial-gradient(ellipse at 37% 100%, #8CCB5E 0 62%, transparent 64%), radial-gradient(ellipse at 64% 100%, #7DBF55 0 60%, transparent 62%), radial-gradient(ellipse at 90% 100%, #8CCB5E 0 58%, transparent 60%); }
+.qpeek { align-self: center; }
+@media (prefers-reduced-motion: reduce) { .cmon.pop img, .cmon.again, .cmon b.hint, .ntile.nope, .ntile.yes { animation: none; } .qmons, .cmon b { transition: none; } }
 </style>
 </head>
 <body>
@@ -634,6 +675,13 @@ button { cursor: pointer; }
       <button class="gametile" id="playLetters" type="button">
         <span class="gpic letterpic" aria-hidden="true"><svg viewBox="0 0 96 96"><path d="M0 22h96M0 74h96" stroke="#C9BCDA" stroke-width="2" stroke-dasharray="5 4"/><path d="M0 40h96M0 74h96" stroke="#9C8BB4" stroke-width="2"/></svg><span class="lpa">a</span><span class="lpdot"></span></span>
         <span><b>Letters</b><small>Trace letters and spell words</small></span></button>
+      <h2 class="h2 ghead" id="numbersHead"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="8.3" cy="8.3" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="15.7" cy="15.7" r="1.9"/></svg>Numbers</h2>
+      <button class="gametile" id="playCount" type="button">
+        <span class="gpic countpic" aria-hidden="true"><img src="faces/F07.webp" alt="" style="left:6px;top:46px"><img src="faces/F12.webp" alt="" style="left:30px;top:10px"><img src="faces/F26.webp" alt="" style="left:54px;top:44px"><i style="left:34px;top:46px">1</i><i style="left:58px;top:8px">2</i><i style="left:78px;top:42px">3</i></span>
+        <span><b>Monster count</b><small>Tap each monster and count them</small></span></button>
+      <button class="gametile" id="playQuick" type="button">
+        <span class="gpic quickpic" aria-hidden="true"><span class="die"><img src="faces/F04.webp" alt="" style="left:6px;top:6px"><img src="faces/F04.webp" alt="" style="left:39px;top:6px"><img src="faces/F04.webp" alt="" style="left:6px;top:39px"><img src="faces/F04.webp" alt="" style="left:39px;top:39px"></span></span>
+        <span><b>Quick look</b><small>How many did you see?</small></span></button>
       <h2 class="h2 spooky-head"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"/></svg>Spooky</h2>
       <button class="gametile" id="playTorch" type="button">
         <span class="gpic torchpic" aria-hidden="true"><img src="faces/F26.webp" alt=""><span class="beam"></span></span>
@@ -776,6 +824,42 @@ button { cursor: pointer; }
         <div class="lword" id="hEndWord">Well done!</div>
         <div class="wdots" id="hEndDots" aria-hidden="true"></div>
         <button class="btn primary" id="hAgain" type="button">Play again</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- NUMBERS -->
+  <section id="countgame" class="stack" hidden aria-label="Monster count">
+    <div class="gamebar"><button class="back" type="button" data-go="games"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>All games</button><button class="mute" type="button"></button></div>
+    <div class="panel npanel">
+      <h2 class="h2">Monster count</h2>
+      <div class="levels three" id="cLevels" role="group" aria-label="How many"></div>
+      <div class="lsay" id="cSay" aria-live="polite"></div>
+      <div class="cfield" id="cField" role="group" aria-label="Monsters to count"></div>
+      <div class="ntiles" id="cTiles" hidden></div>
+      <div class="wdots" id="cDots" aria-hidden="true"></div>
+      <div class="hend" id="cEnd" hidden>
+        <div class="nword" id="cEndWord">Great counting!</div>
+        <div class="wdots" id="cEndDots" aria-hidden="true"></div>
+        <button class="btn primary" id="cAgain" type="button">Play again</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="quickgame" class="stack" hidden aria-label="Quick look">
+    <div class="gamebar"><button class="back" type="button" data-go="games"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>All games</button><button class="mute" type="button"></button></div>
+    <div class="panel npanel">
+      <h2 class="h2">Quick look</h2>
+      <div class="levels three" id="qLevels" role="group" aria-label="How hard"></div>
+      <div class="lsay" id="qSay" aria-live="polite"></div>
+      <div class="qcard hide" id="qCard" role="img" aria-label="Monsters pop up, then hide"><div class="qmons" id="qMons"></div><div class="qbush"></div></div>
+      <button class="btn quiet qpeek" id="qPeek" type="button" hidden><svg viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>Peek again</button>
+      <div class="ntiles" id="qTiles" hidden></div>
+      <div class="wdots" id="qDots" aria-hidden="true"></div>
+      <div class="hend" id="qEnd" hidden>
+        <div class="nword" id="qEndWord">Super sharp eyes!</div>
+        <div class="wdots" id="qEndDots" aria-hidden="true"></div>
+        <button class="btn primary" id="qAgain" type="button">Play again</button>
       </div>
     </div>
   </section>
@@ -1194,14 +1278,15 @@ async function renderCard(rec) {
 }
 
 // ------------------------------------------------------------- screens ---
-const screens = ['make', 'meet', 'card', 'games', 'matchgame', 'whackgame', 'bedgame', 'lettergame', 'torchgame', 'pumpkingame', 'maskgame', 'library'];
-const GAME_SCREENS = ['games', 'matchgame', 'whackgame', 'bedgame', 'lettergame', 'torchgame', 'pumpkingame', 'maskgame'];
-const HASHES = { games: '#games', matchgame: '#match', whackgame: '#whack', bedgame: '#bedtime', lettergame: '#letters', torchgame: '#torch', pumpkingame: '#pumpkin', maskgame: '#masks', library: '#monsters' };
+const screens = ['make', 'meet', 'card', 'games', 'matchgame', 'whackgame', 'bedgame', 'lettergame', 'torchgame', 'pumpkingame', 'maskgame', 'countgame', 'quickgame', 'library'];
+const GAME_SCREENS = ['games', 'matchgame', 'whackgame', 'bedgame', 'lettergame', 'torchgame', 'pumpkingame', 'maskgame', 'countgame', 'quickgame'];
+const HASHES = { games: '#games', matchgame: '#match', whackgame: '#whack', bedgame: '#bedtime', lettergame: '#letters', torchgame: '#torch', pumpkingame: '#pumpkin', maskgame: '#masks', countgame: '#count', quickgame: '#quick', library: '#monsters' };
 function show(id) {
   if (id !== 'whackgame') stopWhack();
   if (id !== 'bedgame') bedQuiet();
   if (id !== 'torchgame') stopTorch();
   if (id !== 'lettergame') stopLetters();
+  stopNumbers();
   screens.forEach(s => { $(s).hidden = s !== id; });
   $('tabMake').setAttribute('aria-selected', String(['make', 'meet', 'card'].includes(id)));
   $('tabGames').setAttribute('aria-selected', String(GAME_SCREENS.includes(id)));
@@ -1221,6 +1306,8 @@ function openGame(id) {
   else if (id === 'torchgame') { show('torchgame'); newTorch(); }
   else if (id === 'pumpkingame') { show('pumpkingame'); drawPumpkin(); }
   else if (id === 'maskgame') openMasks();
+  else if (id === 'countgame') openCount();
+  else if (id === 'quickgame') openQuick();
   else show('games');
   preloadFaces();
 }
@@ -2152,6 +2239,387 @@ async function maskPrint() {
   if (await saveFile(`monster-mask-${name}-${MK.size === 'kid' ? 'kid' : 'grown-up'}.jpg`, blob)) toast('Mask saved. Print it on A4 at 100% (not "fit to page").');
 }
 
+// ------------------------------------------------------------- numbers ---
+// The maths games. One narrator, made with text-to-speech (numbers/number_voices.py) and played through the game's
+// own audio so the mute button covers it. A clip that isn't made yet is said by the browser's own voice if it has
+// one, otherwise shown as words. numbers/voices/index.json lists the clips there are.
+const NUM_LINES = /*NUM_LINES*/{"n_1":"one","n_2":"two","n_3":"three","n_4":"four","n_5":"five","n_6":"six","n_7":"seven","n_8":"eight","n_9":"nine","n_10":"ten","n_11":"eleven","n_12":"twelve","n_13":"thirteen","n_14":"fourteen","n_15":"fifteen","n_16":"sixteen","n_17":"seventeen","n_18":"eighteen","n_19":"nineteen","n_20":"twenty","c_start":"Let's count the monsters! Tap each one.","c_how_many":"How many monsters?","c_already":"We counted that one!","q_look":"Quick look!","q_how_many":"How many did you see?","q_again":"Have another look.","try_again":"Try again.","p_yes":"Yes!","p_right":"That's right!","p_great_counting":"Great counting!","p_sharp":"Super sharp eyes!","p_well_done":"Well done!"}/*/NUM_LINES*/;
+const NUM = n => 'n_' + n;
+const nstore = (() => { try { return JSON.parse(localStorage.getItem('monster-book.numbers')) || {}; } catch (e) { return {}; } })();
+function nsave() { try { localStorage.setItem('monster-book.numbers', JSON.stringify(nstore)); } catch (e) {} }
+
+const speech = (() => {          // the browser's own voice, for lines with no clip yet
+  const ok = typeof window.speechSynthesis === 'object' && typeof window.SpeechSynthesisUtterance === 'function';
+  let pick = null;
+  function choose() {
+    try {
+      const vs = speechSynthesis.getVoices();
+      pick = vs.find(v => /^en[-_]AU/i.test(v.lang)) || vs.find(v => /^en[-_]GB/i.test(v.lang)) || vs.find(v => /^en/i.test(v.lang)) || null;
+    } catch (e) {}
+  }
+  if (ok) { choose(); try { speechSynthesis.addEventListener('voiceschanged', choose); } catch (e) {} }
+  return {
+    ok,
+    say(text) {
+      return new Promise(res => {
+        if (!ok || !text) return res(false);
+        let done = false;
+        const fin = v => { if (!done) { done = true; clearTimeout(t); res(v); } };
+        const t = setTimeout(() => fin(true), 1500 + text.length * 90);   // some browsers never say they've finished
+        try {
+          const u = new SpeechSynthesisUtterance(text);
+          u.lang = pick ? pick.lang : 'en-AU'; if (pick) u.voice = pick;
+          u.rate = .92; u.pitch = 1.08; u.onend = () => fin(true); u.onerror = () => fin(false);
+          speechSynthesis.speak(u);
+        } catch (e) { fin(false); }
+      });
+    },
+    stop() { if (ok) try { speechSynthesis.cancel(); } catch (e) {} },
+  };
+})();
+
+const nvoice = (() => {
+  let avail = null, token = 0, playing = null, sayEl = null, sayTimer;
+  const bufs = new Map();
+  async function load() {
+    if (avail) return avail;
+    try { const r = await fetch('numbers/voices/index.json', { cache: 'no-cache' }); avail = new Set(r.ok ? ((await r.json()).clips || []) : []); }
+    catch (e) { avail = new Set(); }
+    return avail;
+  }
+  const has = id => !!avail && avail.has(id);
+  function buffer(id) {
+    if (!bufs.has(id)) bufs.set(id, (async () => {
+      const o = sound.out(); if (!o) return null;
+      const r = await fetch(`numbers/voices/${id}.mp3`); if (!r.ok) return null;
+      return await o.ctx.decodeAudioData(await r.arrayBuffer());
+    })().catch(() => null));
+    return bufs.get(id);
+  }
+  function clip(id, my) {
+    return new Promise(async res => {
+      const b = await buffer(id), o = sound.out();
+      if (!b || !o || my !== token) return res(false);
+      const s = o.ctx.createBufferSource(); s.buffer = b; s.connect(o.master); playing = s;
+      s.onended = () => res(true); s.start();
+    });
+  }
+  function words(text) {
+    if (!sayEl || !text) return;
+    sayEl.textContent = text; sayEl.classList.add('show');
+    clearTimeout(sayTimer); sayTimer = setTimeout(() => sayEl.classList.remove('show'), 2400);
+  }
+  return {
+    load, has,
+    target(el) { sayEl = el; },
+    preload(ids) { ids.forEach(id => has(id) && buffer(id)); },
+    async say(ids, gap = 120, show = true) {      // returns false if something else spoke over it; show: the words too
+      const my = ++token; this.halt();
+      for (const id of ids) {
+        if (my !== token) return false;
+        const text = NUM_LINES[id] || '';
+        if (show) words(text);
+        let spoke = false;
+        if (sound.on) spoke = has(id) ? await clip(id, my) : await speech.say(text);
+        if (my !== token) return false;
+        await lwait(spoke ? gap : Math.max(450, text.length * 55));
+      }
+      return my === token;
+    },
+    halt() { try { playing && playing.stop(); } catch (e) {} playing = null; speech.stop(); },
+    stop() { token++; this.halt(); },
+  };
+})();
+
+// shared pieces: the level buttons, the progress dots and the number tiles
+function buildNLevels(boxId, levels, cur, pick) {
+  const box = $(boxId); box.textContent = '';
+  levels.forEach(l => {
+    const b = document.createElement('button'); b.className = 'level'; b.type = 'button'; b.dataset.level = l.key;
+    b.innerHTML = '<span></span><small></small>'; b.firstChild.textContent = l.name; b.lastChild.textContent = l.sub;
+    b.setAttribute('aria-pressed', String(l.key === cur));
+    b.addEventListener('click', () => { sound.unlock(); pick(l.key); });
+    box.append(b);
+  });
+}
+function drawNDots(id, st) {
+  const box = $(id); box.textContent = '';
+  for (let i = 0; i < st.queue.length; i++) { const d = document.createElement('i'); if (st.res[i]) d.className = st.res[i]; box.append(d); }
+}
+function numTiles(boxId, nums, onTap) {
+  const box = $(boxId); box.textContent = '';
+  const avail = Math.max(240, box.parentElement.clientWidth - 32);
+  let perRow = nums.length, t = Math.floor((avail - (perRow - 1) * 12) / perRow);
+  if (t < 80 && nums.length === 4) { perRow = 2; t = Math.floor((avail - 12) / 2); }
+  t = Math.min(perRow === 2 ? 104 : 108, t);
+  box.style.setProperty('--t', t + 'px'); box.style.maxWidth = (perRow * t + (perRow - 1) * 12 + 2) + 'px';
+  nums.forEach((v, i) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'ntile'; b.textContent = v; b.dataset.n = v;
+    b.style.background = LCOLS[i % LCOLS.length]; b.setAttribute('aria-label', String(v));
+    b.addEventListener('click', () => onTap(b, v));
+    box.append(b);
+  });
+}
+function nearNumbers(v, k, lo, hi) {   // the answer and k-1 others close to it, in order
+  const pool = shuffleArr([v - 2, v - 1, v + 1, v + 2, v - 3, v + 3].filter(x => x >= lo && x <= hi && x !== v));
+  const near = pool.filter(x => Math.abs(x - v) <= 2), far = pool.filter(x => Math.abs(x - v) > 2);
+  return [v, ...[...near, ...far].slice(0, k - 1)].sort((a, b) => a - b);
+}
+const praise = (() => { let i = 0; return () => ['p_right', 'p_yes'][i++ % 2]; })();
+const faceSet = k => shuffleArr([...Array(N).keys()].map(i => i + 1)).slice(0, k);
+
+// ---- Monster count: tap each monster to count it, then say how many
+const NC = { level: '1', round: 0, n: 0, res: [], queue: [], want: 0, k: 0, tries: 0, busy: false, lastAlready: 0 };
+const NC_ROUND = 5;
+const NC_LEVELS = [{ key: '1', name: 'Easy', sub: 'up to 5', lo: 1, hi: 5 }, { key: '2', name: 'Medium', sub: 'up to 10', lo: 4, hi: 10 },
+                   { key: '3', name: 'Tricky', sub: 'up to 20', lo: 8, hi: 20 }];
+const ncLevel = () => NC_LEVELS.find(l => l.key === NC.level) || NC_LEVELS[0];
+function countLayout(n, W, H) {    // a grid with spare cells; each monster wobbles about inside its own cell, so none overlap
+  const want = n + Math.max(1, Math.ceil(n * (n > 10 ? .15 : .2)));
+  let cols = 1;                                    // the grid that gives the biggest cells
+  for (let c = 1; c <= want; c++) if (Math.min(W / c, H / Math.ceil(want / c)) > Math.min(W / cols, H / Math.ceil(want / cols))) cols = c;
+  const rows = Math.ceil(want / cols), cw = W / cols, ch = H / rows, m = Math.floor(Math.min(104, cw * .8, ch * .8));
+  const cells = shuffleArr([...Array(cols * rows).keys()]).slice(0, n);
+  return { m, spots: cells.map(c => {
+    const jx = (cw - m) * .44, jy = (ch - m) * .44;
+    return [(c % cols + .5) * cw + (Math.random() * 2 - 1) * jx, (Math.floor(c / cols) + .5) * ch + (Math.random() * 2 - 1) * jy];
+  }) };
+}
+const countHeight = (n, W) => Math.round(Math.min(460, Math.max(220, W * (n <= 5 ? .8 : n <= 10 ? 1.1 : 1.3))));
+function newCountRound() {
+  const L = ncLevel();
+  NC.n = 0; NC.res = [];
+  const span = []; for (let v = L.lo; v <= L.hi; v++) span.push(v);
+  NC.queue = shuffleArr(span).slice(0, NC_ROUND);
+  $('cEnd').hidden = true; $('cField').hidden = false; $('cDots').hidden = false;
+  drawNDots('cDots', NC); countNext();
+}
+function countNext() {
+  nvoice.stop();
+  const my = ++NC.round; NC.busy = false; NC.tries = 0; NC.k = 0;
+  if (NC.n >= NC.queue.length) return countEnd();
+  NC.want = NC.queue[NC.n];
+  const field = $('cField'), W = field.clientWidth || 300;
+  const H = countHeight(NC.want, W);
+  field.style.height = H + 'px'; field.textContent = '';
+  const PAD = 9;                                  // room for the number badges at the edges
+  const { m, spots } = countLayout(NC.want, W - 2 * PAD, H - 2 * PAD), faces = faceSet(NC.want);
+  spots.forEach(s => { s[0] += PAD; s[1] += PAD; });
+  field.style.setProperty('--m', m + 'px');
+  spots.forEach(([x, y], i) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'cmon';
+    b.style.left = (x / W * 100).toFixed(2) + '%'; b.style.top = (y / H * 100).toFixed(2) + '%';
+    b.setAttribute('aria-label', 'Monster, not counted yet');
+    const im = new Image(); im.alt = ''; im.src = `faces/F${pad(faces[i])}.webp`; im.draggable = false;
+    b.append(im, document.createElement('b'));
+    b.addEventListener('click', () => countTap(b));
+    field.append(b);
+  });
+  $('cTiles').hidden = true; $('cTiles').textContent = '';
+  nvoice.preload([...Array(NC.want).keys()].map(i => NUM(i + 1)).concat(['c_how_many', 'c_already', 'try_again', 'p_right', 'p_yes']));
+  if (NC.n === 0) lwait(350).then(() => my === NC.round && NC.k === 0 && nvoice.say(['c_start']));   // unless she's already counting
+}
+function countTap(b) {
+  if (NC.busy || NC.k >= NC.want && !b.classList.contains('done')) return;
+  sound.unlock();
+  if (b.classList.contains('done')) {             // counted already: a wobble, and now and then a reminder
+    b.classList.remove('again'); void b.offsetWidth; b.classList.add('again');
+    const now = performance.now();
+    if (now - NC.lastAlready > 4000 && NC.k < NC.want) { NC.lastAlready = now; nvoice.say(['c_already']); }
+    return;
+  }
+  NC.k++; b.dataset.k = NC.k; b.classList.add('done'); b.lastChild.textContent = NC.k;
+  b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop');
+  b.setAttribute('aria-label', `Monster number ${NC.k}`);
+  sound.pop();
+  if (NC.k < NC.want) { nvoice.say([NUM(NC.k)]); return; }
+  nvoice.say([NUM(NC.k), 'c_how_many']);           // the last number said is how many there are
+  numTiles('cTiles', nearNumbers(NC.want, 3, 1, 20), countAnswer);
+  $('cTiles').hidden = false;
+  const r = $('cTiles').getBoundingClientRect();
+  if (r.bottom > innerHeight) $('cTiles').scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'end' });
+}
+function countAnswer(btn, v) {
+  if (NC.busy || btn.classList.contains('yes')) return;
+  sound.unlock();
+  const my = NC.round;
+  if (v === NC.want) {
+    NC.busy = true; btn.classList.add('yes'); sound.chime();
+    [...$('cTiles').children].forEach(b => b !== btn && b.classList.add('dim'));
+    NC.res[NC.n] = NC.tries ? 'miss' : 'hit'; drawNDots('cDots', NC);
+    nvoice.say([NUM(v), praise()]).then(() => {
+      if (my !== NC.round) return;
+      NC.n++; lwait(400).then(() => my === NC.round && countNext());
+    });
+  } else {
+    NC.tries++; btn.classList.remove('nope'); void btn.offsetWidth; btn.classList.add('nope');
+    const last = $('cField').querySelector(`.cmon[data-k="${NC.want}"] b`);   // the last one counted says how many
+    if (last) { last.classList.remove('hint'); void last.offsetWidth; last.classList.add('hint'); }
+    nvoice.say(['try_again']);
+  }
+}
+function countEnd() {
+  NC.busy = true; $('cSay').classList.remove('show');
+  $('cField').hidden = true; $('cTiles').hidden = true; $('cDots').hidden = true;
+  const hits = NC.res.filter(r => r === 'hit').length;
+  $('cEndWord').textContent = hits === NC.queue.length ? 'All first go!' : 'Great counting!';
+  drawNDots('cEndDots', NC); $('cEnd').hidden = false;
+  sound.jingle(); nvoice.say(['p_great_counting'], 120, false);   // the end screen already says it
+}
+function countLevel(key) {
+  NC.level = key; nstore.count = key; nsave();
+  buildNLevels('cLevels', NC_LEVELS, NC.level, countLevel); newCountRound();
+}
+async function openCount() {
+  show('countgame'); nvoice.target($('cSay'));
+  NC.level = NC_LEVELS.some(l => l.key === nstore.count) ? nstore.count : '1';
+  buildNLevels('cLevels', NC_LEVELS, NC.level, countLevel);
+  await nvoice.load();
+  if (!$('countgame').hidden) newCountRound();
+}
+
+// ---- Quick look: a group of monsters pops up for a moment, then hides; how many were there?
+const NQ = { level: '1', round: 0, n: 0, res: [], queue: [], want: 0, face: 0, tries: 0, peeks: 0, busy: false, shown: false, timer: 0 };
+const NQ_ROUND = 8;
+const NQ_LEVELS = [{ key: '1', name: 'Easy', sub: 'dice dots', lo: 1, hi: 5, show: 1800, k: 3 },
+                   { key: '2', name: 'Medium', sub: 'mixed up', lo: 1, hi: 6, show: 1500, k: 3 },
+                   { key: '3', name: 'Tricky', sub: 'two groups', lo: 6, hi: 10, show: 2200, k: 4 }];
+const nqLevel = () => NQ_LEVELS.find(l => l.key === NQ.level) || NQ_LEVELS[0];
+const DICE = { 1: [[.5, .5]], 2: [[.27, .27], [.73, .73]], 3: [[.22, .22], [.5, .5], [.78, .78]],
+               4: [[.27, .27], [.73, .27], [.27, .73], [.73, .73]], 5: [[.25, .25], [.75, .25], [.5, .5], [.25, .75], [.75, .75]],
+               6: [[.28, .2], [.28, .5], [.28, .8], [.72, .2], [.72, .5], [.72, .8]] };
+function dicePts(n) {
+  let p = DICE[n].map(a => a.slice());
+  if (Math.random() < .5) p = p.map(([x, y]) => [1 - x, y]);            // 2 and 3 lean either way
+  if (n === 6 && Math.random() < .5) p = p.map(([x, y]) => [y, x]);      // 6 stands up or lies down
+  return p;
+}
+function scatterPts(n) {             // mixed up, but never touching
+  for (let d = .32; ; d *= .94) {
+    for (let attempt = 0; attempt < 60; attempt++) {
+      const p = [];
+      for (let k = 0; k < 400 && p.length < n; k++) {
+        const q = [.14 + Math.random() * .72, .14 + Math.random() * .72];
+        if (p.every(r => Math.hypot(r[0] - q[0], r[1] - q[1]) >= d)) p.push(q);
+      }
+      if (p.length === n) return p;
+    }
+  }
+}
+function quickQueue(L) {
+  const span = []; for (let v = L.lo; v <= L.hi; v++) span.push(v);
+  const q = shuffleArr(span.slice());
+  while (q.length < NQ_ROUND) { const v = span[Math.floor(Math.random() * span.length)]; if (v !== q[q.length - 1]) q.push(v); }
+  return q.slice(0, NQ_ROUND);
+}
+function placeQuick() {
+  const L = nqLevel(), card = $('qCard'), box = $('qMons');
+  const W = card.clientWidth || 300, H = Math.round(Math.min(300, W * .66));
+  card.style.height = H + 'px'; box.textContent = '';
+  const face = `faces/F${pad(NQ.face)}.webp`, put = [];
+  if (L.key === '3') {                      // two dice side by side: 4 and 3 make 7
+    const a = Math.max(1, NQ.want - 5) + Math.floor(Math.random() * (Math.min(5, NQ.want - 1) - Math.max(1, NQ.want - 5) + 1)), b = NQ.want - a;
+    const S = Math.min(W / 2, H * .86) * .9;
+    [[W / 4, a], [W * 3 / 4, b]].forEach(([cx, n]) => dicePts(n).forEach(([x, y]) => put.push([cx - S / 2 + x * S, H * .43 - S / 2 + y * S])));
+    box.style.setProperty('--m', Math.floor(S * .26) + 'px'); card.classList.add('two');
+  } else {
+    const S = Math.min(W, H * .86) * .94, pts = L.key === '1' ? dicePts(NQ.want) : scatterPts(NQ.want);
+    pts.forEach(([x, y]) => put.push([W / 2 - S / 2 + x * S, H * .43 - S / 2 + y * S]));
+    box.style.setProperty('--m', Math.floor(S * (L.key === '1' && NQ.want <= 4 ? .3 : .24)) + 'px'); card.classList.remove('two');
+  }
+  put.forEach(([x, y]) => {
+    const im = new Image(); im.alt = ''; im.className = 'qmon'; im.src = face; im.draggable = false;
+    im.style.left = (x / W * 100).toFixed(2) + '%'; im.style.top = (y / H * 100).toFixed(2) + '%';
+    box.append(im);
+  });
+  card.setAttribute('aria-label', 'Monsters pop up, then hide');
+}
+function newQuickRound() {
+  const L = nqLevel();
+  NQ.n = 0; NQ.res = []; NQ.queue = quickQueue(L);
+  $('qEnd').hidden = true; $('qCard').hidden = false; $('qDots').hidden = false;
+  drawNDots('qDots', NQ); quickNext();
+}
+function quickNext() {
+  nvoice.stop(); clearTimeout(NQ.timer);
+  const my = ++NQ.round; NQ.busy = false; NQ.tries = 0; NQ.peeks = 0; NQ.shown = false;
+  if (NQ.n >= NQ.queue.length) return quickEnd();
+  NQ.want = NQ.queue[NQ.n];
+  let f; do { f = 1 + Math.floor(Math.random() * N); } while (f === NQ.face && N > 1); NQ.face = f;
+  $('qCard').classList.add('hide'); $('qPeek').hidden = true; $('qTiles').hidden = true; $('qTiles').textContent = '';
+  placeQuick();
+  nvoice.preload([NUM(NQ.want), 'q_look', 'q_how_many', 'q_again', 'p_right', 'p_yes']);
+  const first = NQ.n === 0;
+  lwait(first ? 450 : 500).then(async () => {
+    if (my !== NQ.round) return;
+    if (first) await nvoice.say(['q_look']);
+    if (my === NQ.round) quickShow(my, true);
+  });
+}
+function quickShow(my, first) {      // pop up, stay a moment, duck behind the bush
+  clearTimeout(NQ.timer);
+  NQ.shown = true; $('qCard').classList.remove('hide'); $('qPeek').hidden = true; sound.pop();
+  NQ.timer = setTimeout(() => {
+    if (my !== NQ.round || NQ.busy) return;
+    NQ.shown = false; $('qCard').classList.add('hide'); $('qPeek').hidden = false;
+    if (first) {
+      const L = nqLevel();
+      numTiles('qTiles', nearNumbers(NQ.want, L.k, 1, 10), quickAnswer); $('qTiles').hidden = false;
+      if (NQ.n === 0) nvoice.say(['q_how_many']);
+    }
+  }, nqLevel().show + 280);
+}
+function quickPeek() {
+  if (NQ.busy || NQ.shown) return;
+  sound.unlock(); NQ.peeks++; quickShow(NQ.round, false);
+}
+function quickAnswer(btn, v) {
+  if (NQ.busy || btn.classList.contains('yes')) return;
+  sound.unlock();
+  const my = NQ.round;
+  if (v === NQ.want) {
+    NQ.busy = true; clearTimeout(NQ.timer); btn.classList.add('yes'); sound.chime();
+    $('qCard').classList.remove('hide'); $('qPeek').hidden = true; NQ.shown = true;    // out they come again, to check
+    [...$('qTiles').children].forEach(b => b !== btn && b.classList.add('dim'));
+    NQ.res[NQ.n] = NQ.tries || NQ.peeks ? 'miss' : 'hit'; drawNDots('qDots', NQ);
+    nvoice.say([NUM(v), praise()]).then(() => {
+      if (my !== NQ.round) return;
+      NQ.n++; lwait(500).then(() => my === NQ.round && quickNext());
+    });
+  } else {
+    NQ.tries++; btn.classList.remove('nope'); void btn.offsetWidth; btn.classList.add('nope');
+    nvoice.say(['q_again']).then(ok => { if (ok && my === NQ.round && !NQ.busy && !NQ.shown) quickShow(my, false); });
+  }
+}
+function quickEnd() {
+  NQ.busy = true; clearTimeout(NQ.timer); $('qSay').classList.remove('show');
+  $('qCard').hidden = true; $('qPeek').hidden = true; $('qTiles').hidden = true; $('qDots').hidden = true;
+  const hits = NQ.res.filter(r => r === 'hit').length;
+  $('qEndWord').textContent = hits === NQ.queue.length ? 'All first go!' : 'Super sharp eyes!';
+  drawNDots('qEndDots', NQ); $('qEnd').hidden = false;
+  sound.jingle(); nvoice.say(['p_sharp'], 120, false);
+}
+function quickLevel(key) {
+  NQ.level = key; nstore.quick = key; nsave();
+  buildNLevels('qLevels', NQ_LEVELS, NQ.level, quickLevel); newQuickRound();
+}
+async function openQuick() {
+  show('quickgame'); nvoice.target($('qSay'));
+  NQ.level = NQ_LEVELS.some(l => l.key === nstore.quick) ? nstore.quick : '1';
+  buildNLevels('qLevels', NQ_LEVELS, NQ.level, quickLevel);
+  await nvoice.load();
+  if (!$('quickgame').hidden) newQuickRound();
+}
+
+function stopNumbers() {
+  nvoice.stop(); NC.round++; NC.busy = false; NQ.round++; NQ.busy = false; clearTimeout(NQ.timer);
+}
+function buildNumbers() {
+  $('cAgain').addEventListener('click', () => { sound.unlock(); newCountRound(); });
+  $('qAgain').addEventListener('click', () => { sound.unlock(); newQuickRound(); });
+  $('qPeek').addEventListener('click', quickPeek);
+}
+
 // ------------------------------------------------------------- library ---
 function renderLibrary() {
   $('libCount').textContent = store.monsters.length;
@@ -2731,6 +3199,9 @@ function init() {
   $('playPumpkin').addEventListener('click', () => openGame('pumpkingame'));
   $('playLetters').addEventListener('click', () => openGame('lettergame'));
   $('playMask').addEventListener('click', () => openGame('maskgame'));
+  $('playCount').addEventListener('click', () => openGame('countgame'));
+  $('playQuick').addEventListener('click', () => openGame('quickgame'));
+  buildNumbers();
   buildMasks();
   buildLetters();
   if (!lettersOK()) $('playLetters').style.display = 'none';
@@ -2738,7 +3209,7 @@ function init() {
   $('tAgain').addEventListener('click', newTorch);
   buildPumpkin();
   document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => openGame(b.dataset.go)));
-  document.querySelectorAll('.mute').forEach(b => b.addEventListener('click', () => { sound.set(!sound.on); syncMute(); if (!sound.on) { bedQuiet(); voice.stop(); } }));
+  document.querySelectorAll('.mute').forEach(b => b.addEventListener('click', () => { sound.set(!sound.on); syncMute(); if (!sound.on) { bedQuiet(); voice.stop(); nvoice.stop(); } }));
   syncMute();
   buildWhack();
   $('wGo').addEventListener('click', startWhack);
