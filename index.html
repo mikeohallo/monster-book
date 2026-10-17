@@ -724,7 +724,7 @@ button { cursor: pointer; }
     <div class="panel settings">
       <h2 class="h2">Whose book is this?</h2>
       <label class="field" for="owner">Name on the book and cards
-        <input id="owner" maxlength="20" autocomplete="off" placeholder="e.g. Ellie"></label>
+        <input id="owner" maxlength="20" autocomplete="off" placeholder="e.g. Max"></label>
       <p class="note">Your monsters are saved on this device only. Nothing you type is sent anywhere.</p>
       <div class="row2">
         <button class="btn" id="backup">Back up</button>
@@ -813,9 +813,9 @@ function ownerName() {
   return n.slice(0, 20);
 }
 
-// The Learning Lab (learn.mikeohalloran.au) used to be part of this site, so Ellie's Letters and Numbers progress is
-// saved here, where only this site's pages can read it. The first time the Learning Lab opens on her phone it sends
-// her here for a moment (?handoff=learn); this page hands the progress back in the address and goes straight back.
+// The Learning Lab (learn.mikeohalloran.au) used to be part of this site, so the family's old Letters and Numbers
+// progress is saved here, where only this site's pages can read it. The first time the Learning Lab opens in a family
+// browser it comes here for a moment (?handoff=learn); this page hands the progress back in the address and goes straight back.
 const handingOff = (() => {
   try {
     const q = new URLSearchParams(location.search);
@@ -876,7 +876,7 @@ function renderTitle() {
 }
 
 // ------------------------------------------------------------- flip book --
-const state = { H: 1, B: 2, L: 3 };   // Ellie's three picks, as on the how-to page
+const state = { H: 1, B: 2, L: 3 };   // the three picks shown on the how-to page
 const strips = {};
 const CHEV = d => `<svg viewBox="0 0 24 24"><path d="${d}"/></svg>`;
 function buildBook() {
@@ -2080,7 +2080,7 @@ function renderLibrary() {
   $('libCount').textContent = store.monsters.length;
   $('libCount').hidden = !store.monsters.length;
   $('owner').value = store.owner ?? '';
-  $('owner').placeholder = DEFAULT_OWNER ? `e.g. ${DEFAULT_OWNER}` : 'e.g. Ellie';
+  $('owner').placeholder = DEFAULT_OWNER ? `e.g. ${DEFAULT_OWNER}` : 'e.g. Max';
   const grid = $('grid'); grid.textContent = '';
   $('empty').hidden = store.monsters.length > 0;
   [...store.monsters].reverse().forEach(rec => {

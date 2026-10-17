@@ -112,12 +112,12 @@ with sync_playwright() as pw:
 
     # ---------------------------------------------------------------- bedtime
     ctx, p = new_page(b)
-    saved = {'owner': 'Ellie', 'monsters': [
+    saved = {'owner': 'Sam', 'monsters': [
         {'id': 'a', 'h': 18, 'b': 26, 'l': 7, 'name': 'Fuzzbert', 'food': '', 'friend': '', 'grumpy': '', 'created': '2026-10-14T09:00:00Z'},
         {'id': 'b', 'h': 27, 'b': 28, 'l': 27, 'name': 'Princess Wobble', 'food': '', 'friend': '', 'grumpy': '', 'created': '2026-10-14T09:05:00Z'}]}
     p.goto(BASE); p.evaluate(f"localStorage.setItem('monster-book.v1', {json.dumps(json.dumps(saved))})")
     p.clock.install()
-    p.goto(BASE + '?for=Ellie#bedtime'); p.wait_for_timeout(1500); p.clock.run_for(300)   # a new URL, so a real reload
+    p.goto(BASE + '?for=Sam#bedtime'); p.wait_for_timeout(1500); p.clock.run_for(300)   # a new URL, so a real reload
     labels = p.eval_on_selector_all('.waiter', 'els => els.map(e => e.getAttribute("aria-label"))')
     check(f'3 monsters waiting, both saved ones among them: {labels}', len(labels) == 3 and any('Fuzzbert' in l for l in labels) and any('Princess Wobble' in l for l in labels))
     check('3 beds, all empty', p.eval_on_selector_all('.bed', 'e => e.length') == 3 and p.eval_on_selector_all('.bed.in', 'e => e.length') == 0)

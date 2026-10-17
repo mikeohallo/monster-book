@@ -76,11 +76,11 @@ with sync_playwright() as pw:
     p.click('#tabMake'); p.click('#tabGames'); p.click('#playWhack'); p.wait_for_timeout(200)
     check('tab switches do not pile up history', p.evaluate('history.length') == hist)
     # 6. a gift link keeps its name with #match
-    p.goto(BASE + '?for=Ivy#match'); p.wait_for_timeout(700)
+    p.goto(BASE + '?for=Alex#match'); p.wait_for_timeout(700)
     title = p.text_content('.title')
-    check(f'?for=Ivy#match: title "{title.strip()}" and on the game', 'Ivy' in title and p.is_visible('#matchgame'))
+    check(f'?for=Alex#match: title "{title.strip()}" and on the game', 'Alex' in title and p.is_visible('#matchgame'))
     p.click('#tabMake'); p.wait_for_timeout(300)
-    check('gift link keeps ?for=Ivy after switching tabs', p.evaluate('location.search') == '?for=Ivy')
+    check('gift link keeps ?for=Alex after switching tabs', p.evaluate('location.search') == '?for=Alex')
     # 7. typing a hash by hand switches screens
     p.evaluate("location.hash = '#monsters'"); p.wait_for_timeout(300)
     check('changing the hash to #monsters shows the library', p.is_visible('#library'))
@@ -107,15 +107,15 @@ with sync_playwright() as pw:
     ctx.route('https://learn.mikeohalloran.au/**', lambda r: r.fulfill(status=200, content_type='text/html', body='<p>learning lab</p>'))
     p.on('framenavigated', lambda f: f == p.main_frame and f.url.startswith('https://learn.') and seen.append(f.url))
     for h in ('#letters', '#count', '#quick'):
-        p.goto(BASE + '?for=Ellie' + h, wait_until='commit'); p.wait_for_url('https://learn.mikeohalloran.au/**', timeout=8000); p.wait_for_timeout(200)
-    check(f'#letters, #count and #quick go to the Learning Lab ({len(seen)} hops)', seen == [f'https://learn.mikeohalloran.au/?for=Ellie{h}' for h in ('#letters', '#count', '#quick')])
+        p.goto(BASE + '?for=Sam' + h, wait_until='commit'); p.wait_for_url('https://learn.mikeohalloran.au/**', timeout=8000); p.wait_for_timeout(200)
+    check(f'#letters, #count and #quick go to the Learning Lab ({len(seen)} hops)', seen == [f'https://learn.mikeohalloran.au/?for=Sam{h}' for h in ('#letters', '#count', '#quick')])
     # 10. the one-time hand-over: this site's saved Letters and Numbers progress goes back to the Learning Lab
     seen.clear()
     p.goto(BASE, wait_until='domcontentloaded'); p.wait_for_timeout(300); p.evaluate("localStorage.setItem('monster-book.letters', JSON.stringify({ next: 'k', mode: 'spell', traced: { a: 1 } })); localStorage.setItem('monster-book.numbers', JSON.stringify({ count: '2' })); localStorage.setItem('monster-book.sound', 'off')")
-    p.goto(BASE + '?handoff=learn&for=Ellie&to=letters', wait_until='commit'); p.wait_for_timeout(800)
+    p.goto(BASE + '?handoff=learn&for=Sam&to=letters', wait_until='commit'); p.wait_for_timeout(800)
     import json as _j, urllib.parse as _u
     got = _j.loads(_u.unquote(seen[0].split('#import=', 1)[1])) if seen and '#import=' in seen[0] else {}
-    check(f'?handoff=learn sends the progress straight back ({seen[0][:60] if seen else "no hop"}...)', seen and seen[0].startswith('https://learn.mikeohalloran.au/?for=Ellie#import=')
+    check(f'?handoff=learn sends the progress straight back ({seen[0][:60] if seen else "no hop"}...)', seen and seen[0].startswith('https://learn.mikeohalloran.au/?for=Sam#import=')
           and _j.loads(got.get('letters') or '{}').get('next') == 'k' and _j.loads(got.get('numbers') or '{}').get('count') == '2' and got.get('sound') == 'off' and got.get('to') == 'letters')
     p.goto(BASE + '?handoff=learn&to=../../evil', wait_until='commit'); p.wait_for_timeout(800)
     check('  it only ever goes to the Learning Lab, and drops a strange "to"', seen[-1].startswith('https://learn.mikeohalloran.au/') and '"to":""' in _u.unquote(seen[-1]))
