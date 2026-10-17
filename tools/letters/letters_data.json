@@ -339,7 +339,9 @@
   "great_writing": "Great writing!",
   "great_spelling": "Amazing spelling!",
   "sound_out": "Sound it out with me.",
-  "listen": "Listen."
+  "listen": "Listen.",
+  "which": "Which letter makes this sound?",
+  "starts": "What does it start with?"
  },
  "newPictures": {
   "hat": "a red sun hat",
@@ -1013,6 +1015,20 @@
    "say": "Listen.",
    "kind": "prompt",
    "tip": "Warm and clear."
+  },
+  {
+   "id": "say_which",
+   "say": "Which letter makes this sound?",
+   "kind": "prompt",
+   "tip": "Warm and clear.",
+   "optional": true
+  },
+  {
+   "id": "say_starts",
+   "say": "What does it start with?",
+   "kind": "prompt",
+   "tip": "Warm and clear.",
+   "optional": true
   }
  ]
 }
