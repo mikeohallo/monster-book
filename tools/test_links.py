@@ -9,7 +9,8 @@ OUT = Path(sys.argv[1]); OUT.mkdir(parents=True, exist_ok=True)
 socketserver.TCPServer.allow_reuse_address = True
 http.server.SimpleHTTPRequestHandler.log_message = lambda *a: None
 PORT = 8798
-srv = socketserver.TCPServer(('127.0.0.1', PORT), functools.partial(http.server.SimpleHTTPRequestHandler, directory=str(SITE)))
+socketserver.ThreadingTCPServer.daemon_threads = True
+srv = socketserver.ThreadingTCPServer(('127.0.0.1', PORT), functools.partial(http.server.SimpleHTTPRequestHandler, directory=str(SITE)))
 threading.Thread(target=srv.serve_forever, daemon=True).start()
 BASE = f'http://127.0.0.1:{PORT}/index.html'
 
@@ -55,15 +56,15 @@ with sync_playwright() as pw:
     p.screenshot(path=OUT / 'direct_match.png')
     # 3. tabs update the address
     p.click('#tabMake'); p.wait_for_timeout(300)
-    check('Make tab clears the hash', p.evaluate('location.hash') == '')
+    check('Make tab sets #make', p.evaluate('location.hash') == '#make')
     p.click('#tabLib'); p.wait_for_timeout(300)
     check('My monsters tab sets #monsters', p.evaluate('location.hash') == '#monsters')
     p.click('#tabGames'); p.wait_for_timeout(300)
-    check('Games tab sets #games', p.evaluate('location.hash') == '#games')
+    check('Play tab clears the hash (the games page is the front page)', p.evaluate('location.hash') == '' and p.is_visible('#games'))
     for tile, h in (('#playMatch', '#match'), ('#playWhack', '#whack'), ('#playBed', '#bedtime')):
         p.click('#tabGames'); p.click(tile); p.wait_for_timeout(300)
         check(f'{tile} sets {h}', p.evaluate('location.hash') == h)
-    for h, sec in (('#whack', '#whackgame'), ('#bedtime', '#bedgame'), ('#games', '#games')):
+    for h, sec in (('#whack', '#whackgame'), ('#bedtime', '#bedgame'), ('#make', '#make'), ('#games', '#games')):
         p.evaluate(f"location.hash = '{h}'"); p.wait_for_timeout(300)
         check(f'typing {h} shows {sec}', p.is_visible(sec))
     p.click('#tabGames'); p.click('#playMatch'); p.wait_for_timeout(300)
@@ -84,10 +85,41 @@ with sync_playwright() as pw:
     p.evaluate("location.hash = '#monsters'"); p.wait_for_timeout(300)
     check('changing the hash to #monsters shows the library', p.is_visible('#library'))
     p.evaluate("location.hash = ''"); p.wait_for_timeout(300)
-    check('clearing the hash goes back to Make', p.is_visible('#make'))
-    # 8. plain link still opens on Make
+    check('clearing the hash goes back to the games page', p.is_visible('#games'))
+    # 8. the plain link opens on the games page, Make a monster first, showing the monster on the flip book
     p.goto(BASE); p.wait_for_timeout(600)
-    check('plain link opens on Make', p.is_visible('#make') and p.get_attribute('#tabMake', 'aria-selected') == 'true')
+    first = p.eval_on_selector_all('#games .gamelist > *', 'e => e[0].id')
+    check(f'plain link opens on the games page, Play tab selected, Make a monster first ({first})', p.is_visible('#games') and not p.is_visible('#make')
+          and p.get_attribute('#tabGames', 'aria-selected') == 'true' and first == 'playMake')
+    order = p.eval_on_selector_all('.tab .tlabel', 'e => e.map(x => x.textContent.trim())')
+    check(f'tabs in order: {order}', order == ['Play', 'Make', 'My monsters'])
+    p.click('#playMake'); p.wait_for_timeout(300)
+    check('Make a monster opens the flip book (#make)', p.is_visible('#make') and p.evaluate('location.hash') == '#make' and p.get_attribute('#tabMake', 'aria-selected') == 'true')
+    p.click('.strip[data-part="H"] .next'); p.wait_for_timeout(700)
+    h = p.evaluate('state.H')
+    p.click('#tabGames'); p.wait_for_timeout(300)
+    check(f'the Make card shows the monster on the flip book (head {h})', p.get_attribute('#mkH', 'src').endswith(f'H{h:02d}.webp'))
+    p.screenshot(path=OUT / 'home.png', full_page=True)
+    title = p.get_attribute('#title', 'aria-label')
+    check(f'the site is called Monster Lab ("{title}")', title.endswith('Monster Lab'))
+    # 9. old Letters and Numbers links go to the Learning Lab, with the name
+    seen = []   # where the page went (the address with its #part, which never reaches a server)
+    ctx.route('https://learn.mikeohalloran.au/**', lambda r: r.fulfill(status=200, content_type='text/html', body='<p>learning lab</p>'))
+    p.on('framenavigated', lambda f: f == p.main_frame and f.url.startswith('https://learn.') and seen.append(f.url))
+    for h in ('#letters', '#count', '#quick'):
+        p.goto(BASE + '?for=Ellie' + h, wait_until='commit'); p.wait_for_url('https://learn.mikeohalloran.au/**', timeout=8000); p.wait_for_timeout(200)
+    check(f'#letters, #count and #quick go to the Learning Lab ({len(seen)} hops)', seen == [f'https://learn.mikeohalloran.au/?for=Ellie{h}' for h in ('#letters', '#count', '#quick')])
+    # 10. the one-time hand-over: this site's saved Letters and Numbers progress goes back to the Learning Lab
+    seen.clear()
+    p.goto(BASE, wait_until='domcontentloaded'); p.wait_for_timeout(300); p.evaluate("localStorage.setItem('monster-book.letters', JSON.stringify({ next: 'k', mode: 'spell', traced: { a: 1 } })); localStorage.setItem('monster-book.numbers', JSON.stringify({ count: '2' })); localStorage.setItem('monster-book.sound', 'off')")
+    p.goto(BASE + '?handoff=learn&for=Ellie&to=letters', wait_until='commit'); p.wait_for_timeout(800)
+    import json as _j, urllib.parse as _u
+    got = _j.loads(_u.unquote(seen[0].split('#import=', 1)[1])) if seen and '#import=' in seen[0] else {}
+    check(f'?handoff=learn sends the progress straight back ({seen[0][:60] if seen else "no hop"}...)', seen and seen[0].startswith('https://learn.mikeohalloran.au/?for=Ellie#import=')
+          and _j.loads(got.get('letters') or '{}').get('next') == 'k' and _j.loads(got.get('numbers') or '{}').get('count') == '2' and got.get('sound') == 'off' and got.get('to') == 'letters')
+    p.goto(BASE + '?handoff=learn&to=../../evil', wait_until='commit'); p.wait_for_timeout(800)
+    check('  it only ever goes to the Learning Lab, and drops a strange "to"', seen[-1].startswith('https://learn.mikeohalloran.au/') and '"to":""' in _u.unquote(seen[-1]))
+    p.evaluate("localStorage.removeItem('monster-book.letters'); localStorage.removeItem('monster-book.numbers'); localStorage.removeItem('monster-book.sound')")
     ctx.close(); b.close()
 srv.shutdown()
 print('PROBLEMS:' if problems else 'all good', *problems, sep='\n  ')

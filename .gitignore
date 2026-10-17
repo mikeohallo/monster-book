@@ -8,24 +8,3 @@ __pycache__/
 *.pyc
 .DS_Store
 Thumbs.db
-
-# The Letters game: pictures, family portraits and recorded voices stay out, like the monster art
-letters/pics/
-letters/fam/
-letters/voices/
-letters/family.json
-# The lock: the built worker and its key never go in the repo (tools/_worker_src.js has a placeholder)
-_worker.js
-letters_key.txt
-# Private family words, and files built from them
-family_words.py
-letters_family.json
-tools/letters/recorder.html
-tools/letters/letters_gen.py
-tools/letters/voices_gen.py
-tools/letters/work/
-# The maths games' narrator clips stay out too (the games fall back to the browser's voice)
-numbers/voices/
-tools/numbers/voices/
-tools/numbers/listen.html
-tools/numbers/log.txt
