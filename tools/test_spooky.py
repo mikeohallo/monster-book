@@ -558,6 +558,26 @@ with sync_playwright() as pw:
     check('from the keyboard, Enter casts the spell', cls() == ['big'])
     bad = p.evaluate("""WD_SPELLS.filter(S => !wdEven(wdShape(S.id), 15).every(([x, y]) => x > 20 && x < 340 && y > 20 && y < 290)).map(S => S.id)""")
     check(f'every shape sits inside the picture, above the table{": not " + str(bad) if bad else ""}', not bad)
+    # when a spell finishes: only at the end of the shape, not before (28 Oct: it used to finish the star after two lines)
+    when = p.evaluate("""() => { const out = { at: {}, partial: {} }; const c = wdCast; window.wdCast = () => { wd.busy = true; };
+      const run = (id, pts, A, back) => { wd.k = WD_SPELLS.findIndex(S => S.id === id); wdSpell(); if (back) pts = [...pts].reverse(); let at = null;
+        for (let i = 0; i < pts.length && !wd.busy; i++) { wdAdd([pts[i][0] + A * Math.sin(i / 9), pts[i][1] + A * Math.cos(i / 13)], i === 0); if (wd.busy) at = i / (pts.length - 1); }
+        return at; };
+      for (const S of WD_SPELLS) for (const A of [0, 10, 18]) for (const back of [false, true]) out.at[`${S.id} ${A}${back ? ' back' : ''}`] = run(S.id, wdEven(wdShape(S.id), 3), A, back);
+      const part = (id, f) => { const pts = wdEven(wdShape(id), 3); run(id, pts.slice(0, Math.floor(pts.length * f)), 0, false); return [wd.busy, Math.round(wd.lit / wd.dots.length * 100)]; };
+      out.partial = { star2of5: part('star', .4), star4of5: part('star', .8), circle85: part('circle', .85), wave85: part('wave', .85), zigzag85: part('zigzag', .85), spiral85: part('spiral', .85) };
+      run('zigzag', wdEven(wdShape('zigzag'), 3), 25, false); const missed = !wd.busy;
+      wdEven(wdShape('zigzag'), 3).forEach((p, i) => { if (!wd.busy) wdAdd(p, i === 0); }); out.again = [missed, wd.busy];
+      window.wdCast = c; wd.k = 0; wdSpell(); return out; }""")
+    early = {k: v for k, v in when['at'].items() if v is not None and v < .88}
+    unfinished = [k for k, v in when['at'].items() if v is None]
+    done = [v for v in when['at'].values() if v is not None]
+    check(f'no spell finishes before the end of its shape, steady or wobbly, either way round (earliest {min(done):.0%}){": " + str(early) if early else ""}', not early)
+    check(f'a steady finger or a little wobble finishes every shape, either way round{": not " + str(unfinished) if any(not k.endswith(("18", "18 back")) for k in unfinished) else ""}',
+          not [k for k in unfinished if not k.endswith(('18', '18 back'))])
+    pt = when['partial']
+    check(f'stopping short doesn\'t cast: two lines of the star light {pt["star2of5"][1]}%, four lines {pt["star4of5"][1]}%, 85% of the circle, wave, zigzag or spiral ({pt})', not any(v[0] for v in pt.values()) and pt['star2of5'][1] < 50)
+    check(f'a very wobbly zigzag that misses corners finishes when she goes over it again ({when["again"]})', when['again'] == [True, True])
     ctx.close()
     ctx, p = page_at(b, 390, 844); p.emulate_media(reduced_motion='reduce')
     p.goto(BASE + '#wand'); p.wait_for_timeout(1200)

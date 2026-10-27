@@ -2672,7 +2672,9 @@ function psEnd() {
 // (a white dot shows the way round first), the dots light up gold as she covers them, and when nearly all are lit the spell
 // works. The spells stack: big, floating, rainbow, spinning, sparkly. It's forgiving: any direction, lifting the finger is
 // fine, and only scribbling all over the place makes it fizzle. Circles, waves, zigzags, spirals and stars are the
-// pre-writing shapes children practise before letters.
+// pre-writing shapes children practise before letters. A dot only lights when her finger passes that point along the shape
+// (where the line she is nearest to has got to), and only if it's next to a dot already lit or her finger has been moving
+// steadily along the shape to it. A wobble across to another line, where the star's lines cross, is neither.
 const WD_SPELLS = [
   { id: 'circle', name: 'Big spell', say: 'Trace the circle to make the monster big!', done: 'Big spell!' },
   { id: 'wave', name: 'Float spell', say: 'Trace the wave to make it float!', done: 'Float spell!' },
@@ -2680,8 +2682,8 @@ const WD_SPELLS = [
   { id: 'spiral', name: 'Spin spell', say: 'Trace the spiral to make it spin!', done: 'Spin spell!' },
   { id: 'star', name: 'Sparkle spell', say: 'Trace the star to make it sparkle!', done: 'Sparkle spell!' },
 ];
-const WD_TOL = 30, WD_NEED = .88;   // how close counts as on the line, and how much of the shape lights the spell
-const wd = { k: 0, dots: [], dense: [], lit: 0, trace: [], stray: 0, total: 0, ptr: null, busy: false, parts: null, brew: 0 };
+const WD_TOL = 30, WD_NEED = .85, WD_GAP = 15;   // how close counts as on the line, how much of the shape must be lit (both ends too), the dots' spacing
+const wd = { k: 0, dots: [], dense: [], lit: 0, run: 0, lastAlong: null, trace: [], stray: 0, total: 0, ptr: null, busy: false, parts: null, brew: 0 };
 function wdShape(id) {   // points along the shape in the 360 x 360 picture, in the order to trace it
   const P = [];
   if (id === 'circle') for (let k = 0; k <= 72; k++) { const a = -Math.PI / 2 + k / 72 * Math.PI * 2; P.push([180 + 96 * Math.cos(a), 172 + 96 * Math.sin(a)]); }
@@ -2721,8 +2723,16 @@ function wdNew() {   // a fresh monster, no spells on it yet
 }
 function wdSpell() {   // show the next spell's shape
   const S = WD_SPELLS[wd.k], P = wdShape(S.id);
-  wd.dots = wdEven(P, 15).map(([x, y]) => ({ x, y, on: false }));
-  wd.dense = wdEven(P, 4); wd.lit = 0; wd.trace = []; wd.stray = 0; wd.total = 0; wd.ptr = null; wd.busy = false;
+  wd.dots = wdEven(P, WD_GAP).map(([x, y], i) => ({ x, y, s: i * WD_GAP, on: false }));   // s: how far along the shape
+  wd.dense = wdEven(P, 3).map(([x, y], i) => [x, y, i * 3]); wd.lit = 0;
+  const last = wd.dots[wd.dots.length - 1];   // the circle and the star end where they start: one dot there, not two
+  wd.loop = Math.hypot(last.x - wd.dots[0].x, last.y - wd.dots[0].y) < WD_GAP * .6;
+  if (wd.loop) {
+    wd.dots.pop();
+    const end = wd.dots[wd.dots.length - 1].s + WD_GAP * .6;
+    wd.dense = wd.dense.filter(d => d[2] <= end);   // so near the start, the finger is at the start, not the end
+  }
+  wd.trace = []; wd.stray = 0; wd.total = 0; wd.ptr = null; wd.busy = false;
   const d = 'M' + P.map(p => p.map(v => v.toFixed(1)).join(' ')).join('L');
   const [sx, sy] = P[0], [nx, ny] = wdEven(P, 22)[1];
   const ang = Math.atan2(ny - sy, nx - sx) * 180 / Math.PI;
@@ -2744,12 +2754,44 @@ function wdAdd([x, y], start) {   // a bit more of her line: light the dots near
   if (wd.busy) return;
   wd.trace.push([x, y, start]);
   wd.total++;
-  let near = Infinity; for (const [dx, dy] of wd.dense) { const dd = (dx - x) ** 2 + (dy - y) ** 2; if (dd < near) near = dd; }
-  if (Math.sqrt(near) > WD_TOL * 1.3) wd.stray++;
+  let near = Infinity, along = 0;   // the nearest point of the shape, and how far along the shape it is
+  for (const [dx, dy, ds] of wd.dense) { const dd = (dx - x) ** 2 + (dy - y) ** 2; if (dd < near) { near = dd; along = ds; } }
+  near = Math.sqrt(near);
+  if (!start && wd.lastAlong !== null) {   // through a crossing, stay on the line she's following unless she's clearly left it
+    let n2 = Infinity, a2 = 0;
+    for (const [dx, dy, ds] of wd.dense) if (Math.abs(ds - wd.lastAlong) <= 2 * WD_GAP) { const dd = (dx - x) ** 2 + (dy - y) ** 2; if (dd < n2) { n2 = dd; a2 = ds; } }
+    n2 = Math.sqrt(n2);
+    if (n2 <= near + 10) { near = n2; along = a2; }
+  }
+  if (near > WD_TOL * 1.3) wd.stray++;
   const dots = document.querySelectorAll('#wdGuide .wdd');
-  wd.dots.forEach((p, i) => { if (!p.on && (p.x - x) ** 2 + (p.y - y) ** 2 < WD_TOL * WD_TOL) { p.on = true; wd.lit++; dots[i]?.classList.add('on'); } });
+  if (start) wd.lastAlong = null;
+  const step = wd.lastAlong !== null && near <= WD_TOL && Math.abs(along - wd.lastAlong) <= WD_GAP;   // a small step along the same bit
+  wd.run = step ? wd.run + 1 : 0; wd.lastAlong = near <= WD_TOL ? along : null;
+  if (near <= WD_TOL) wd.dots.forEach((p, i) => {
+    if (p.on || Math.abs(p.s - along) > WD_GAP * .6) return;
+    if (wd.run < 3 && !wd.dots.some((q, j) => q.on && Math.abs(j - i) <= 2)) return;
+    p.on = true; wd.lit++; dots[i]?.classList.add('on');
+  });
+  // an end she started just past, or stopped just short of: lit once she's been near it and the dot beside it is lit
+  const n = wd.dots.length;
+  [[0, 1, 2], [n - 1, n - 2, n - 3]].forEach(([e, a, b]) => {
+    const d = wd.dots[e];
+    const back = !wd.loop || e === 0 || wd.dots[a]?.on || wd.dots[b]?.on;   // on the circle and the star the last dot is beside the start: only once she's come round
+    if (!d.on && back && (d.x - x) ** 2 + (d.y - y) ** 2 < (WD_TOL * .7) ** 2) d.near = true;
+    if (!d.on && d.near && (wd.dots[a]?.on || wd.dots[b]?.on)) { d.on = true; wd.lit++; dots[e]?.classList.add('on'); }
+  });
+  // a corner cut short leaves a dot or two unlit between lit ones: fill those in
+  wd.dots.forEach((p, i) => {
+    if (p.on) return;
+    const before = [1, 2].find(a => wd.dots[i - a]?.on), after = [1, 2].find(b => wd.dots[i + b]?.on);
+    if (before && after && before + after <= 3) { p.on = true; wd.lit++; dots[i]?.classList.add('on'); }
+  });
   $('wdTrace').setAttribute('d', wd.trace.map(([px, py, s], i) => `${s || !i ? 'M' : 'L'}${px.toFixed(1)} ${py.toFixed(1)}`).join(''));
-  if (wd.lit >= WD_NEED * wd.dots.length && wd.stray <= .4 * wd.total) wdCast();
+  // done: an open shape when both ends and most of it are lit (a cut corner doesn't matter, stopping early does);
+  // the circle and the star, whose ends meet, when nearly all of it is lit
+  const ends = wd.dots[0].on && wd.dots[wd.dots.length - 1].on, need = wd.loop ? .95 : WD_NEED;
+  if ((wd.loop || ends) && wd.lit >= need * wd.dots.length && wd.stray <= .4 * wd.total) wdCast();
 }
 function wdLift() {   // finger up: keep what's lit, unless it was mostly scribble, then it fizzles and starts again
   wd.ptr = null;
