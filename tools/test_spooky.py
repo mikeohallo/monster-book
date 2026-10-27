@@ -1,7 +1,7 @@
 """Play Torch hunt (the bedroom and the witch's cottage), brew in the Witch's cauldron, make a pumpkin face and print monster masks,
 at phone, folding-phone and laptop sizes.
     python3 tools/test_spooky.py OUTDIR"""
-import http.server, socketserver, sys, threading, functools
+import http.server, socketserver, sys, threading, functools, math
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 from PIL import Image
@@ -58,6 +58,26 @@ def shine_on_all(p):
         p.mouse.move(box['x'] + fx * box['width'], box['y'] + fy * box['height'], steps=4)
         p.wait_for_timeout(330)
     return len(centres)
+
+def stir(p, turns, start=0.0, way=1, hold=False):
+    """Stir the cauldron with the mouse held down: round the middle of the potion, 24 moves a time round."""
+    p.locator('#cdStage').scroll_into_view_if_needed()
+    box = p.locator('#cdStage').bounding_box()
+    cx, cy, r = box['x'] + box['width'] * .5, box['y'] + box['height'] * 168 / 320, box['width'] * .22
+    at = lambda a: (cx + r * math.cos(a), cy + r * .5 * math.sin(a))
+    p.mouse.move(*at(start)); p.mouse.down()
+    for k in range(1, int(24 * turns) + 1):
+        p.mouse.move(*at(start + way * k * math.pi / 12)); p.wait_for_timeout(20)
+    if not hold: p.mouse.up()
+
+def finger_stir(p, turns):
+    """The same with a finger: touch pointer events on the picture."""
+    return p.evaluate("""async turns => { const st = $('cdStage'); st.scrollIntoView({ block: 'nearest' });
+      const r = st.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height * 168 / 320, R = r.width * .22;
+      const ev = (type, a) => st.dispatchEvent(new PointerEvent(type, { pointerId: 9, pointerType: 'touch', isPrimary: true, bubbles: true, cancelable: true, clientX: cx + R * Math.cos(a), clientY: cy + R * .5 * Math.sin(a) }));
+      ev('pointerdown', 0); let k = 1;
+      for (; k <= 24 * turns; k++) { ev('pointermove', k * Math.PI / 12); await new Promise(r => setTimeout(r, 16)); }
+      ev('pointerup', k * Math.PI / 12); return cd.rounds; }""", turns)
 
 with sync_playwright() as pw:
     b = pw.chromium.launch()
@@ -300,22 +320,41 @@ with sync_playwright() as pw:
     p.click('#playCauldron'); p.wait_for_timeout(800)
     fill = lambda: p.get_attribute('#cdLiquid', 'fill')
     got = lambda: p.eval_on_selector_all('#cdPot span.got', 'e => e.length')
-    check('Cauldron tile opens #cauldron: 6 things on the shelf, 3 empty places in the pot, Stir not ready yet',
-          p.evaluate('location.hash') == '#cauldron' and p.eval_on_selector_all('#cdShelf .cding', 'e => e.length') == 6 and got() == 0 and p.is_disabled('#cdStir'))
+    stars = lambda: p.eval_on_selector_all('#cdTurns svg.got', 'e => e.length')
+    has = lambda c: p.evaluate(f"$('cdStage').classList.contains('{c}')")
+    froth = lambda: p.eval_on_selector_all('#cdFoam circle.on', 'e => e.length')
+    no_monster = lambda: not p.evaluate('cd.done') and p.eval_on_selector_all('#cdMon canvas', 'e => e.length') == 0
+    check('Cauldron tile opens #cauldron: 6 things on the shelf, 3 empty places in the pot, and no button to stir',
+          p.evaluate('location.hash') == '#cauldron' and p.eval_on_selector_all('#cdShelf .cding', 'e => e.length') == 6 and got() == 0 and p.locator('#cdStir').count() == 0)
     check(f'it says what to do ("{p.text_content("#cdHint")}") and the potion starts murky purple', p.text_content('#cdHint') == 'Tap three things to drop in the pot' and fill() == '#7A6AAE')
+    stir(p, 1.2)
+    check('before the pot is full, stirring does nothing, and a finger on the picture still scrolls the page',
+          p.evaluate('cd.stirred') == 0 and p.evaluate("getComputedStyle($('cdStage')).touchAction") != 'none')
     colours = []
     for i in (0, 3, 4):     # a frog, a star and some slime
         p.click(f'#cdShelf .cding >> nth={i}'); p.wait_for_timeout(900); colours.append(fill())
     check(f'each one splashes in and turns the potion its colour ({colours})', colours == ['#68B242', '#F2C828', '#A6E98A'])
-    check('three in: the shelf is shut, Stir is ready, and it says to stir',
-          got() == 3 and p.eval_on_selector_all('#cdShelf .cding', 'e => e.every(b => b.disabled)') and not p.is_disabled('#cdStir') and p.text_content('#cdHint') == 'Now stir the pot!')
+    check(f'three in: the shelf is shut and it says "{p.text_content("#cdHint")}"',
+          got() == 3 and p.eval_on_selector_all('#cdShelf .cding', 'e => e.every(b => b.disabled)') and p.text_content('#cdHint') == 'Now stir it round three times with your finger!')
+    check('a dotted circle with a finger going round shows how, three stars wait, and the picture holds still under a finger',
+          has('canstir') and has('hinting') and p.evaluate("getComputedStyle($('cdGhost')).opacity") == '1' and stars() == 0
+          and p.eval_on_selector_all('#cdTurns svg', 'e => e.length') == 3 and p.evaluate("getComputedStyle($('cdStage')).touchAction") == 'none')
     p.click('#cdShelf .cding >> nth=1', force=True); p.wait_for_timeout(300)
     check('a fourth tap does nothing', p.evaluate('cd.pot.length') == 3)
-    p.click('#cdStir', force=True); p.wait_for_timeout(400)
-    check('stirring: the bubbles go faster and Stir cannot be pressed again', p.evaluate("$('cdStage').classList.contains('stirring')") and p.is_disabled('#cdStir'))
-    p.wait_for_timeout(3000)
+    p.locator('#cdStage').click(); p.wait_for_timeout(400)
+    check('a tap on the pot isn\'t a stir', p.evaluate('cd.rounds') == 0 and no_monster())
+    spoon0 = p.get_attribute('#cdSpoon line', 'x1')
+    stir(p, 1.3, hold=True); p.wait_for_timeout(200)
+    check(f'once round: the spoon follows the finger ({spoon0} -> {p.get_attribute("#cdSpoon line", "x1")}), the first star lights up, froth builds ({froth()} of 12), and "{p.text_content("#cdHint")}"',
+          p.get_attribute('#cdSpoon line', 'x1') != spoon0 and stars() == 1 and 1 <= froth() < 12 and p.text_content('#cdHint') == 'One! Keep stirring'
+          and not has('hinting') and float(p.get_attribute('#cdSwirl', 'opacity')) > .35 and no_monster())
+    p.mouse.up(); p.wait_for_timeout(2900)
+    check('stopping part way keeps what she has stirred, and the finger shows how again', stars() == 1 and has('hinting') and no_monster())
+    stir(p, 1.0, start=1.0, way=-1)
+    check(f'stirring the other way counts too: "{p.text_content("#cdHint")}"', stars() == 2 and p.text_content('#cdHint') == 'Two! One more time round' and no_monster())
+    stir(p, 1.0, start=2.0); p.wait_for_timeout(3000)
     parts = p.evaluate('cd.parts'); names = p.evaluate('cd.parts.map(n => mon(n).name)')
-    check(f'a monster climbs out ({names}) and it says what it is made of',
+    check(f'the third time round it bubbles over and a monster climbs out ({names}), and it says what it is made of',
           p.is_visible('#cdMon canvas') and p.is_visible('#cdDone') and p.text_content('#cdText').startswith(f'{names[0]} head, {names[1]} body and {names[2]} legs, from a frog, a star and a slime.'))
     hat = p.evaluate("""(() => { const c = document.querySelector('#cdMon canvas'), d = c.getContext('2d').getImageData(0, 0, c.width, Math.round(c.height * .3)).data;
       let n = 0; for (let i = 0; i < d.length; i += 4) if (d[i] === 0x4A && d[i + 1] === 0x34 && d[i + 2] === 0x70 && d[i + 3] === 255) n++; return n; })()""")
@@ -325,16 +364,17 @@ with sync_playwright() as pw:
           mb['y'] >= sb['y'] - 1 and mb['x'] >= sb['x'] - 1 and mb['x'] + mb['width'] <= sb['x'] + sb['width'] + 1 and mb['y'] + mb['height'] > sb['y'] + .45 * sb['height'])
     meet = p.locator('#cdMeet').bounding_box()
     check(f'the monster and Meet your monster are both on screen (monster from {mb["y"]:.0f}, button ends {meet["y"] + meet["height"]:.0f} of {vh})', mb['y'] + mb['height'] / 2 >= 0 and meet['y'] + meet['height'] <= vh + 1)
-    check('the shelf and Stir go away; Meet your monster and Brew another are there',
-          not p.is_visible('#cdShelf') and not p.is_visible('#cdStir') and p.is_visible('#cdMeet') and p.is_visible('#cdAgain'))
+    check('the shelf goes away and the pot stops taking stirs; Meet your monster and Brew another are there',
+          not p.is_visible('#cdShelf') and not has('canstir') and p.is_visible('#cdMeet') and p.is_visible('#cdAgain'))
     p.screenshot(path=OUT / 'cd1_brewed.png', full_page=True)
     p.click('#cdAgain'); p.wait_for_timeout(700)
-    check('Brew another: an empty pot, murky purple again, the shelf back, no monster',
-          got() == 0 and fill() == '#7A6AAE' and p.is_visible('#cdShelf') and not p.is_visible('#cdDone') and p.eval_on_selector_all('#cdMon canvas', 'e => e.length') == 0)
-    for i in (4, 0, 3):     # the same three, in another order
+    check('Brew another: an empty pot, murky purple again, no froth or stars, the spoon back, the shelf back, no monster',
+          got() == 0 and fill() == '#7A6AAE' and froth() == 0 and stars() == 0 and p.get_attribute('#cdSpoon line', 'x1') == spoon0
+          and p.is_visible('#cdShelf') and not p.is_visible('#cdDone') and no_monster())
+    for i in (4, 0, 3):     # the same three, in another order, stirred with a finger
         p.click(f'#cdShelf .cding >> nth={i}'); p.wait_for_timeout(250)
-    p.wait_for_timeout(800); p.click('#cdStir', force=True); p.wait_for_timeout(3400)
-    check(f'the same three in another order make the same monster ({p.evaluate("cd.parts")})', p.evaluate('cd.parts') == parts)
+    p.wait_for_timeout(800); r1 = finger_stir(p, 3.2); p.wait_for_timeout(3200)
+    check(f'stirring with a finger works the same ({r1} times round), and the same three in another order make the same monster ({p.evaluate("cd.parts")})', r1 == 3 and p.evaluate('cd.parts') == parts)
     p.click('#cdMeet'); p.wait_for_timeout(1200)
     check('Meet your monster opens with that monster, and the flip book has turned to it',
           p.is_visible('#meet') and p.text_content('#meetParts').startswith(f'{names[0]} head, {names[1]} body and {names[2]} legs') and p.evaluate('[state.H, state.B, state.L]') == parts)
@@ -345,27 +385,32 @@ with sync_playwright() as pw:
     p.click('#cdShelf .cding >> nth=5'); p.wait_for_timeout(100); p.click('#cdEmpty'); p.wait_for_timeout(900)
     check(f'a drop still falling when the pot is emptied doesn\'t colour the new pot ({fill()})', fill() == '#7A6AAE' and got() == 0)
     for i in (1, 2, 5): p.click(f'#cdShelf .cding >> nth={i}'); p.wait_for_timeout(250)
-    p.wait_for_timeout(800); p.click('#cdStir', force=True); p.wait_for_timeout(500)
-    p.click('#cdEmpty'); p.wait_for_timeout(3200)
-    check('emptying the pot while it stirs: nobody climbs out', not p.evaluate('cd.done') and p.eval_on_selector_all('#cdMon canvas', 'e => e.length') == 0 and got() == 0 and p.is_visible('#cdShelf'))
+    p.wait_for_timeout(800); stir(p, 1.4); p.click('#cdEmpty'); p.wait_for_timeout(600)
+    check('emptying the pot half stirred starts again from nothing', p.evaluate('cd.stirred') == 0 and stars() == 0 and froth() == 0 and got() == 0 and no_monster())
     for i in (1, 2, 5): p.click(f'#cdShelf .cding >> nth={i}'); p.wait_for_timeout(250)
-    p.wait_for_timeout(800); p.click('#cdStir', force=True); p.wait_for_timeout(400)
+    p.wait_for_timeout(800); stir(p, 3.1); p.click('#cdEmpty'); p.wait_for_timeout(3200)
+    check('emptying the pot just as it bubbles over: nobody climbs out', no_monster() and got() == 0 and p.is_visible('#cdShelf'))
+    for i in (1, 2, 5): p.click(f'#cdShelf .cding >> nth={i}'); p.wait_for_timeout(250)
+    p.wait_for_timeout(800); stir(p, 3.1)
     p.goto(BASE + '#games'); p.wait_for_timeout(300); p.goto(BASE + '#cauldron'); p.wait_for_timeout(3200)
-    check('leaving while it stirs and coming straight back: a fresh pot, nobody climbs out', not p.evaluate('cd.done') and p.eval_on_selector_all('#cdMon canvas', 'e => e.length') == 0 and got() == 0)
-    # the secret monsters
+    check('leaving just as it bubbles over and coming straight back: a fresh pot, nobody climbs out', no_monster() and got() == 0 and stars() == 0)
+    # the secret monsters, stirred from the keyboard
     check('no secret monsters found yet, so it doesn\'t say anything about them', p.text_content('#cdSecrets') == '')
     frog = p.evaluate('mon(10).name')
     for _ in range(3): p.click('#cdShelf .cding >> nth=0'); p.wait_for_timeout(250)
-    p.wait_for_timeout(800); p.click('#cdStir', force=True); p.wait_for_timeout(3400)
+    p.wait_for_timeout(800); p.focus('#cdStage')
+    for _ in range(8): p.keyboard.press(' '); p.wait_for_timeout(60)
+    check(f'from the keyboard, Space stirs a third of the way round ({stars()} stars after 8 presses)', stars() == 2 and p.get_attribute('#cdStage', 'role') == 'button' and no_monster())
+    p.keyboard.press(' '); p.wait_for_timeout(3200)
     check(f'three frogs make a secret monster: the whole {frog} ("{p.text_content("#cdTitle")}")',
           p.evaluate('cd.parts') == [10, 10, 10] and p.text_content('#cdTitle') == f'A secret monster: the whole {frog}!' and p.text_content('#cdSecrets') == 'Secret monsters found: 1 of 6')
     p.screenshot(path=OUT / 'cd2_secret.png', full_page=True)
     p.reload(); p.wait_for_timeout(900)
     check('the secret it found is remembered next time', p.text_content('#cdSecrets') == 'Secret monsters found: 1 of 6')
     for _ in range(3): p.click('#cdShelf .cding >> nth=0'); p.wait_for_timeout(250)
-    p.wait_for_timeout(800); p.click('#cdStir', force=True); p.wait_for_timeout(3400)
+    p.wait_for_timeout(800); stir(p, 3.2); p.wait_for_timeout(3200)
     check('finding the same secret again doesn\'t count twice', p.text_content('#cdSecrets') == 'Secret monsters found: 1 of 6')
-    words = p.evaluate("""(async () => { const out = []; for (let i = 0; i < 6; i++) { cdReset(); cd.pot = [i, i, i]; await cdStir(); out.push($('cdText').textContent); } cdReset(); return out; })()""")
+    words = p.evaluate("""(async () => { const out = []; for (let i = 0; i < 6; i++) { cdReset(); cd.pot = [i, i, i]; await cdBrewUp(); out.push($('cdText').textContent); } cdReset(); return out; })()""")
     check(f'the words for all six secrets read right ({words[2]})', all(w.startswith('Three ') for w in words) and not any(' a A' in w or ' a E' in w or ' a I' in w or ' a O' in w or ' a U' in w for w in words))
     # every recipe: 56 different pots (the order doesn't matter)
     r = p.evaluate("""(() => { const out = [], perms = ([a, b, c]) => [[a, b, c], [a, c, b], [b, a, c], [b, c, a], [c, a, b], [c, b, a]];
@@ -387,12 +432,13 @@ with sync_playwright() as pw:
       return bad; })()""")
     check(f'the hat finds the top of all 30 heads{": not " + str(bad) if bad else ""}', not bad)
     ctx.close()
-    # with reduced motion it brews straight away
+    # with reduced motion it still has to be stirred, and then brews straight away
     ctx, p = page_at(b, 390, 844); p.emulate_media(reduced_motion='reduce')
     p.goto(BASE + '#cauldron'); p.wait_for_timeout(800)
     for i in (1, 2, 5): p.click(f'#cdShelf .cding >> nth={i}')
-    c = fill(); p.click('#cdStir'); p.wait_for_timeout(700)
-    check(f'with reduced motion: the potion changes at once ({c}) and the monster is there straight away', c == '#EC6AA8' and p.is_visible('#cdDone') and p.is_visible('#cdMon canvas'))
+    c = fill(); stir(p, 3.2); p.wait_for_timeout(700)
+    check(f'with reduced motion: the potion changes at once ({c}), the finger shows how without moving, and the monster is there as soon as it\'s stirred',
+          c == '#EC6AA8' and p.eval_on_selector_all('#cdGhost animateMotion', 'e => e.length') == 0 and p.is_visible('#cdDone') and p.is_visible('#cdMon canvas'))
     ctx.close()
 
     # ---------------------------------------------------------------- other sizes
@@ -419,7 +465,10 @@ with sync_playwright() as pw:
         p.screenshot(path=OUT / f'c3_{w}.png', full_page=True)
         p.goto(BASE + '#cauldron'); p.wait_for_timeout(800)
         for i in (2, 3, 5): p.click(f'#cdShelf .cding >> nth={i}'); p.wait_for_timeout(250)
-        p.wait_for_timeout(800); p.click('#cdStir', force=True); p.wait_for_timeout(3400)
+        p.wait_for_timeout(1000)
+        sb = p.locator('#cdStage').bounding_box()
+        check(f'{label}: with three in, the pot is on screen to stir (picture {sb["y"]:.0f} to {sb["y"] + sb["height"]:.0f} of {h})', sb['y'] + .35 * sb['height'] >= 0 and sb['y'] + .9 * sb['height'] <= h + 1)
+        stir(p, 3.2); p.wait_for_timeout(3400)
         sb, mb, meet = p.locator('#cdStage').bounding_box(), p.locator('#cdMon canvas').bounding_box(), p.locator('#cdMeet').bounding_box()
         check(f'{label}: the cauldron brews, and the monster in its hat is inside the picture', p.is_visible('#cdDone') and mb['y'] >= sb['y'] - 1 and mb['x'] >= sb['x'] - 1 and mb['x'] + mb['width'] <= sb['x'] + sb['width'] + 1)
         check(f'{label}: the monster and Meet your monster are both on screen (monster middle {mb["y"] + mb["height"] / 2:.0f}, button ends {meet["y"] + meet["height"]:.0f} of {h})', mb['y'] + mb['height'] / 2 >= 0 and meet['y'] + meet['height'] <= h + 1)

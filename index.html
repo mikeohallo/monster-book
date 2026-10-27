@@ -460,12 +460,23 @@ button { cursor: pointer; }
 .cdsplash, .cdpuff { position: absolute; left: 50%; top: 51%; border-radius: 50%; translate: -50% -50%; }
 .cdsplash { width: 14px; height: 14px; border: 2.5px solid #3A2852; }
 .cdpuff { width: 46px; height: 46px; background: #F4EFFF; opacity: 0; }
-.cdb { transform-box: fill-box; transform-origin: center; animation: cdbub 2.2s ease-in infinite; }
-.cdstage.stirring .cdb { animation-duration: .6s; }
+.cdb { transform-box: fill-box; transform-origin: center; animation: cdbub var(--bub, 2.2s) ease-in infinite; }
+.cdstage.canstir { touch-action: none; cursor: grab; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.cdstage.canstir.stirring { cursor: grabbing; }
+.cdstage:focus-visible { outline: 4px solid var(--purple); outline-offset: 3px; }
+#cdGhost { opacity: 0; transition: opacity .3s; }
+.cdstage.hinting #cdGhost { opacity: 1; }
+#cdSwirl { transition: opacity .3s; }
+.cdfoam circle { transform-box: fill-box; transform-origin: center; transform: scale(0); transition: transform .3s cubic-bezier(.3, 1.6, .5, 1); }
+.cdfoam circle.on { transform: scale(1); }
+.cdturns { position: absolute; z-index: 3; top: 4%; left: 50%; translate: -50% 0; display: flex; gap: 6px; pointer-events: none; transition: opacity .3s; }
+.cdturns svg { width: 34px; height: 34px; display: block; }
+.cdturns svg path { fill: #4A3E80; stroke: #2E2660; stroke-width: 3; stroke-linejoin: round; transition: fill .2s; }
+.cdturns svg.got path { fill: #F2C828; stroke: #3A2852; }
+.cdturns svg.got { animation: bounce .5s ease; }
+.cdstage:not(.canstir):not(.stirring) .cdturns { opacity: 0; }
 @keyframes cdbub { 0% { transform: translateY(0) scale(.6); opacity: 0; } 30% { opacity: 1; } 100% { transform: translateY(-26px) scale(1.1); opacity: 0; } }
-#cdSpoon { transition: opacity .3s; transform-origin: 214px 170px; }
-.cdstage.stirring #cdSpoon { animation: cdstir .5s ease-in-out infinite alternate; }
-@keyframes cdstir { from { transform: translateX(-70px) rotate(-14deg); } to { transform: translateX(0) rotate(8deg); } }
+#cdSpoon { transition: opacity .3s; }
 .cdpot { display: flex; justify-content: center; gap: 10px; min-height: 56px; }
 .cdpot span { width: 54px; height: 54px; border-radius: 50%; border: 2.5px dashed var(--line); background: var(--card); display: grid; place-items: center; }
 .cdpot span.got { border: 2.5px solid var(--purple); background: #F3ECFB; animation: bounce .5s ease; }
@@ -477,10 +488,8 @@ button { cursor: pointer; }
 .cding svg { width: 54px; height: 54px; }
 .cding:disabled { opacity: .45; }
 .cding:not(:disabled):active { transform: scale(.95); }
-#cdStir.ready { animation: cdready 1.3s ease-in-out infinite; }
-@keyframes cdready { 0%, 100% { scale: 1; } 50% { scale: 1.04; } }
 .cdsecrets { margin: 0; text-align: center; color: var(--ink-soft); font-weight: 800; font-size: 13px; }
-@media (prefers-reduced-motion: reduce) { .cdb, .cdstage.stirring #cdSpoon, #cdStir.ready, .cdpot span.got { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .cdb, .cdpot span.got, .cdturns svg.got { animation: none; } .cdfoam circle { transition: none; } }
 
 /* ---------- pumpkin face maker ---------- */
 .pkstage { border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; background: #FFF3DC; transition: background .6s; touch-action: manipulation; }
@@ -756,16 +765,16 @@ button { cursor: pointer; }
       <h2 class="h2">Witch's cauldron</h2>
       <p class="lede">Drop three things into the cauldron, give it a stir, and see who climbs out!</p>
     </div>
-    <div class="cdstage" id="cdStage">
+    <div class="cdstage" id="cdStage" aria-label="The cauldron">
       <svg class="cdbg" viewBox="0 0 360 320" aria-hidden="true" id="cdBg"></svg>
       <div class="cdmon" id="cdMon"></div>
       <svg class="cdfg" viewBox="0 0 360 320" aria-hidden="true" id="cdFg"></svg>
+      <div class="cdturns" id="cdTurns" aria-hidden="true"></div>
       <div class="cdfx" id="cdFx"></div>
     </div>
     <div class="cdpot" id="cdPot" role="group" aria-label="In the pot"></div>
     <p class="cdhint" id="cdHint" aria-live="polite"></p>
     <div class="cdshelf" id="cdShelf" role="group" aria-label="Things to drop in"></div>
-    <button class="btn primary" id="cdStir" type="button" disabled>Stir the pot</button>
     <div class="panel win" id="cdDone" hidden>
       <h2 class="h2" id="cdTitle"></h2>
       <p class="lede" id="cdText"></p>
@@ -1487,6 +1496,8 @@ const sound = (() => {
     },
     giggle() { [0, .1, .2, .3].forEach((at, i) => tone({ f0: 700 + i * 60, f1: 900 + i * 60, dur: .08, vol: .07, at: .45 + at })); },
     plop() { tone({ f0: 560, f1: 150, dur: .17, vol: .12 }); hiss({ dur: .12, f0: 900, q: 1.5, vol: .03, at: .03 }); },   // something drops into the potion
+    blub(k = 0) { tone({ f0: 190 + (k % 4) * 40, f1: 360 + (k % 4) * 55, dur: .08, vol: .07 }); },   // stirring the potion
+    round(n = 1) { [0, .07].forEach((at, i) => tone({ f0: [523.25, 659.25, 783.99][(n - 1) % 3] * (i ? 1.5 : 1), dur: .22, vol: .06, at })); },   // one round of the pot done
     bubble() { [0, .14, .3, .45, .62, .8, 1, 1.2].forEach((at, i) => tone({ f0: 260 + (i % 3) * 60, f1: 640 + (i % 4) * 70, dur: .07, vol: .05, at })); },
     peep(v) { [0, .09].forEach((at, i) => tone({ f0: 760 + i * 90, f1: 980 + i * 90, dur: .06, vol: .012 + .045 * v, at })); },   // a little giggle from the dark
     whoosh() { hiss({ dur: .6, f0: 300, f1: 1800, q: .6, vol: .08, attack: .15 }); [659.25, 880, 1318.5].forEach((f, i) => tone({ f0: f, dur: .5, vol: .05, at: .35 + i * .08 })); },
@@ -2120,17 +2131,22 @@ const CD_BG = `<rect width="360" height="250" fill="#3D3270"/>
     <path d="M136 292c-6-16 8-24 10-36 8 12 14 18 10 36z M168 292c-8-22 10-32 12-48 10 14 20 24 12 48z M202 292c-4-14 6-22 8-32 6 10 12 16 8 32z" fill="#F4882C"/>
     <path d="M146 292c-2-8 4-12 6-18 4 6 8 8 6 18z M176 292c-4-12 6-18 8-28 6 10 10 14 6 28z" fill="#F2C828"/></g>
   <ellipse cx="180" cy="168" rx="96" ry="18" fill="#2E2440" stroke="#3A2852" stroke-width="5"/>`;
+const CD_FOAM = [[112, 162, 6], [128, 157, 8], [146, 154, 7], [163, 152, 9], [181, 151, 8], [198, 152, 9], [216, 154, 7], [233, 157, 8], [249, 162, 6], [140, 166, 6], [222, 166, 6], [181, 162, 7]];   // froth that builds up as she stirs
 const CD_FG = `<g stroke="#3A2852" stroke-width="5" stroke-linejoin="round">
   <ellipse id="cdLiquid" cx="180" cy="168" rx="88" ry="13" fill="${CD_START}" stroke="none"/>
+  <g id="cdSwirl" opacity="0" transform="translate(180 168) scale(1 .16)"><path id="cdSwirlR" d="M0 -8a8 8 0 0 1 8 8a16 16 0 0 1 -16 16a26 26 0 0 1 -26 -26a38 38 0 0 1 38 -38a50 50 0 0 1 50 50" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="3" stroke-linecap="round" vector-effect="non-scaling-stroke"/></g>
   <g id="cdBubbles" fill="#fff" fill-opacity=".55" stroke="none">${[[132, 166, 5, 0], [168, 170, 4, .5], [204, 165, 6, .9], [228, 170, 3.5, 1.3], [150, 172, 3, 1.7]].map(([x, y, r, d]) => `<circle class="cdb" cx="${x}" cy="${y}" r="${r}" style="animation-delay:${d}s"/>`).join('')}</g>
+  <g class="cdfoam" id="cdFoam" stroke="#3A2852" stroke-width="2">${CD_FOAM.map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}"/>`).join('')}</g>
   <g id="cdSpoon"><line x1="214" y1="170" x2="256" y2="72" stroke-width="12" stroke-linecap="round"/><line x1="214" y1="170" x2="256" y2="72" stroke="#B07A4F" stroke-width="6" stroke-linecap="round"/></g>
   <rect x="104" y="262" width="16" height="30" rx="5" fill="#2E2440"/><rect x="240" y="262" width="16" height="30" rx="5" fill="#2E2440"/>
   <path d="M84 168c0 72 34 106 96 106s96-34 96-106z" fill="#2E2440"/>
   <path d="M108 196c4 30 20 52 44 62" fill="none" stroke="#4A3E66" stroke-width="7" stroke-linecap="round"/>
   <path d="M84 168a96 18 0 0 0 192 0" fill="none" stroke-width="8"/>
-</g>`;
+</g>
+<g id="cdGhost"><ellipse cx="180" cy="166" rx="64" ry="22" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="1 9" stroke-linecap="round" opacity=".85"/>
+  <circle ${reduced ? 'cx="244" cy="166" ' : ''}r="12" fill="#fff" fill-opacity=".9" stroke="#3A2852" stroke-width="3">${reduced ? '' : '<animateMotion dur="1.4s" repeatCount="indefinite" path="M244 166a64 22 0 1 1 -128 0a64 22 0 1 1 128 0"/>'}</circle></g>`;
 const CD_KEY = 'monster-book.cauldron';
-const cd = { pot: [], busy: false, done: false, parts: null, secrets: [], brew: 0 };   // brew counts up each time the pot is emptied, so a stir or a drop from before doesn't land in the new pot
+const cd = { pot: [], busy: false, done: false, parts: null, secrets: [], brew: 0, stirred: 0, turn: 0, rounds: 0, ptr: null, lastA: null, keyA: null, art: null, idle: 0 };   // brew counts up each time the pot is emptied, so a stir or a drop from before doesn't land in the new pot
 try { cd.secrets = JSON.parse(localStorage.getItem(CD_KEY) || '{}').secrets || []; } catch (e) {}
 const CD_POTS = [];   // the 50 pots that aren't three the same, each written smallest first
 for (let a = 0; a < 6; a++) for (let b = a; b < 6; b++) for (let c = b; c < 6; c++) if (a !== c) CD_POTS.push(`${a}${b}${c}`);
@@ -2152,16 +2168,20 @@ function buildCauldron() {
     b.addEventListener('click', () => cdAdd(i));
     shelf.append(b);
   });
-  $('cdStir').addEventListener('click', cdStir);
+  cdStirSetup();
+  $('cdTurns').innerHTML = [0, 1, 2].map(() => '<svg viewBox="0 0 40 40"><path d="M20 3l5 11 12 1.5-9 8.5 2.5 12L20 30l-10.5 6 2.5-12-9-8.5L15 14z"/></svg>').join('');
   $('cdEmpty').addEventListener('click', () => { sound.click(); cdReset(); });
   $('cdAgain').addEventListener('click', () => { cdReset(); $('cdStage').scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' }); });
   $('cdMeet').addEventListener('click', cdMeet);
 }
 function cdReset() {
   cd.pot = []; cd.busy = false; cd.done = false; cd.parts = null; cd.brew++;
+  cd.stirred = 0; cd.turn = 0; cd.rounds = 0; cd.ptr = null; cd.lastA = null; cd.keyA = null; cd.art = null; clearTimeout(cd.idle);
   $('cdMon').textContent = ''; $('cdFx').textContent = ''; $('cdDone').hidden = true;
-  $('cdLiquid').setAttribute('fill', CD_START); $('cdSpoon').style.opacity = '';
-  $('cdStage').classList.remove('stirring', 'brewed');
+  cdColour(CD_START); $('cdSpoon').style.opacity = ''; cdSpoonAt(CD_REST);
+  $('cdSwirl').setAttribute('opacity', '0'); document.querySelectorAll('#cdFoam circle').forEach(c => c.classList.remove('on'));
+  $('cdStage').style.removeProperty('--bub');
+  $('cdStage').classList.remove('stirring', 'brewed', 'hinting');
   cdRender();
 }
 function openCauldron() { cdReset(); }
@@ -2172,12 +2192,18 @@ function cdRender() {
     if (cd.pot[k] !== undefined) { s.className = 'got'; s.innerHTML = cdIcon(CD_ING[cd.pot[k]]); s.setAttribute('aria-label', CD_ING[cd.pot[k]].name); }
     slots.append(s);
   }
-  const full = cd.pot.length === 3;
+  const full = cd.pot.length === 3, can = full && !cd.busy && !cd.done, stage = $('cdStage');
   document.querySelectorAll('#cdShelf .cding').forEach(b => { b.disabled = full || cd.done; });
-  $('cdStir').disabled = !full || cd.busy || cd.done;
-  $('cdStir').classList.toggle('ready', full && !cd.busy && !cd.done);
-  ['cdShelf', 'cdStir', 'cdEmpty'].forEach(id => { $(id).hidden = cd.done; });   // once it's brewed, the monster and what next
-  $('cdHint').textContent = cd.done ? '' : full ? 'Now stir the pot!' : `Tap ${['three things', 'two more', 'one more'][cd.pot.length]} to drop in the pot`;
+  stage.classList.toggle('canstir', can);
+  stage.tabIndex = can ? 0 : -1;
+  if (can) { stage.setAttribute('role', 'button'); stage.setAttribute('aria-label', 'The cauldron: stir it round three times with your finger, or press Space'); }
+  else { stage.removeAttribute('role'); stage.setAttribute('aria-label', 'The cauldron'); }
+  if (!can) stage.classList.remove('hinting');
+  else if (!cd.rounds && !stage.classList.contains('stirring')) stage.classList.add('hinting');
+  ['cdShelf', 'cdEmpty'].forEach(id => { $(id).hidden = cd.done; });   // once it's brewed, the monster and what next
+  $('cdTurns').querySelectorAll('svg').forEach((t, k) => t.classList.toggle('got', k < cd.rounds));   // a star for each time round
+  $('cdHint').textContent = cd.done || cd.busy ? '' : !full ? `Tap ${['three things', 'two more', 'one more'][cd.pot.length]} to drop in the pot`
+    : ['Now stir it round three times with your finger!', 'One! Keep stirring', 'Two! One more time round'][cd.rounds];
   const found = cd.secrets.length;
   $('cdSecrets').textContent = found ? `Secret monsters found: ${found} of 6` : '';
 }
@@ -2190,8 +2216,9 @@ function cdAdd(i) {
   const land = () => {
     drop.remove();
     if (brew !== cd.brew || $('cauldrongame').hidden) return;
-    $('cdLiquid').setAttribute('fill', ing.colour);
+    cdColour(ing.colour);
     sound.plop();
+    if (cd.pot.length === 3) $('cdStage').scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'nearest' });   // the pot on screen, ready to stir
     for (let k = 0; k < 7; k++) {   // a splash in the potion's new colour
       const s = document.createElement('i'); s.className = 'cdsplash'; s.style.background = ing.colour; fx.append(s);
       const a = Math.PI * (1.05 + k * .9 / 6), r = 40 + (k % 3) * 14;
@@ -2205,17 +2232,97 @@ function cdAdd(i) {
     drop.animate([{ transform: `translateY(${-dh}px) rotate(-20deg) scale(1)` }, { transform: `translateY(${sh * .5 - dh * .5}px) rotate(200deg) scale(.55)` }], { duration: 560, easing: 'cubic-bezier(.5, 0, .9, .6)', fill: 'forwards' }).onfinish = land;
   }
 }
-async function cdStir() {
+function cdColour(c) {   // the potion, and its froth a paler shade of it
+  $('cdLiquid').setAttribute('fill', c);
+  const n = parseInt(c.slice(1), 16), mix = v => Math.round(v + (255 - v) * .55);
+  $('cdFoam').setAttribute('fill', `rgb(${mix(n >> 16)}, ${mix((n >> 8) & 255)}, ${mix(n & 255)})`);
+}
+
+// Stirring: she drags round the pot (a finger, or the mouse held down) and the spoon follows. Every bit of the way round
+// counts, either direction, even back and forth, so it's forgiving; three whole rounds and it bubbles over.
+const CD_ROUND = Math.PI * 2, CD_REST = .98;   // CD_REST: where the spoon leans when nobody's stirring
+function cdSpoonAt(a) {
+  const bx = 180 + 62 * Math.cos(a), by = 168 + 8 * Math.sin(a), tx = bx + .55 * (bx - 180) + 18;
+  $('cdSpoon').querySelectorAll('line').forEach(l => { l.setAttribute('x1', bx.toFixed(1)); l.setAttribute('y1', by.toFixed(1)); l.setAttribute('x2', tx.toFixed(1)); l.setAttribute('y2', 74); });
+}
+function cdCanStir() { return cd.pot.length === 3 && !cd.busy && !cd.done && !$('cauldrongame').hidden; }
+function cdAngle(e) {   // where the finger is round the middle of the potion, or null right in the middle
+  const r = $('cdStage').getBoundingClientRect();
+  const x = (e.clientX - r.left) / r.width * 360 - 180, y = (e.clientY - r.top) / r.height * 320 - 168;
+  return Math.hypot(x, y) < 10 ? null : Math.atan2(y, x);
+}
+function cdStirStart() {
+  const stage = $('cdStage');
+  clearTimeout(cd.idle);
+  stage.classList.add('stirring'); stage.classList.remove('hinting');
+  if (!cd.art) cd.art = cdMonsterArt(...cdParts(cd.pot));   // start drawing the monster while she stirs
+}
+function cdStirBy(d, a) {
+  if (!cdCanStir()) return;
+  const before = cd.stirred;
+  cd.stirred += Math.abs(d); cd.turn += d;
+  cdSpoonAt(a);
+  const p = Math.min(1, cd.stirred / (3 * CD_ROUND));
+  $('cdSwirl').setAttribute('opacity', (.35 + .55 * p).toFixed(2));
+  $('cdSwirlR').setAttribute('transform', `rotate(${(cd.turn * 180 / Math.PI).toFixed(1)})`);
+  $('cdStage').style.setProperty('--bub', `${(2.2 - 1.7 * p).toFixed(2)}s`);
+  document.querySelectorAll('#cdFoam circle').forEach((c, k, all) => c.classList.toggle('on', p >= (k + 1) / (all.length + 1)));
+  if (Math.floor(cd.stirred / (Math.PI / 2)) > Math.floor(before / (Math.PI / 2))) sound.blub(Math.floor(cd.stirred / (Math.PI / 2)));
+  const rounds = Math.min(3, Math.floor(cd.stirred / CD_ROUND));
+  if (rounds > cd.rounds) { cd.rounds = rounds; sound.round(rounds); cdRender(); }
+  if (rounds >= 3) cdBrewUp();
+}
+function cdStirEnd() {
+  const stage = $('cdStage');
+  cd.ptr = null; cd.lastA = null; stage.classList.remove('stirring');
+  clearTimeout(cd.idle);
+  if (cdCanStir()) cd.idle = setTimeout(() => { if (cdCanStir() && cd.ptr === null) stage.classList.add('hinting'); }, 2500);   // show how again if she stops
+}
+function cdStirSetup() {
+  const stage = $('cdStage');
+  stage.addEventListener('pointerdown', e => {
+    if (!cdCanStir() || cd.ptr !== null) return;
+    e.preventDefault(); sound.unlock();
+    try { stage.setPointerCapture(e.pointerId); } catch (_) {}
+    cd.ptr = e.pointerId; cd.lastA = cdAngle(e);
+    cdStirStart();
+    if (cd.lastA !== null) cdSpoonAt(cd.lastA);
+  });
+  stage.addEventListener('pointermove', e => {
+    if (e.pointerId !== cd.ptr) return;
+    const a = cdAngle(e);
+    if (a === null) return;
+    if (cd.lastA !== null) {
+      let d = a - cd.lastA;
+      d = ((d + Math.PI) % CD_ROUND + CD_ROUND) % CD_ROUND - Math.PI;   // the short way round
+      cdStirBy(Math.max(-1.2, Math.min(1.2, d)), a);                   // a big jump counts as a bit, not a lot
+    }
+    cd.lastA = a;
+  });
+  const end = e => { if (e.pointerId === cd.ptr) cdStirEnd(); };
+  stage.addEventListener('pointerup', end); stage.addEventListener('pointercancel', end);
+  stage.addEventListener('keydown', e => {   // Space, Enter or an arrow stirs a third of the way round
+    if (!cdCanStir() || ![' ', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) return;
+    e.preventDefault(); sound.unlock();
+    cdStirStart();
+    cd.keyA = (cd.keyA ?? CD_REST) + CD_ROUND / 3;
+    cdStirBy(CD_ROUND / 3 + .001, cd.keyA);
+    cdStirEnd();
+  });
+}
+async function cdBrewUp() {   // three times round: it bubbles over, poof, and the monster climbs out
   if (cd.pot.length < 3 || cd.busy || cd.done) return;
-  cd.busy = true; cdRender(); sound.unlock();
+  cd.busy = true; clearTimeout(cd.idle); cdRender();
   const brew = cd.brew, gone = () => brew !== cd.brew || $('cauldrongame').hidden;   // emptied, or she went off somewhere else
-  const stage = $('cdStage'); stage.classList.add('stirring'); sound.bubble();
+  const stage = $('cdStage'); stage.classList.remove('stirring', 'hinting');
+  try { if (cd.ptr !== null) stage.releasePointerCapture(cd.ptr); } catch (_) {}
+  cd.ptr = null;
+  const parts = cdParts(cd.pot), art = cd.art || cdMonsterArt(...parts);
   stage.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'nearest' });
-  const parts = cdParts(cd.pot);
-  const art = cdMonsterArt(...parts);   // start drawing while she stirs
-  await new Promise(r => setTimeout(r, reduced ? 50 : 1500));
+  sound.bubble();
+  await new Promise(r => setTimeout(r, reduced ? 50 : 450));
   if (gone()) return;
-  stage.classList.remove('stirring'); $('cdSpoon').style.opacity = '0';
+  $('cdSpoon').style.opacity = '0';
   // poof: a puff of smoke, then the monster climbs out of the potion
   sound.whoosh();
   const fx = $('cdFx');
