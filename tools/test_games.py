@@ -66,7 +66,7 @@ with sync_playwright() as pw:
     ctx, p = new_page(b)
     p.clock.install()
     p.goto(BASE + '#games'); p.wait_for_timeout(900); p.clock.run_for(500)
-    check('#games opens the games page: Make a monster, then 7 games', p.is_visible('#games') and p.is_visible('#playMake') and p.eval_on_selector_all('.gametile', 'e => e.length') == 7)
+    check('#games opens the games page: Make a monster, then 10 games', p.is_visible('#games') and p.is_visible('#playMake') and p.eval_on_selector_all('.gametile', 'e => e.length') == 10)
     check('Games tab selected', p.get_attribute('#tabGames', 'aria-selected') == 'true')
     check('no sideways scroll on the games page', not p.evaluate('document.documentElement.scrollWidth > innerWidth'))
     p.screenshot(path=OUT / 'g1_hub.png')

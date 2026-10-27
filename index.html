@@ -488,8 +488,83 @@ button { cursor: pointer; }
 .cding svg { width: 54px; height: 54px; }
 .cding:disabled { opacity: .45; }
 .cding:not(:disabled):active { transform: scale(.95); }
+.gpic.potionpic { background: #2E2660; position: relative; }
+.gpic.potionpic img { position: absolute; left: 6px; top: 8px; width: 46px; height: 46px; }
+.gpic.potionpic svg { position: absolute; right: 2px; bottom: 0; width: 70px; height: 70px; }
+.cdcust { position: absolute; z-index: 1; left: 7.4%; top: 8.3%; width: 19.6%; aspect-ratio: 1; border-radius: 50%; object-fit: cover; background: #2A2458; pointer-events: none; }
+.cdcust.in { animation: pscome .5s ease-out; }
+.cdcust.happy { animation: bounce .55s ease 2; }
+.cdcust.shake { animation: psshake .5s ease 2; }
+@keyframes pscome { from { transform: translateY(50%) scale(.5); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes psshake { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-12deg); } 75% { transform: rotate(12deg); } }
+.cdorder { position: absolute; z-index: 3; left: 33%; right: 3%; top: 4%; min-height: 17%; background: #fff; border: 3px solid #3A2852; border-radius: 18px; pointer-events: none;
+  display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; justify-content: center; padding: 6px 8px; box-shadow: 0 4px 0 rgba(0, 0, 0, .18); animation: pspop .35s ease-out; }
+.cdorder::before { content: ''; position: absolute; left: -15px; top: 38%; border: 9px solid transparent; border-right: 14px solid #3A2852; border-left: 0; }
+.cdorder::after { content: ''; position: absolute; left: -9px; top: calc(38% + 3px); border: 6px solid transparent; border-right: 10px solid #fff; border-left: 0; }
+@keyframes pspop { from { transform: scale(.6); opacity: 0; } to { transform: none; opacity: 1; } }
+.cdorder .psg { display: flex; gap: 1px; }
+.cdorder svg { width: clamp(28px, 8.6vw, 44px); height: clamp(28px, 8.6vw, 44px); display: block; }
+.cdorder .psn { display: flex; align-items: center; gap: 2px; font-family: var(--font-display); font-weight: 700; font-size: clamp(24px, 7.4vw, 36px); color: var(--ink); line-height: 1; }
+.cdorder .pst { font-family: var(--font-display); font-weight: 700; font-size: clamp(17px, 5.2vw, 26px); color: var(--ink); text-align: center; line-height: 1.15; }
+.cdstage.shop .cdturns { top: auto; bottom: 3%; left: 3%; translate: none; }
+.cdtray { display: flex; justify-content: center; gap: 10px; }
+.cdtray span { width: 18px; height: 18px; border-radius: 50%; border: 3px solid var(--line); background: var(--card); }
+.cdtray span.now { border-color: var(--purple); }
+.cdtray span.got { background: var(--green); border-color: var(--green); }
+.cdtray span.oops { background: var(--pink); border-color: var(--pink); }
 .cdsecrets { margin: 0; text-align: center; color: var(--ink-soft); font-weight: 800; font-size: 13px; }
-@media (prefers-reduced-motion: reduce) { .cdb, .cdpot span.got, .cdturns svg.got { animation: none; } .cdfoam circle { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .cdb, .cdpot span.got, .cdturns svg.got, .cdcust.in, .cdcust.happy, .cdcust.shake, .cdorder { animation: none; } .cdfoam circle { transition: none; } }
+
+/* ---------- wand spells ---------- */
+.gpic.wandpic { background: #2E2660; display: grid; place-items: center; }
+.gpic.wandpic svg { width: 86px; height: 86px; }
+.wdstage { position: relative; width: 100%; max-width: 520px; margin: 0 auto; aspect-ratio: 1; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); background: #3D3270;
+  touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; cursor: crosshair; }
+.wdstage:focus-visible { outline: 4px solid var(--purple); outline-offset: 3px; }
+.wdstage > svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.wdmon { position: absolute; left: 50%; bottom: 16.5%; height: 54%; translate: -50% 0; pointer-events: none; z-index: 1; }
+.wdmon .wfloat { position: relative; height: 100%; }
+.wdmon .wspin, .wdmon .wbig, .wdart { height: 100%; }
+.wdart canvas { display: block; height: 100%; width: auto; }
+.wbig { transform-origin: 50% 100%; transition: scale .6s cubic-bezier(.3, 1.6, .5, 1); }
+.wdstage.big .wbig { scale: 1.25; }
+.wdstage.float .wfloat { animation: wdfloat 2.6s ease-in-out infinite; }
+@keyframes wdfloat { 0%, 100% { translate: 0 -6%; } 50% { translate: 0 -12%; } }
+.wspin { transform-origin: 50% 60%; }
+.wdstage.spin .wspin { animation: wdspin 1s ease-in-out, wdsway 3s 1s ease-in-out infinite; }
+@keyframes wdspin { from { rotate: 0deg; } to { rotate: 360deg; } }
+@keyframes wdsway { 0%, 100% { rotate: -6deg; } 50% { rotate: 6deg; } }
+.wdstage.rainbow .wdart { animation: wdhue 3s linear infinite; }
+@keyframes wdhue { from { filter: hue-rotate(0deg) saturate(1.4); } to { filter: hue-rotate(360deg) saturate(1.4); } }
+.wdsparks { position: absolute; inset: -8% -36% 10%; opacity: 0; transition: opacity .4s; }
+.wdstage.sparkle .wdsparks { opacity: 1; }
+.wdsparks svg { position: absolute; width: 16%; height: auto; fill: #FFE58A; stroke: #3A2852; stroke-width: 2.5; stroke-linejoin: round; animation: wdtwinkle 1.4s ease-in-out infinite; }
+@keyframes wdtwinkle { 0%, 100% { scale: .5; opacity: .5; } 50% { scale: 1.1; opacity: 1; } }
+.wdover { z-index: 2; pointer-events: none; }
+.wdd { fill: #fff; fill-opacity: .9; stroke: #3A2852; stroke-width: 2; transition: fill .15s; }
+.wdd.on { fill: #FFD85C; }
+.wdghost { opacity: 0; transition: opacity .3s; }
+.wdstage.hinting .wdghost { opacity: 1; }
+#wdTrace { stroke: #FFE58A; stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; stroke-opacity: .8; filter: drop-shadow(0 0 4px rgba(255, 229, 138, .9)); }
+.wdfx { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+.wdspark { position: absolute; width: 20px; height: 20px; margin: -10px; background: #FFE58A; clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); }
+.wdbook { display: flex; justify-content: center; gap: 8px; }
+.wdbook span { width: 52px; height: 52px; border-radius: 14px; border: 2.5px solid var(--line); background: var(--card); display: grid; place-items: center; }
+.wdbook svg { width: 36px; height: 36px; fill: none; stroke: #C9BFDD; stroke-width: 26; stroke-linecap: round; stroke-linejoin: round; }
+.wdbook span.now { border-color: var(--purple); background: #F3ECFB; animation: bounce .5s ease; }
+.wdbook span.now svg { stroke: var(--purple); }
+.wdbook span.done { border-color: #E9B949; background: #FFF6D6; }
+.wdbook span.done svg { stroke: #D9A030; }
+@media (prefers-reduced-motion: reduce) { .wdstage.float .wfloat { animation: none; translate: 0 -10%; } .wdstage.spin .wspin { animation: none; rotate: -6deg; }
+  .wdstage.rainbow .wdart { animation: none; filter: hue-rotate(150deg) saturate(1.4); } .wdsparks svg, .wdbook span.now { animation: none; } .wbig { transition: none; } }
+
+/* ---------- broomstick ride ---------- */
+.gpic.broompic { background: #1E1A45; display: grid; place-items: center; }
+.gpic.broompic svg { width: 86px; height: 86px; }
+.brsky { width: 100%; max-width: 600px; margin: 0 auto; aspect-ratio: 360 / 320; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); background: #16123A;
+  touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.brsky canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+.brsky canvas:focus-visible { outline: 4px solid var(--purple); outline-offset: -4px; }
 
 /* ---------- pumpkin face maker ---------- */
 .pkstage { border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; background: #FFF3DC; transition: background .6s; touch-action: manipulation; }
@@ -642,15 +717,26 @@ button { cursor: pointer; }
       <button class="gametile" id="playTorch" type="button">
         <span class="gpic torchpic" aria-hidden="true"><img src="faces/F26.webp" alt=""><span class="beam"></span></span>
         <span><b>Torch hunt</b><small>Shine the torch in the bedroom or the witch's cottage</small></span></button>
-      <button class="gametile" id="playCauldron" type="button">
-        <span class="gpic cauldronpic" aria-hidden="true"><svg viewBox="0 0 100 100"><g stroke="#3A2852" stroke-width="3" stroke-linejoin="round"><path d="M38 34C42 22 47 13 55 7c4-3 8-2 10 1-5 3-7 11-2 26z" fill="#4A3470"/><ellipse cx="51" cy="35" rx="19" ry="4.5" fill="#4A3470"/><ellipse cx="50" cy="56" rx="34" ry="8" fill="#2E2440"/><ellipse cx="50" cy="57" rx="30" ry="5.5" fill="#7BD35A" stroke="none"/><path d="M16 56c0 26 14 36 34 36s34-10 34-36" fill="#2E2440"/><path d="M16 56a34 8 0 0 0 68 0" fill="none" stroke-width="4"/><circle cx="34" cy="48" r="4" fill="#A6E98A" stroke-width="2"/><circle cx="68" cy="46" r="3" fill="#A6E98A" stroke-width="2"/></g></svg></span>
-        <span><b>Witch's cauldron</b><small>Brew a potion and see who climbs out</small></span></button>
       <button class="gametile" id="playPumpkin" type="button">
         <span class="gpic pumpkinpic" aria-hidden="true"><svg viewBox="0 0 100 100"><path d="M47 22c-1-6 1-11 6-14l4 3c-4 3-5 7-4 11z" fill="#6B8E3A" stroke="#3A2852" stroke-width="2.5" stroke-linejoin="round"/><ellipse cx="34" cy="58" rx="24" ry="33" fill="#E06C1A" stroke="#3A2852" stroke-width="3"/><ellipse cx="66" cy="58" rx="24" ry="33" fill="#E06C1A" stroke="#3A2852" stroke-width="3"/><ellipse cx="50" cy="58" rx="22" ry="36" fill="#F4882C" stroke="#3A2852" stroke-width="3"/><path d="M30 44l8 12H22zM70 44l8 12H62z" fill="#FFD85C"/><path d="M28 66q22 20 44 0q-22 9-44 0z" fill="#FFD85C"/></svg></span>
         <span><b>Pumpkin face maker</b><small>Make a jack-o'-lantern, then print a stencil to carve</small></span></button>
       <button class="gametile" id="playMask" type="button">
         <span class="gpic maskpic" aria-hidden="true"><img src="faces/F18.webp" alt=""><span class="mkeye" style="left:31px"></span><span class="mkeye" style="left:50px"></span></span>
         <span><b>Monster masks</b><small>Print a monster face to wear</small></span></button>
+      <h2 class="h2 spooky-head witch-head"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 19.4c0-1.4 2.9-2.4 6.3-2.9L11 5.2c.6-2.6 3.6-3.4 5.2-1.5-1.6.2-2.6 1.4-2.4 3.2l1.9 9.6c3.4.5 6.3 1.5 6.3 2.9 0 1.7-4.5 2.8-10 2.8S2 21.1 2 19.4z"/></svg>Witches</h2>
+      <button class="gametile" id="playCauldron" type="button">
+        <span class="gpic cauldronpic" aria-hidden="true"><svg viewBox="0 0 100 100"><g stroke="#3A2852" stroke-width="3" stroke-linejoin="round"><path d="M38 34C42 22 47 13 55 7c4-3 8-2 10 1-5 3-7 11-2 26z" fill="#4A3470"/><ellipse cx="51" cy="35" rx="19" ry="4.5" fill="#4A3470"/><ellipse cx="50" cy="56" rx="34" ry="8" fill="#2E2440"/><ellipse cx="50" cy="57" rx="30" ry="5.5" fill="#7BD35A" stroke="none"/><path d="M16 56c0 26 14 36 34 36s34-10 34-36" fill="#2E2440"/><path d="M16 56a34 8 0 0 0 68 0" fill="none" stroke-width="4"/><circle cx="34" cy="48" r="4" fill="#A6E98A" stroke-width="2"/><circle cx="68" cy="46" r="3" fill="#A6E98A" stroke-width="2"/></g></svg></span>
+        <span><b>Witch's cauldron</b><small>Brew a potion and see who climbs out</small></span></button>
+      <button class="gametile" id="playPotions" type="button">
+        <span class="gpic potionpic" aria-hidden="true"><img src="faces/F14.webp" alt=""><svg viewBox="0 0 100 100"><g stroke="#3A2852" stroke-width="3" stroke-linejoin="round"><path d="M44 30h12v14c10 4 16 12 16 22 0 13-10 22-22 22S28 79 28 66c0-10 6-18 16-22z" fill="#F4EFFF"/><path d="M30.5 62h39c.4 1.3.5 2.6.5 4 0 11.5-9 19-20 19s-20-7.5-20-19c0-1.4.1-2.7.5-4z" fill="#EC6AA8" stroke="none"/><path d="M44 30h12v14c10 4 16 12 16 22 0 13-10 22-22 22S28 79 28 66c0-10 6-18 16-22z" fill="none"/><rect x="41" y="22" width="18" height="9" rx="3" fill="#C9A06A"/></g><circle cx="42" cy="72" r="3.5" fill="#fff" fill-opacity=".8"/><circle cx="55" cy="77" r="2.5" fill="#fff" fill-opacity=".8"/></svg></span>
+        <span><b>Potion shop</b><small>Make the potions the monsters ask for</small></span></button>
+      <button class="gametile" id="playWand" type="button">
+        <span class="gpic wandpic" aria-hidden="true"><svg viewBox="0 0 100 100"><g stroke="#3A2852" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M22 84L62 40" stroke-width="9"/><path d="M22 84L62 40" stroke="#4A3470" stroke-width="5"/><path d="M58 44l6-6" stroke="#fff" stroke-width="5"/>
+          <path d="M72 14l4 12 12 2-9 8 3 12-10-6-10 6 3-12-9-8 12-2z" fill="#F2C828"/></g><path d="M30 30l2 6 6 2-6 2-2 6-2-6-6-2 6-2z" fill="#FFE58A"/><path d="M84 62l1.6 4.4 4.4 1.6-4.4 1.6-1.6 4.4-1.6-4.4-4.4-1.6 4.4-1.6z" fill="#FFE58A"/><circle cx="46" cy="22" r="2" fill="#fff"/><circle cx="76" cy="80" r="2" fill="#fff"/></svg></span>
+        <span><b>Wand spells</b><small>Draw the magic shape to cast a spell</small></span></button>
+      <button class="gametile" id="playBroom" type="button">
+        <span class="gpic broompic" aria-hidden="true"><svg viewBox="0 0 100 100"><circle cx="66" cy="34" r="22" fill="#FFE58A"/><circle cx="58" cy="28" r="4" fill="#F2D06B"/><circle cx="72" cy="42" r="5" fill="#F2D06B"/><g stroke="#3A2852" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><path d="M14 66c-6-4-10-2-12 2 4 2 6 6 12 4z" fill="#E9B949"/><path d="M14 69L84 56" stroke-width="6"/><path d="M14 69L84 56" stroke="#B07A4F" stroke-width="3"/><path d="M40 50C43 40 46 33 52 28c3-2 6-1 7 1-3 2-5 7-2 21z" fill="#4A3470"/><ellipse cx="49" cy="51" rx="16" ry="4" fill="#4A3470"/></g><path d="M24 26l2 5 5 .5-4 3.5 1.2 5-4.2-2.7-4.2 2.7 1.2-5-4-3.5 5-.5z" fill="#F2C828"/><circle cx="86" cy="78" r="2" fill="#FFF6D6"/><circle cx="30" cy="84" r="1.6" fill="#FFF6D6"/></svg></span>
+        <span><b>Broomstick ride</b><small>Fly home past the moon, catching stars</small></span></button>
     </div>
   </section>
 
@@ -759,22 +845,69 @@ button { cursor: pointer; }
   </section>
 
   <!-- WITCH'S CAULDRON -->
+  <section id="wandgame" class="stack" hidden aria-label="Wand spells">
+    <div class="gamebar"><button class="back" type="button" data-go="games"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>All games</button><button class="mute" type="button"></button></div>
+    <div class="panel">
+      <h2 class="h2">Wand spells</h2>
+      <p class="lede">Your finger is a magic wand! Trace the glowing shape to cast a spell on the monster.</p>
+    </div>
+    <div class="wdstage" id="wdStage" tabindex="0" role="button" aria-label="Wand spells">
+      <svg class="wdbg" id="wdBg" viewBox="0 0 360 360" aria-hidden="true"></svg>
+      <div class="wdmon" aria-hidden="true"><div class="wfloat"><div class="wspin"><div class="wbig"><div class="wdart" id="wdArt"></div></div></div><div class="wdsparks" id="wdSparks"></div></div></div>
+      <svg class="wdover" viewBox="0 0 360 360" aria-hidden="true"><g id="wdGuide"></g><path id="wdTrace" fill="none"/></svg>
+      <div class="wdfx" id="wdFx"></div>
+    </div>
+    <div class="wdbook" id="wdBook" aria-hidden="true"></div>
+    <p class="cdhint" id="wdHint" aria-live="polite"></p>
+    <div class="panel win" id="wdDone" hidden>
+      <h2 class="h2" id="wdTitle"></h2>
+      <p class="lede" id="wdText"></p>
+      <button class="btn primary" id="wdAgain" type="button">New monster</button>
+    </div>
+  </section>
+
+  <section id="broomgame" class="stack" hidden aria-label="Broomstick ride">
+    <div class="gamebar"><button class="back" type="button" data-go="games"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>All games</button><button class="mute" type="button"></button></div>
+    <div class="panel">
+      <h2 class="h2">Broomstick ride</h2>
+      <p class="lede">Fly your monster home to the witch's cottage! Touch the sky and it flies up or down to your finger. Catch the stars on the way.</p>
+      <div class="levels two" id="brLevels" role="group" aria-label="How fast"></div>
+    </div>
+    <div class="brsky"><canvas id="brSky" tabindex="0" role="application" aria-label="The night sky"></canvas></div>
+    <p class="cdhint" id="brHint" aria-live="polite"></p>
+    <div class="panel win" id="brWin" hidden>
+      <h2 class="h2" id="brTitle"></h2>
+      <p class="lede" id="brText"></p>
+      <button class="btn primary" id="brAgain" type="button">Fly again</button>
+    </div>
+  </section>
+
   <section id="cauldrongame" class="stack" hidden aria-label="Witch's cauldron">
     <div class="gamebar"><button class="back" type="button" data-go="games"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>All games</button><button class="mute" type="button"></button></div>
     <div class="panel">
-      <h2 class="h2">Witch's cauldron</h2>
-      <p class="lede">Drop three things into the cauldron, give it a stir, and see who climbs out!</p>
+      <h2 class="h2" id="cdH2">Witch's cauldron</h2>
+      <p class="lede" id="cdLede">Drop three things into the cauldron, give it a stir, and see who climbs out!</p>
+      <div class="levels three" id="cdLevels" role="group" aria-label="How hard" hidden></div>
     </div>
     <div class="cdstage" id="cdStage" aria-label="The cauldron">
       <svg class="cdbg" viewBox="0 0 360 320" aria-hidden="true" id="cdBg"></svg>
       <div class="cdmon" id="cdMon"></div>
+      <img class="cdcust" id="cdCust" alt="" hidden>
       <svg class="cdfg" viewBox="0 0 360 320" aria-hidden="true" id="cdFg"></svg>
       <div class="cdturns" id="cdTurns" aria-hidden="true"></div>
+      <div class="cdorder" id="cdOrder" role="img" hidden></div>
       <div class="cdfx" id="cdFx"></div>
     </div>
     <div class="cdpot" id="cdPot" role="group" aria-label="In the pot"></div>
     <p class="cdhint" id="cdHint" aria-live="polite"></p>
+    <div class="cdtray" id="cdTray" aria-hidden="true" hidden></div>
     <div class="cdshelf" id="cdShelf" role="group" aria-label="Things to drop in"></div>
+    <div class="panel win" id="cdShopEnd" hidden>
+      <h2 class="h2" id="cdShopTitle"></h2>
+      <div class="faces" id="cdShopFaces"></div>
+      <p class="lede" id="cdShopText"></p>
+      <button class="btn primary" id="cdShopAgain" type="button">Open the shop again</button>
+    </div>
     <div class="panel win" id="cdDone" hidden>
       <h2 class="h2" id="cdTitle"></h2>
       <p class="lede" id="cdText"></p>
@@ -1202,9 +1335,9 @@ async function renderCard(rec) {
 }
 
 // ------------------------------------------------------------- screens ---
-const screens = ['make', 'meet', 'card', 'games', 'matchgame', 'whackgame', 'bedgame', 'torchgame', 'cauldrongame', 'pumpkingame', 'maskgame', 'library'];
-const GAME_SCREENS = ['games', 'matchgame', 'whackgame', 'bedgame', 'torchgame', 'cauldrongame', 'pumpkingame', 'maskgame'];
-const HASHES = { make: '#make', games: '', matchgame: '#match', whackgame: '#whack', bedgame: '#bedtime', torchgame: '#torch', cauldrongame: '#cauldron', pumpkingame: '#pumpkin', maskgame: '#masks', library: '#monsters' };
+const screens = ['make', 'meet', 'card', 'games', 'matchgame', 'whackgame', 'bedgame', 'torchgame', 'cauldrongame', 'wandgame', 'broomgame', 'pumpkingame', 'maskgame', 'library'];
+const GAME_SCREENS = ['games', 'matchgame', 'whackgame', 'bedgame', 'torchgame', 'cauldrongame', 'wandgame', 'broomgame', 'pumpkingame', 'maskgame'];
+const HASHES = { make: '#make', games: '', matchgame: '#match', whackgame: '#whack', bedgame: '#bedtime', torchgame: '#torch', cauldrongame: '#cauldron', wandgame: '#wand', broomgame: '#broom', pumpkingame: '#pumpkin', maskgame: '#masks', library: '#monsters' };
 // Letters and the Numbers games moved to the Learning Lab; old links (and home-screen icons) go there
 const MOVED = { '#letters': '#letters', '#count': '#count', '#quick': '#quick' };
 function learnURL(hash) {
@@ -1216,13 +1349,14 @@ function show(id) {
   if (id !== 'whackgame') stopWhack();
   if (id !== 'bedgame') bedQuiet();
   if (id !== 'torchgame') stopTorch();
+  if (id !== 'broomgame') stopBroom();
   screens.forEach(s => { $(s).hidden = s !== id; });
   $('tabMake').setAttribute('aria-selected', String(['make', 'meet', 'card'].includes(id)));
   $('tabGames').setAttribute('aria-selected', String(GAME_SCREENS.includes(id)));
   $('tabLib').setAttribute('aria-selected', String(id === 'library'));
   // keep the address in step, so #match, #whack, #bedtime or #monsters can be bookmarked or saved to a home screen
   try {
-    const h = HASHES[id] ?? '';
+    const h = id === 'cauldrongame' && cd.mode === 'shop' ? '#potions' : HASHES[id] ?? '';
     if (location.hash !== h) history.replaceState(null, '', location.pathname + location.search + h);
   } catch (e) {}
   scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
@@ -1233,6 +1367,8 @@ function openGame(id) {
   else if (id === 'bedgame') openBedtime();
   else if (id === 'torchgame') { show('torchgame'); newTorch(); }
   else if (id === 'cauldrongame') { show('cauldrongame'); openCauldron(); }
+  else if (id === 'wandgame') openWand();
+  else if (id === 'broomgame') openBroom();
   else if (id === 'pumpkingame') { show('pumpkingame'); drawPumpkin(); }
   else if (id === 'maskgame') openMasks();
   else { show('games'); drawMakeTile(); }
@@ -1242,6 +1378,8 @@ function route() {
   const h = location.hash.toLowerCase();
   if (MOVED[h]) { location.replace(learnURL(MOVED[h])); return; }
   if (h === '#cottage') { tor.room = 'cottage'; openGame('torchgame'); return; }
+  if (h === '#potions') { cd.mode = 'shop'; openGame('cauldrongame'); return; }
+  if (h === '#cauldron') cd.mode = 'brew';
   const id = Object.keys(HASHES).find(k => HASHES[k] && HASHES[k] === h);
   if (id === 'library') { renderLibrary(); show('library'); }
   else if (id === 'make') show('make');
@@ -1498,6 +1636,12 @@ const sound = (() => {
     plop() { tone({ f0: 560, f1: 150, dur: .17, vol: .12 }); hiss({ dur: .12, f0: 900, q: 1.5, vol: .03, at: .03 }); },   // something drops into the potion
     blub(k = 0) { tone({ f0: 190 + (k % 4) * 40, f1: 360 + (k % 4) * 55, dur: .08, vol: .07 }); },   // stirring the potion
     round(n = 1) { [0, .07].forEach((at, i) => tone({ f0: [523.25, 659.25, 783.99][(n - 1) % 3] * (i ? 1.5 : 1), dur: .22, vol: .06, at })); },   // one round of the pot done
+    twinkle(n = 1) { const f = [784, 880, 987.77, 1046.5, 1174.66, 1318.5, 1396.9, 1568][(n - 1) % 8]; tone({ f0: f, dur: .16, vol: .06 }); tone({ f0: f * 2, dur: .1, vol: .02, at: .03 }); },   // a star caught
+    eek() { tone({ f0: 1900, f1: 2700, dur: .07, type: 'triangle', vol: .05 }); tone({ f0: 2400, f1: 1700, dur: .08, type: 'triangle', vol: .05, at: .09 }); },   // a bat bumped
+    knock() { [0, .17].forEach(at => { tone({ f0: 190, f1: 120, dur: .07, type: 'triangle', vol: .14, at }); hiss({ dur: .04, kind: 'lowpass', f0: 600, vol: .08, at }); }); },   // a customer at the window
+    yuck() { tone({ f0: 320, f1: 110, dur: .4, type: 'sawtooth', vol: .045 }); },   // not the potion they wanted
+    magic() { [783.99, 987.77, 1174.66, 1567.98, 1975.53].forEach((f, i) => tone({ f0: f, dur: .22, vol: .055, at: i * .06 })); hiss({ dur: .6, kind: 'highpass', f0: 5000, vol: .025, attack: .05 }); },   // a spell works
+    fizzle() { hiss({ dur: .45, f0: 2400, f1: 300, q: .7, vol: .06 }); tone({ f0: 330, f1: 150, dur: .3, type: 'triangle', vol: .05 }); },   // a spell fizzles out
     bubble() { [0, .14, .3, .45, .62, .8, 1, 1.2].forEach((at, i) => tone({ f0: 260 + (i % 3) * 60, f1: 640 + (i % 4) * 70, dur: .07, vol: .05, at })); },
     peep(v) { [0, .09].forEach((at, i) => tone({ f0: 760 + i * 90, f1: 980 + i * 90, dur: .06, vol: .012 + .045 * v, at })); },   // a little giggle from the dark
     whoosh() { hiss({ dur: .6, f0: 300, f1: 1800, q: .6, vol: .08, attack: .15 }); [659.25, 880, 1318.5].forEach((f, i) => tone({ f0: f, dur: .5, vol: .05, at: .35 + i * .08 })); },
@@ -2146,7 +2290,7 @@ const CD_FG = `<g stroke="#3A2852" stroke-width="5" stroke-linejoin="round">
 <g id="cdGhost"><ellipse cx="180" cy="166" rx="64" ry="22" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="1 9" stroke-linecap="round" opacity=".85"/>
   <circle ${reduced ? 'cx="244" cy="166" ' : ''}r="12" fill="#fff" fill-opacity=".9" stroke="#3A2852" stroke-width="3">${reduced ? '' : '<animateMotion dur="1.4s" repeatCount="indefinite" path="M244 166a64 22 0 1 1 -128 0a64 22 0 1 1 128 0"/>'}</circle></g>`;
 const CD_KEY = 'monster-book.cauldron';
-const cd = { pot: [], busy: false, done: false, parts: null, secrets: [], brew: 0, stirred: 0, turn: 0, rounds: 0, ptr: null, lastA: null, keyA: null, art: null, idle: 0 };   // brew counts up each time the pot is emptied, so a stir or a drop from before doesn't land in the new pot
+const cd = { mode: 'brew', pot: [], busy: false, done: false, parts: null, secrets: [], brew: 0, stirred: 0, turn: 0, rounds: 0, ptr: null, lastA: null, keyA: null, art: null, idle: 0 };   // brew counts up each time the pot is emptied, so a stir or a drop from before doesn't land in the new pot
 try { cd.secrets = JSON.parse(localStorage.getItem(CD_KEY) || '{}').secrets || []; } catch (e) {}
 const CD_POTS = [];   // the 50 pots that aren't three the same, each written smallest first
 for (let a = 0; a < 6; a++) for (let b = a; b < 6; b++) for (let c = b; c < 6; c++) if (a !== c) CD_POTS.push(`${a}${b}${c}`);
@@ -2170,29 +2314,55 @@ function buildCauldron() {
   });
   cdStirSetup();
   $('cdTurns').innerHTML = [0, 1, 2].map(() => '<svg viewBox="0 0 40 40"><path d="M20 3l5 11 12 1.5-9 8.5 2.5 12L20 30l-10.5 6 2.5-12-9-8.5L15 14z"/></svg>').join('');
-  $('cdEmpty').addEventListener('click', () => { sound.click(); cdReset(); });
+  $('cdEmpty').addEventListener('click', () => { sound.click(); if (cd.mode === 'shop') cdClearPot(); else cdReset(); });
+  $('cdLevels').innerHTML = '';
+  PS_LEVELS.forEach((L, i) => {
+    const b = document.createElement('button'); b.className = 'level'; b.type = 'button';
+    b.innerHTML = '<span></span><small></small>'; b.firstChild.textContent = L.name; b.lastChild.textContent = L.sub;
+    b.addEventListener('click', () => { ps.level = i; try { localStorage.setItem(PS_KEY, JSON.stringify({ level: i })); } catch (e) {} sound.click(); openCauldron(); });
+    $('cdLevels').append(b);
+  });
+  $('cdShopAgain').addEventListener('click', () => { openCauldron(); $('cdStage').scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'nearest' }); });
   $('cdAgain').addEventListener('click', () => { cdReset(); $('cdStage').scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' }); });
   $('cdMeet').addEventListener('click', cdMeet);
 }
-function cdReset() {
-  cd.pot = []; cd.busy = false; cd.done = false; cd.parts = null; cd.brew++;
+function cdClearPot() {   // an empty pot of murky purple, the spoon back, nothing stirred
+  cd.pot = []; cd.busy = false; cd.brew++;
   cd.stirred = 0; cd.turn = 0; cd.rounds = 0; cd.ptr = null; cd.lastA = null; cd.keyA = null; cd.art = null; clearTimeout(cd.idle);
-  $('cdMon').textContent = ''; $('cdFx').textContent = ''; $('cdDone').hidden = true;
+  $('cdFx').textContent = '';
   cdColour(CD_START); $('cdSpoon').style.opacity = ''; cdSpoonAt(CD_REST);
   $('cdSwirl').setAttribute('opacity', '0'); document.querySelectorAll('#cdFoam circle').forEach(c => c.classList.remove('on'));
   $('cdStage').style.removeProperty('--bub');
-  $('cdStage').classList.remove('stirring', 'brewed', 'hinting');
+  $('cdStage').classList.remove('stirring', 'hinting');
   cdRender();
 }
-function openCauldron() { cdReset(); }
+function cdReset() {
+  cd.done = false; cd.parts = null;
+  $('cdMon').textContent = ''; $('cdDone').hidden = true; $('cdStage').classList.remove('brewed');
+  cdClearPot();
+}
+function openCauldron() {   // the cauldron (brew a monster) or the potion shop: the same pot, shelf and stirring
+  const shop = cd.mode === 'shop';
+  $('cdH2').textContent = shop ? 'Potion shop' : "Witch's cauldron";
+  $('cdLede').textContent = shop ? 'Monsters come to the window for potions. Drop in just what they ask for, then stir it round three times!'
+    : 'Drop three things into the cauldron, give it a stir, and see who climbs out!';
+  $('cauldrongame').setAttribute('aria-label', shop ? 'Potion shop' : "Witch's cauldron");
+  ['cdLevels', 'cdTray'].forEach(id => { $(id).hidden = !shop; });
+  ['cdShopEnd', 'cdCust', 'cdOrder'].forEach(id => { $(id).hidden = true; });
+  $('cdStage').classList.toggle('shop', shop);
+  ps.order = null;
+  cdReset();
+  if (shop) psStart();
+}
+const cdCap = () => cd.mode === 'shop' ? (ps.order ? ps.order.reduce((a, [, c]) => a + c, 0) : 0) : 3;   // how many go in the pot
 function cdRender() {
   const slots = $('cdPot'); slots.textContent = '';
-  for (let k = 0; k < 3; k++) {
+  for (let k = 0; k < cdCap(); k++) {
     const s = document.createElement('span');
     if (cd.pot[k] !== undefined) { s.className = 'got'; s.innerHTML = cdIcon(CD_ING[cd.pot[k]]); s.setAttribute('aria-label', CD_ING[cd.pot[k]].name); }
     slots.append(s);
   }
-  const full = cd.pot.length === 3, can = full && !cd.busy && !cd.done, stage = $('cdStage');
+  const full = cd.pot.length === cdCap() && cdCap() > 0, can = full && !cd.busy && !cd.done, stage = $('cdStage'), shop = cd.mode === 'shop';
   document.querySelectorAll('#cdShelf .cding').forEach(b => { b.disabled = full || cd.done; });
   stage.classList.toggle('canstir', can);
   stage.tabIndex = can ? 0 : -1;
@@ -2202,13 +2372,13 @@ function cdRender() {
   else if (!cd.rounds && !stage.classList.contains('stirring')) stage.classList.add('hinting');
   ['cdShelf', 'cdEmpty'].forEach(id => { $(id).hidden = cd.done; });   // once it's brewed, the monster and what next
   $('cdTurns').querySelectorAll('svg').forEach((t, k) => t.classList.toggle('got', k < cd.rounds));   // a star for each time round
-  $('cdHint').textContent = cd.done || cd.busy ? '' : !full ? `Tap ${['three things', 'two more', 'one more'][cd.pot.length]} to drop in the pot`
+  $('cdHint').textContent = cd.done || cd.busy || (shop && !ps.order) ? '' : !full ? (shop ? 'Drop in what the monster wants' : `Tap ${['three things', 'two more', 'one more'][cd.pot.length]} to drop in the pot`)
     : ['Now stir it round three times with your finger!', 'One! Keep stirring', 'Two! One more time round'][cd.rounds];
   const found = cd.secrets.length;
-  $('cdSecrets').textContent = found ? `Secret monsters found: ${found} of 6` : '';
+  $('cdSecrets').textContent = found && !shop ? `Secret monsters found: ${found} of 6` : '';
 }
 function cdAdd(i) {
-  if (cd.pot.length >= 3 || cd.done) return;
+  if (cd.pot.length >= cdCap() || cd.done || cd.busy) return;
   sound.unlock();
   cd.pot.push(i); cdRender();
   const ing = CD_ING[i], fx = $('cdFx'), brew = cd.brew;
@@ -2218,7 +2388,7 @@ function cdAdd(i) {
     if (brew !== cd.brew || $('cauldrongame').hidden) return;
     cdColour(ing.colour);
     sound.plop();
-    if (cd.pot.length === 3) $('cdStage').scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'nearest' });   // the pot on screen, ready to stir
+    if (cd.pot.length === cdCap()) $('cdStage').scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'nearest' });   // the pot on screen, ready to stir
     for (let k = 0; k < 7; k++) {   // a splash in the potion's new colour
       const s = document.createElement('i'); s.className = 'cdsplash'; s.style.background = ing.colour; fx.append(s);
       const a = Math.PI * (1.05 + k * .9 / 6), r = 40 + (k % 3) * 14;
@@ -2245,7 +2415,7 @@ function cdSpoonAt(a) {
   const bx = 180 + 62 * Math.cos(a), by = 168 + 8 * Math.sin(a), tx = bx + .55 * (bx - 180) + 18;
   $('cdSpoon').querySelectorAll('line').forEach(l => { l.setAttribute('x1', bx.toFixed(1)); l.setAttribute('y1', by.toFixed(1)); l.setAttribute('x2', tx.toFixed(1)); l.setAttribute('y2', 74); });
 }
-function cdCanStir() { return cd.pot.length === 3 && !cd.busy && !cd.done && !$('cauldrongame').hidden; }
+function cdCanStir() { return cd.pot.length === cdCap() && cdCap() > 0 && !cd.busy && !cd.done && !$('cauldrongame').hidden; }
 function cdAngle(e) {   // where the finger is round the middle of the potion, or null right in the middle
   const r = $('cdStage').getBoundingClientRect();
   const x = (e.clientX - r.left) / r.width * 360 - 180, y = (e.clientY - r.top) / r.height * 320 - 168;
@@ -2311,7 +2481,8 @@ function cdStirSetup() {
   });
 }
 async function cdBrewUp() {   // three times round: it bubbles over, poof, and the monster climbs out
-  if (cd.pot.length < 3 || cd.busy || cd.done) return;
+  if (cd.pot.length < cdCap() || cd.busy || cd.done) return;
+  if (cd.mode === 'shop') return psServe();
   cd.busy = true; clearTimeout(cd.idle); cdRender();
   const brew = cd.brew, gone = () => brew !== cd.brew || $('cauldrongame').hidden;   // emptied, or she went off somewhere else
   const stage = $('cdStage'); stage.classList.remove('stirring', 'hinting');
@@ -2392,6 +2563,503 @@ function cdMeet() {   // on to Meet your monster with the brewed one, and the fl
   draft = { h, b, l, name: '', food: '', friend: '', grumpy: '' };
   PARTS.forEach((p, k) => { if (state[p] !== cd.parts[k]) goTo(p, cd.parts[k], 1); });
   openMeet(true);
+}
+
+// ------------------------------------------------------------- potion shop -
+// The cauldron as a shop: a monster peeks in at the window and asks for a potion ("two frogs and a star"), she drops in
+// just that, stirs it round three times, and it drinks it up. Right first time is a green dot; a wrong potion goes yucky
+// and the monster says what was wrong, then she has another go (a pink dot). Five customers and the shop closes.
+const PS_LEVELS = [
+  { name: 'Easy', sub: 'One kind', kinds: 1, totals: [1, 2, 3] },
+  { name: 'Medium', sub: 'Two kinds', kinds: 2, totals: [3, 4] },
+  { name: 'Tricky', sub: 'Count it out', kinds: 3, totals: [4, 5], numbers: true },
+];
+const PS_KEY = 'monster-book.potions', PS_ROUND = 5;
+const ps = { level: 0, n: 0, order: null, faces: [], firstGo: [], tries: 0, last: '' };
+try { const v = JSON.parse(localStorage.getItem(PS_KEY) || '{}'); if (v.level >= 0 && v.level < PS_LEVELS.length) ps.level = v.level; } catch (e) {}
+const psName = (i, n) => CD_ING[i].name.toLowerCase() + (n === 1 ? '' : 's');
+const psSay = order => { const w = order.map(([i, c]) => c === 1 ? `a ${psName(i, 1)}` : `${['', 'one', 'two', 'three'][c]} ${psName(i, c)}`); return w.length > 1 ? `${w.slice(0, -1).join(', ')} and ${w[w.length - 1]}` : w[0]; };
+function psOrder() {   // what the next monster wants: [[ingredient, how many], ...], most first, not the same as last time
+  const L = PS_LEVELS[ps.level];
+  for (let t = 0; t < 40; t++) {
+    const total = L.totals[Math.floor(Math.random() * L.totals.length)], kinds = shuffleArr([0, 1, 2, 3, 4, 5]).slice(0, Math.min(L.kinds, total));
+    const counts = kinds.map(() => 1);
+    for (let extra = total - kinds.length; extra > 0; extra--) { const open = counts.map((c, j) => c < 3 ? j : -1).filter(j => j >= 0); counts[open[Math.floor(Math.random() * open.length)]]++; }
+    const order = kinds.map((i, j) => [i, counts[j]]).sort((a, b) => b[1] - a[1] || a[0] - b[0]);
+    if (JSON.stringify(order) !== ps.last) { ps.last = JSON.stringify(order); return order; }
+  }
+}
+function psBubble() {   // the order in the speech bubble: the pictures to count, or on Tricky a number by each
+  const L = PS_LEVELS[ps.level], b = $('cdOrder');
+  b.innerHTML = ps.order.map(([i, c]) => L.numbers ? `<span class="psn"><b>${c}</b>${cdIcon(CD_ING[i])}</span>` : `<span class="psg">${cdIcon(CD_ING[i]).repeat(c)}</span>`).join('');
+  b.setAttribute('aria-label', `The monster wants ${psSay(ps.order)}.`);
+  b.hidden = false; b.style.animation = 'none'; void b.offsetWidth; b.style.animation = '';
+}
+function psSays(text) { const b = $('cdOrder'); b.innerHTML = '<span class="pst"></span>'; b.firstChild.textContent = text; b.setAttribute('aria-label', text); }
+function psTray() {
+  $('cdTray').innerHTML = Array.from({ length: PS_ROUND }, (_, k) => `<span class="${k < ps.n ? (ps.firstGo[k] ? 'got' : 'oops') : k === ps.n ? 'now' : ''}"></span>`).join('');
+}
+function psStart() {
+  ps.n = 0; ps.firstGo = []; ps.last = '';
+  ps.faces = shuffleArr([...Array(N).keys()].map(i => i + 1)).slice(0, PS_ROUND);
+  document.querySelectorAll('#cdLevels .level').forEach((b, i) => b.setAttribute('aria-pressed', String(i === ps.level)));
+  psNext();
+}
+function psNext() {   // the next customer at the window
+  ps.order = psOrder(); ps.tries = 0;
+  const im = $('cdCust'); im.src = `faces/F${pad(ps.faces[ps.n])}.webp`; im.alt = 'A monster at the window';
+  im.className = 'cdcust'; im.hidden = false; void im.offsetWidth; im.classList.add('in');
+  psBubble(); psTray(); sound.knock();
+  cdClearPot();
+}
+async function psServe() {   // three times round: does the potion match the order?
+  cd.busy = true; clearTimeout(cd.idle); cdRender();
+  const brew = cd.brew, gone = () => brew !== cd.brew || $('cauldrongame').hidden || cd.mode !== 'shop';
+  const stage = $('cdStage'); stage.classList.remove('stirring', 'hinting');
+  try { if (cd.ptr !== null) stage.releasePointerCapture(cd.ptr); } catch (_) {}
+  cd.ptr = null;
+  sound.bubble();
+  await new Promise(r => setTimeout(r, reduced ? 50 : 450));
+  if (gone()) return;
+  const have = {}; cd.pot.forEach(i => { have[i] = (have[i] || 0) + 1; });
+  const want = Object.fromEntries(ps.order);
+  const extra = Object.keys(have).map(Number).find(i => !want[i]);
+  const tooMany = ps.order.find(([i, c]) => (have[i] || 0) > c), tooFew = ps.order.find(([i, c]) => (have[i] || 0) < c);
+  const wrong = extra !== undefined ? `Oops! I didn't want ${have[extra] === 1 ? 'a ' + psName(extra, 1) : 'any ' + psName(extra, 2)}!`
+    : tooMany ? `Too many ${psName(tooMany[0], 2)}!` : tooFew ? `I wanted more ${psName(tooFew[0], 2)}!` : '';
+  const cust = $('cdCust');
+  if (!wrong) {
+    ps.firstGo[ps.n] = ps.tries === 0; ps.n++; psTray();
+    $('cdSpoon').style.opacity = '0';
+    psSays(['Yum! Thank you!', 'Mmm, just right!', 'Perfect potion!'][ps.n % 3]);
+    sound.chime(); sound.giggle();
+    cust.className = 'cdcust happy';
+    const fx = $('cdFx');
+    for (let k = 0; k < 8; k++) {   // sparkles
+      const p = document.createElement('i'); p.className = 'cdsplash'; p.style.background = ['#F2C828', '#EC6AA8', '#A6E98A', '#54A6E2'][k % 4]; fx.append(p);
+      const a = (k / 8) * Math.PI * 2;
+      if (reduced) { setTimeout(() => p.remove(), 300); continue; }
+      p.animate([{ transform: 'translate(0, 0) scale(1)', opacity: 1 }, { transform: `translate(${Math.cos(a) * 80}px, ${Math.sin(a) * 50 - 40}px) scale(.5)`, opacity: 0 }], { duration: 800, easing: 'ease-out' }).onfinish = () => p.remove();
+    }
+    await new Promise(r => setTimeout(r, reduced ? 400 : 1800));
+    if (gone()) return;
+    if (ps.n >= PS_ROUND) psEnd(); else psNext();
+  } else {
+    ps.tries++;
+    cdColour('#7D8A4E'); sound.yuck();
+    psSays(wrong);
+    cust.className = 'cdcust shake';
+    await new Promise(r => setTimeout(r, reduced ? 600 : 2200));
+    if (gone()) return;
+    cust.className = 'cdcust';
+    psBubble(); cdClearPot();
+  }
+}
+function psEnd() {
+  cd.done = true; cd.busy = false;
+  $('cdOrder').hidden = true; $('cdCust').hidden = true;
+  const all = ps.firstGo.every(Boolean);
+  $('cdShopTitle').textContent = 'The shop is closed!';
+  $('cdShopFaces').innerHTML = ps.faces.map(n => `<img src="faces/F${pad(n)}.webp" alt="">`).join('');
+  $('cdShopText').textContent = `You made potions for ${PS_ROUND} monsters.` + (all ? ' All first go!' : ' Well done!');
+  $('cdShopEnd').hidden = false; ps.order = null;
+  sound.morning(); cdRender();
+  setTimeout(() => { if (!$('cauldrongame').hidden) $('cdShopAgain').scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'nearest' }); }, 300);
+}
+
+// ------------------------------------------------------------- wand spells -
+// A monster in a witch's hat sits on the witch's table. Each spell is a glowing dotted shape: she traces it with her finger
+// (a white dot shows the way round first), the dots light up gold as she covers them, and when nearly all are lit the spell
+// works. The spells stack: big, floating, rainbow, spinning, sparkly. It's forgiving: any direction, lifting the finger is
+// fine, and only scribbling all over the place makes it fizzle. Circles, waves, zigzags, spirals and stars are the
+// pre-writing shapes children practise before letters.
+const WD_SPELLS = [
+  { id: 'circle', name: 'Big spell', say: 'Trace the circle to make the monster big!', done: 'Big spell!' },
+  { id: 'wave', name: 'Float spell', say: 'Trace the wave to make it float!', done: 'Float spell!' },
+  { id: 'zigzag', name: 'Rainbow spell', say: 'Trace the zigzag to make it rainbow coloured!', done: 'Rainbow spell!' },
+  { id: 'spiral', name: 'Spin spell', say: 'Trace the spiral to make it spin!', done: 'Spin spell!' },
+  { id: 'star', name: 'Sparkle spell', say: 'Trace the star to make it sparkle!', done: 'Sparkle spell!' },
+];
+const WD_TOL = 30, WD_NEED = .88;   // how close counts as on the line, and how much of the shape lights the spell
+const wd = { k: 0, dots: [], dense: [], lit: 0, trace: [], stray: 0, total: 0, ptr: null, busy: false, parts: null, brew: 0 };
+function wdShape(id) {   // points along the shape in the 360 x 360 picture, in the order to trace it
+  const P = [];
+  if (id === 'circle') for (let k = 0; k <= 72; k++) { const a = -Math.PI / 2 + k / 72 * Math.PI * 2; P.push([180 + 96 * Math.cos(a), 172 + 96 * Math.sin(a)]); }
+  if (id === 'wave') for (let k = 0; k <= 72; k++) { const f = k / 72; P.push([50 + 260 * f, 172 - 50 * Math.sin(f * Math.PI * 3)]); }
+  if (id === 'zigzag') [[48, 118], [114, 228], [180, 118], [246, 228], [312, 118]].forEach(p => P.push(p));
+  if (id === 'spiral') for (let k = 0; k <= 120; k++) { const f = k / 120, a = f * Math.PI * 4 - Math.PI / 2; P.push([180 + (10 + 92 * f) * Math.cos(a), 172 + (10 + 92 * f) * Math.sin(a)]); }
+  if (id === 'star') for (let k = 0; k <= 5; k++) { const a = -Math.PI / 2 + k * Math.PI * 4 / 5; P.push([180 + 108 * Math.cos(a), 182 + 108 * Math.sin(a)]); }
+  return P;
+}
+function wdEven(P, step) {   // the same line with a point every `step` along it
+  const out = [P[0]]; let left = step;
+  for (let i = 1; i < P.length; i++) {
+    let [x0, y0] = P[i - 1]; const [x1, y1] = P[i]; let seg = Math.hypot(x1 - x0, y1 - y0);
+    while (seg >= left) { const t = left / seg; x0 += (x1 - x0) * t; y0 += (y1 - y0) * t; out.push([x0, y0]); seg -= left; left = step; }
+    left -= seg;
+  }
+  return out;
+}
+const WD_BG = `<rect width="360" height="360" fill="#3D3270"/>
+  <g fill="#4A3E80">${Array.from({ length: 10 }, (_, r) => Array.from({ length: 7 }, (_, i) => `<rect x="${i * 60 - (r % 2) * 30 - 4}" y="${r * 30 + 6}" width="52" height="24" rx="9"/>`).join('')).join('')}</g>
+  <circle cx="52" cy="54" r="32" fill="#1E1A45" stroke="#C9A06A" stroke-width="6"/><circle cx="62" cy="44" r="9" fill="#FFE58A"/><circle cx="58" cy="41" r="8" fill="#1E1A45"/>
+  <rect y="300" width="360" height="60" fill="#6B4A2E"/><rect y="296" width="360" height="8" rx="3" fill="#8A5A36" stroke="#3A2852" stroke-width="3"/>
+  <g stroke="#3A2852" stroke-width="3" stroke-linejoin="round"><path d="M18 296l4-22h52l4 22z" fill="#E8DCC2"/><path d="M48 274v22" fill="none"/><path d="M24 280h20M24 287h18M52 280h20M54 287h16" stroke="#B9A98A" stroke-width="2"/>
+    <rect x="300" y="250" width="16" height="46" rx="3" fill="#FFF3D6"/><path d="M308 250c-6-8-2-16 0-22 4 6 7 14 0 22z" fill="#F2C828"/></g>`;
+async function wdMonster() {   // a new monster for this round: any head, body and legs, hat on
+  const r = () => 1 + Math.floor(Math.random() * N);
+  wd.parts = [r(), r(), r()];
+  const brew = wd.brew, c = await cdMonsterArt(...wd.parts);
+  if (brew !== wd.brew) return;
+  const box = $('wdArt'); box.textContent = ''; box.append(c);
+}
+function wdNew() {   // a fresh monster, no spells on it yet
+  wd.brew++; wd.k = 0; wd.busy = false;
+  const st = $('wdStage'); st.classList.remove('big', 'float', 'rainbow', 'spin', 'sparkle');
+  $('wdDone').hidden = true;
+  wdMonster(); wdSpell();
+}
+function wdSpell() {   // show the next spell's shape
+  const S = WD_SPELLS[wd.k], P = wdShape(S.id);
+  wd.dots = wdEven(P, 15).map(([x, y]) => ({ x, y, on: false }));
+  wd.dense = wdEven(P, 4); wd.lit = 0; wd.trace = []; wd.stray = 0; wd.total = 0; wd.ptr = null; wd.busy = false;
+  const d = 'M' + P.map(p => p.map(v => v.toFixed(1)).join(' ')).join('L');
+  const [sx, sy] = P[0], [nx, ny] = wdEven(P, 22)[1];
+  const ang = Math.atan2(ny - sy, nx - sx) * 180 / Math.PI;
+  $('wdGuide').innerHTML = `<path d="${d}" fill="none" stroke="#fff" stroke-opacity=".18" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+    ${wd.dots.map((p, i) => `<circle class="wdd" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="5.5"/>`).join('')}
+    <g transform="translate(${sx.toFixed(1)} ${sy.toFixed(1)}) rotate(${ang.toFixed(1)})"><circle r="13" fill="#7BD35A" stroke="#3A2852" stroke-width="3"/><path d="M-4 -6l8 6-8 6" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></g>
+    <circle class="wdghost" r="11" fill="#fff" fill-opacity=".9" stroke="#3A2852" stroke-width="3" ${reduced ? `cx="${sx.toFixed(1)}" cy="${sy.toFixed(1)}"` : ''}>${reduced ? '' : `<animateMotion dur="${(1 + wdEven(P, 1).length / 260).toFixed(1)}s" repeatCount="indefinite" path="${d}"/>`}</circle>`;
+  $('wdTrace').setAttribute('d', '');
+  $('wdStage').classList.add('hinting');
+  $('wdHint').textContent = S.say;
+  $('wdStage').setAttribute('aria-label', `${S.say} Or press Enter to cast it.`);
+  document.querySelectorAll('#wdBook span').forEach((b, i) => { b.className = i < wd.k ? 'done' : i === wd.k ? 'now' : ''; });
+}
+function wdPoint(e) {
+  const r = $('wdStage').getBoundingClientRect();
+  return [(e.clientX - r.left) / r.width * 360, (e.clientY - r.top) / r.height * 360];
+}
+function wdAdd([x, y], start) {   // a bit more of her line: light the dots near it, and count it if it's off the shape
+  if (wd.busy) return;
+  wd.trace.push([x, y, start]);
+  wd.total++;
+  let near = Infinity; for (const [dx, dy] of wd.dense) { const dd = (dx - x) ** 2 + (dy - y) ** 2; if (dd < near) near = dd; }
+  if (Math.sqrt(near) > WD_TOL * 1.3) wd.stray++;
+  const dots = document.querySelectorAll('#wdGuide .wdd');
+  wd.dots.forEach((p, i) => { if (!p.on && (p.x - x) ** 2 + (p.y - y) ** 2 < WD_TOL * WD_TOL) { p.on = true; wd.lit++; dots[i]?.classList.add('on'); } });
+  $('wdTrace').setAttribute('d', wd.trace.map(([px, py, s], i) => `${s || !i ? 'M' : 'L'}${px.toFixed(1)} ${py.toFixed(1)}`).join(''));
+  if (wd.lit >= WD_NEED * wd.dots.length && wd.stray <= .4 * wd.total) wdCast();
+}
+function wdLift() {   // finger up: keep what's lit, unless it was mostly scribble, then it fizzles and starts again
+  wd.ptr = null;
+  if (wd.busy || wd.total < 8 || wd.stray <= .4 * wd.total) return;
+  sound.fizzle();
+  $('wdHint').textContent = 'Fizzle! Follow the glowing dots';
+  const k = wd.k;
+  setTimeout(() => { if (wd.k === k && !wd.busy && !$('wandgame').hidden) wdSpell(); }, reduced ? 200 : 700);
+}
+async function wdCast() {   // the spell works
+  if (wd.busy) return;
+  wd.busy = true; wd.ptr = null;
+  const S = WD_SPELLS[wd.k], st = $('wdStage'), brew = wd.brew;
+  st.classList.remove('hinting');
+  document.querySelectorAll('#wdGuide .wdd').forEach(c => c.classList.add('on'));
+  sound.magic();
+  const fx = $('wdFx');
+  for (let i = 0; i < 14; i++) {   // a burst of stars along her line
+    const p = wd.trace[Math.floor(i / 14 * wd.trace.length)] || [180, 172];
+    const sp = document.createElement('i'); sp.className = 'wdspark'; sp.style.left = `${p[0] / 3.6}%`; sp.style.top = `${p[1] / 3.6}%`; fx.append(sp);
+    if (reduced) { setTimeout(() => sp.remove(), 300); continue; }
+    sp.animate([{ transform: 'scale(.4) rotate(0)', opacity: 1 }, { transform: `translate(${(Math.random() - .5) * 60}px, ${-20 - Math.random() * 40}px) scale(1.2) rotate(140deg)`, opacity: 0 }], { duration: 900, easing: 'ease-out' }).onfinish = () => sp.remove();
+  }
+  st.classList.add(['big', 'float', 'rainbow', 'spin', 'sparkle'][wd.k]);
+  $('wdHint').textContent = S.done;
+  document.querySelectorAll('#wdBook span')[wd.k].className = 'done';
+  await new Promise(r => setTimeout(r, reduced ? 300 : 1100));
+  if (brew !== wd.brew || $('wandgame').hidden) return;
+  $('wdGuide').innerHTML = ''; $('wdTrace').setAttribute('d', '');
+  await new Promise(r => setTimeout(r, reduced ? 100 : 500));
+  if (brew !== wd.brew || $('wandgame').hidden) return;
+  wd.k++;
+  if (wd.k < WD_SPELLS.length) { wdSpell(); return; }
+  sound.jingle();   // all five spells on
+  $('wdHint').textContent = '';
+  $('wdTitle').textContent = 'Abracadabra!';
+  $('wdText').textContent = 'Big, floating, rainbow, spinning and sparkly. What a magic monster!';
+  $('wdDone').hidden = false;
+  setTimeout(() => { if (!$('wandgame').hidden) $('wdAgain').scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'nearest' }); }, 300);
+}
+function openWand() { show('wandgame'); wdNew(); setTimeout(() => { if (!$('wandgame').hidden) $('wdStage').scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'nearest' }); }, 60); }
+function buildWand() {
+  $('wdBg').innerHTML = WD_BG;
+  $('wdSparks').innerHTML = [[8, 30], [86, 22], [14, 62], [90, 58], [30, 10], [70, 8], [50, 4], [4, 46]].map(([x, y], i) => `<svg viewBox="0 0 40 40" style="left:${x}%;top:${y}%;animation-delay:${(i * .23).toFixed(2)}s"><path d="M20 2l4 14 14 4-14 4-4 14-4-14-14-4 14-4z"/></svg>`).join('');
+  $('wdBook').innerHTML = WD_SPELLS.map(S => `<span title="${S.name}"><svg viewBox="0 0 360 360"><path d="${'M' + wdShape(S.id).map(p => p.map(v => v.toFixed(0)).join(' ')).join('L')}"/></svg></span>`).join('');
+  const st = $('wdStage');
+  st.addEventListener('pointerdown', e => {
+    if (wd.busy) return;
+    e.preventDefault(); sound.unlock();
+    try { st.setPointerCapture(e.pointerId); } catch (_) {}
+    wd.ptr = e.pointerId; st.classList.remove('hinting');
+    wdAdd(wdPoint(e), true);
+  });
+  st.addEventListener('pointermove', e => { if (e.pointerId === wd.ptr) wdAdd(wdPoint(e), false); });
+  const up = e => { if (e.pointerId === wd.ptr) wdLift(); };
+  st.addEventListener('pointerup', up); st.addEventListener('pointercancel', up);
+  st.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && !wd.busy) { e.preventDefault(); sound.unlock(); wdCast(); } });
+  $('wdAgain').addEventListener('click', () => { sound.click(); wdNew(); $('wdStage').scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'nearest' }); });
+}
+
+// ------------------------------------------------------------- broomstick ride -
+// The monster on the flip book, in a witch's hat on a broom, flies across the night sky to the witch's cottage. It goes up
+// and down to wherever her finger is on the sky (a mouse just has to point), catches stars, bumps the odd bat (no harm done:
+// a wobble and an "eek"), swoops past the moon, and lands at the cottage door. Nothing to lose; the stars are the score.
+const BR_W = 360, BR_H = 320, BR_X = 100, BR_TOP = 46, BR_LOW = 246;   // the sky is 360 x 320; the flyer stays this far across
+const BR_LEVELS = [
+  { name: 'Gentle', sub: 'Slow and calm', speed: 58, length: 2100, bats: 520 },
+  { name: 'Speedy', sub: 'Fast, more bats', speed: 88, length: 2900, bats: 300 },
+];
+const BR_KEY = 'monster-book.broom';
+const br = { level: 0, state: 'ready', cam: 0, y: 150, target: 150, tilt: 0, stars: [], bats: [], houses: [], clouds: [], hills: [], sky: [],
+  caught: 0, bumps: 0, wob: 0, t: 0, land: 0, ly: 0, sprite: null, spriteFor: '', raf: 0, last: 0, best: [0, 0], trail: [], ptr: null };
+try { const s = JSON.parse(localStorage.getItem(BR_KEY) || '{}'); br.level = s.level === 1 ? 1 : 0; if (Array.isArray(s.best)) br.best = [s.best[0] | 0, s.best[1] | 0]; } catch (e) {}
+const brSave = () => { try { localStorage.setItem(BR_KEY, JSON.stringify({ level: br.level, best: br.best })); } catch (e) {} };
+const brRand = (a, b) => a + Math.random() * (b - a);
+
+function brMake() {   // this ride's stars, bats, rooftops and clouds
+  const L = BR_LEVELS[br.level], len = L.length;
+  br.stars = []; br.bats = []; br.houses = []; br.clouds = []; br.hills = []; br.sky = [];
+  const shapes = ['line', 'arcUp', 'arcDown', 'rise', 'fall', 'wave'];
+  for (let x = 330; x < len - 180;) {   // stars come in little runs of five: a line, an arch, a slope or a wave
+    const kind = shapes[Math.floor(Math.random() * shapes.length)], y0 = brRand(80, 210);
+    for (let k = 0; k < 5; k++) {
+      const f = k / 4;
+      const y = kind === 'line' ? y0 : kind === 'arcUp' ? y0 - Math.sin(f * Math.PI) * 40 : kind === 'arcDown' ? y0 + Math.sin(f * Math.PI) * 40
+        : kind === 'rise' ? y0 + 32 - f * 64 : kind === 'fall' ? y0 - 32 + f * 64 : y0 + Math.sin(f * Math.PI * 2) * 26;
+      br.stars.push({ x: x + k * 28, y: Math.max(BR_TOP + 6, Math.min(BR_LOW - 6, y)), got: false, pop: 0 });
+    }
+    x += 4 * 28 + brRand(90, 170);
+  }
+  for (let x = 620; x < len - 260; x += L.bats * brRand(.8, 1.25)) br.bats.push({ x, y: brRand(70, 220), ph: brRand(0, 6), hit: false, cy: 0 });
+  for (let x = -30; x < len + 420; x += brRand(44, 80)) if (Math.abs(x + 20 - (len + 230)) > 90) br.houses.push({ x, w: brRand(30, 52), h: brRand(24, 56), roof: Math.random() < .55, lit: [Math.random() < .6, Math.random() < .5] });
+  for (let x = 140; x < len * .6 + 420; x += brRand(150, 280)) br.clouds.push({ x, y: brRand(40, 140), s: brRand(.7, 1.25) });
+  for (let x = -60; x < len * .3 + 460; x += brRand(90, 150)) br.hills.push({ x, r: brRand(60, 110) });
+  for (let k = 0; k < 40; k++) br.sky.push({ x: brRand(0, 420), y: brRand(8, 200), r: brRand(.6, 1.5) });
+}
+async function brSprite() {   // the flip book's monster, hat on, sitting on a broom, drawn once per ride
+  const key = `${state.H}-${state.B}-${state.L}`;
+  if (br.spriteFor === key && br.sprite) return;
+  br.spriteFor = key;
+  const m = await cdMonsterArt(state.H, state.B, state.L);
+  if (br.spriteFor !== key) return;
+  const W = m.width, H = m.height, c = document.createElement('canvas');
+  c.width = Math.round(W * 1.7); c.height = Math.round(H * 1.08);
+  const x = c.getContext('2d'), ox = W * .45, by = H * .7;
+  x.lineCap = 'round'; x.lineJoin = 'round';
+  // the broom: bristles at the back, the stick under the monster and poking out in front
+  x.save(); x.translate(ox + W * .5, by); x.rotate(-.08);
+  x.fillStyle = '#E9B949'; x.strokeStyle = '#3A2852'; x.lineWidth = W * .02;
+  x.beginPath(); x.moveTo(-W * .62, 0); x.quadraticCurveTo(-W * .92, -W * .2, -W * 1.02, -W * .12); x.lineTo(-W * 1.0, W * .14); x.quadraticCurveTo(-W * .9, W * .2, -W * .62, 0); x.closePath(); x.fill(); x.stroke();
+  x.strokeStyle = '#C08A2E'; x.lineWidth = W * .012;
+  for (let k = -2; k <= 2; k++) { x.beginPath(); x.moveTo(-W * .66, 0); x.lineTo(-W * .98, k * W * .05); x.stroke(); }
+  x.fillStyle = '#B5524A'; x.strokeStyle = '#3A2852'; x.lineWidth = W * .02; x.fillRect(-W * .66, -W * .045, W * .07, W * .09); x.strokeRect(-W * .66, -W * .045, W * .07, W * .09);
+  x.strokeStyle = '#3A2852'; x.lineWidth = W * .085; x.beginPath(); x.moveTo(-W * .6, 0); x.lineTo(W * .78, 0); x.stroke();
+  x.strokeStyle = '#B07A4F'; x.lineWidth = W * .05; x.beginPath(); x.moveTo(-W * .6, 0); x.lineTo(W * .78, 0); x.stroke();
+  x.restore();
+  x.drawImage(m, ox, 0);
+  br.sprite = c;
+}
+function brNew() {
+  const L = BR_LEVELS[br.level];
+  Object.assign(br, { state: 'ready', cam: 0, y: 150, target: 150, tilt: 0, caught: 0, bumps: 0, wob: 0, land: 0, trail: [], ptr: null });
+  brMake();
+  br.font = getComputedStyle(document.body).getPropertyValue('--font-display').trim() || 'sans-serif';
+  document.querySelectorAll('#brLevels .level').forEach((b, i) => b.setAttribute('aria-pressed', String(i === br.level)));
+  $('brWin').hidden = true;
+  $('brHint').textContent = 'Touch the sky, and your monster flies to your finger';
+  $('brSky').setAttribute('aria-label', `The night sky. Touch it, or press Space, to fly; ${L.name.toLowerCase()} ride.`);
+  brSprite().then(() => { if (!$('broomgame').hidden) brDraw(); });
+  brSize(); brDraw();
+}
+function brSize() {
+  const c = $('brSky'), w = c.clientWidth || BR_W, dpr = Math.min(2, devicePixelRatio || 1);
+  c.width = Math.round(w * dpr); c.height = Math.round(w * dpr * BR_H / BR_W);
+}
+function openBroom() { show('broomgame'); brNew(); brStart(); setTimeout(() => { if (!$('broomgame').hidden) $('brSky').scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'nearest' }); }, 60); }
+function brStart() { cancelAnimationFrame(br.raf); br.last = 0; br.raf = requestAnimationFrame(brLoop); }
+function stopBroom() { cancelAnimationFrame(br.raf); br.raf = 0; br.ptr = null; }
+function brLoop(now) {
+  if ($('broomgame').hidden) { br.raf = 0; return; }
+  const dt = br.last ? Math.min(.05, (now - br.last) / 1000) : 0; br.last = now;
+  brUpdate(dt); brDraw();
+  br.raf = requestAnimationFrame(brLoop);
+}
+function brGo() {   // off we go
+  if (br.state !== 'ready') return;
+  br.state = 'flying'; sound.unlock(); sound.fwip();
+  $('brHint').textContent = 'Catch the stars!';
+}
+function brAim(e) {
+  const r = $('brSky').getBoundingClientRect();
+  br.target = Math.max(BR_TOP, Math.min(BR_LOW, (e.clientY - r.top) / r.height * BR_H));
+}
+function brUpdate(dt) {   // move everything on by dt seconds
+  const L = BR_LEVELS[br.level];
+  br.t += dt;
+  const y0 = br.y;
+  if (br.state === 'flying') {
+    br.cam = Math.min(L.length, br.cam + L.speed * dt);
+    br.y += (br.target - br.y) * Math.min(1, dt * 5);
+    const fx = br.cam + BR_X;
+    for (const s of br.stars) if (!s.got && Math.abs(s.x - fx) < 24 && Math.abs(s.y - br.y) < 30) { s.got = true; s.pop = 1; br.caught++; sound.twinkle(br.caught); }
+    for (const b of br.bats) {
+      b.x -= 22 * dt; b.cy = b.y + Math.sin(br.t * 3 + b.ph) * 10;
+      if (!b.hit && Math.abs(b.x - fx) < 22 && Math.abs(b.cy - br.y) < 24) { b.hit = true; br.wob = 1; br.bumps++; sound.eek(); }
+    }
+    if (br.cam >= L.length) { br.state = 'landing'; br.land = 0; br.ly = br.y; $('brHint').textContent = 'Nearly home…'; }
+  } else if (br.state === 'landing') {
+    br.land = Math.min(1, br.land + dt / 2);
+    const e = br.land * br.land * (3 - 2 * br.land);
+    br.y = br.ly + (266 - br.ly) * e;
+    if (br.land >= 1) brHome();
+  } else if (br.state === 'ready') {
+    br.y = 150 + (reduced ? 0 : Math.sin(br.t * 2.2) * 6);
+  }
+  for (const b of br.bats) if (br.state !== 'flying') b.cy = b.y + Math.sin(br.t * 3 + b.ph) * 10;
+  br.tilt += ((dt ? (br.y - y0) / dt : 0) * .004 - br.tilt) * Math.min(1, dt * 8);
+  br.tilt = Math.max(-.3, Math.min(.3, br.tilt));
+  br.wob = Math.max(0, br.wob - dt * 1.4);
+  for (const s of br.stars) if (s.pop) s.pop = Math.max(0, s.pop - dt * 2.5);
+  if (!reduced && br.state === 'flying' && Math.random() < dt * 30) br.trail.push({ x: br.cam + BR_X - 46, y: br.y + 14 + brRand(-4, 4), a: 1 });
+  br.trail.forEach(p => { p.a -= dt * 1.6; }); br.trail = br.trail.filter(p => p.a > 0);
+}
+function brHome() {   // landed at the cottage door
+  br.state = 'home';
+  const L = BR_LEVELS[br.level], best = br.caught > br.best[br.level];
+  if (best) { br.best[br.level] = br.caught; }
+  brSave();
+  sound.morning();
+  $('brHint').textContent = '';
+  $('brTitle').textContent = 'Home again!';
+  $('brText').textContent = `You caught ${br.caught} ${br.caught === 1 ? 'star' : 'stars'} on the way.` + (best && br.caught ? ' Your best yet!' : br.best[br.level] ? ` Your best on ${L.name} is ${br.best[br.level]}.` : '');
+  $('brWin').hidden = false;
+  setTimeout(() => { if (!$('broomgame').hidden) $('brAgain').scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'nearest' }); }, 300);
+}
+function brStar(x, cx, cy, r, fill) {
+  x.beginPath();
+  for (let k = 0; k < 10; k++) { const a = -Math.PI / 2 + k * Math.PI / 5, rr = k % 2 ? r * .45 : r; x.lineTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr); }
+  x.closePath(); x.fillStyle = fill; x.fill(); x.stroke();
+}
+function brDraw() {
+  const c = $('brSky'), x = c.getContext('2d'), s = c.width / BR_W, L = BR_LEVELS[br.level], cam = br.cam;
+  x.setTransform(s, 0, 0, s, 0, 0);
+  const g = x.createLinearGradient(0, 0, 0, BR_H); g.addColorStop(0, '#16123A'); g.addColorStop(.7, '#3D3270'); g.addColorStop(1, '#5A4A94');
+  x.fillStyle = g; x.fillRect(0, 0, BR_W, BR_H);
+  x.fillStyle = '#FFF6D6';
+  for (const p of br.sky) { const px = ((p.x - cam * .04) % 420 + 420) % 420 - 30; x.globalAlpha = .45 + .4 * Math.sin(br.t * 2 + p.x); x.beginPath(); x.arc(px, p.y, p.r, 0, 7); x.fill(); }
+  x.globalAlpha = 1;
+  // the moon, drifting slowly across so the monster swoops past it near the end
+  const mx = 300 - cam * .095, my = 92;
+  x.fillStyle = 'rgba(255, 229, 138, .16)'; x.beginPath(); x.arc(mx, my, 50, 0, 7); x.fill();
+  x.fillStyle = '#FFE58A'; x.beginPath(); x.arc(mx, my, 36, 0, 7); x.fill();
+  x.fillStyle = '#F2D06B'; [[-12, -8, 7], [10, 6, 9], [-4, 16, 5]].forEach(([dx, dy, r]) => { x.beginPath(); x.arc(mx + dx, my + dy, r, 0, 7); x.fill(); });
+  // far hills, clouds, then the rooftops
+  x.fillStyle = '#2A2358';
+  for (const h of br.hills) { const hx = h.x - cam * .3; if (hx > -130 && hx < 490) { x.beginPath(); x.ellipse(hx, 300, h.r, h.r * .62, 0, Math.PI, 0); x.fill(); } }
+  x.fillRect(0, 290, BR_W, 30);
+  for (const cl of br.clouds) {
+    const cx = cl.x - cam * .6; if (cx < -90 || cx > 450) continue;
+    x.fillStyle = 'rgba(214, 205, 245, .5)';
+    [[0, 0, 18], [18, -8, 20], [38, 0, 16], [18, 6, 18]].forEach(([dx, dy, r]) => { x.beginPath(); x.arc(cx + dx * cl.s, cl.y + dy * cl.s, r * cl.s, 0, 7); x.fill(); });
+  }
+  x.lineJoin = 'round'; x.lineCap = 'round';
+  for (const h of br.houses) {
+    const hx = h.x - cam; if (hx < -60 || hx > 400) continue;
+    const top = 300 - h.h;
+    x.fillStyle = '#1B1638'; x.fillRect(hx, top, h.w, h.h + 20);
+    if (h.roof) { x.beginPath(); x.moveTo(hx - 4, top); x.lineTo(hx + h.w / 2, top - h.w * .45); x.lineTo(hx + h.w + 4, top); x.fill(); }
+    x.fillStyle = '#FFD85C';
+    h.lit.forEach((on, k) => { if (on) x.fillRect(hx + 7 + k * (h.w - 22), top + 9, 8, 9); });
+  }
+  // the witch's cottage at the end, with a lit door
+  const kx = L.length + 230 - cam;
+  if (kx < 420) {
+    x.fillStyle = '#4A3470'; x.strokeStyle = '#1B1638'; x.lineWidth = 3;
+    x.beginPath(); x.rect(kx - 40, 236, 80, 64); x.fill(); x.stroke();
+    x.fillStyle = '#2E2660'; x.beginPath(); x.moveTo(kx - 52, 240); x.lineTo(kx + 6, 182); x.quadraticCurveTo(kx + 24, 176, kx + 26, 164); x.lineTo(kx + 52, 240); x.closePath(); x.fill(); x.stroke();
+    x.fillStyle = '#FFD85C'; x.beginPath(); x.moveTo(kx - 12, 300); x.lineTo(kx - 12, 266); x.quadraticCurveTo(kx, 254, kx + 12, 266); x.lineTo(kx + 12, 300); x.fill();
+    x.fillStyle = '#A6E98A'; x.fillRect(kx + 20, 252, 12, 12); x.fillRect(kx - 32, 252, 12, 12);
+    x.fillStyle = '#5A4A3A'; x.fillRect(kx + 22, 172, 8, 20);
+  }
+  // the stars to catch
+  x.strokeStyle = '#3A2852'; x.lineWidth = 2;
+  for (const st of br.stars) {
+    const sx = st.x - cam; if (sx < -20 || sx > 380) continue;
+    if (!st.got) brStar(x, sx, st.y + (reduced ? 0 : Math.sin(br.t * 3 + st.x) * 2), 10, '#F2C828');
+    else if (st.pop) { x.globalAlpha = st.pop; x.lineWidth = 1.5; brStar(x, sx, st.y - (1 - st.pop) * 30, 10 + (1 - st.pop) * 8, '#FFF3C4'); x.lineWidth = 2; x.globalAlpha = 1; }
+  }
+  // bats
+  for (const b of br.bats) {
+    const bx = b.x - cam; if (bx < -30 || bx > 390) continue;
+    const flap = reduced ? .5 : (Math.sin(br.t * 14 + b.ph) + 1) / 2, by = b.cy || b.y;
+    x.fillStyle = b.hit ? '#5A4A7A' : '#2A2140'; x.strokeStyle = '#120E26'; x.lineWidth = 1.5;
+    x.beginPath(); x.moveTo(bx, by);
+    x.quadraticCurveTo(bx - 10, by - 14 * flap - 4, bx - 20, by - 6 * flap); x.quadraticCurveTo(bx - 14, by + 2, bx - 10, by + 4); x.quadraticCurveTo(bx - 6, by + 2, bx, by + 6);
+    x.quadraticCurveTo(bx + 6, by + 2, bx + 10, by + 4); x.quadraticCurveTo(bx + 14, by + 2, bx + 20, by - 6 * flap); x.quadraticCurveTo(bx + 10, by - 14 * flap - 4, bx, by);
+    x.fill(); x.stroke();
+    x.fillStyle = '#FFE58A'; x.beginPath(); x.arc(bx - 3, by + 1, 1.4, 0, 7); x.arc(bx + 3, by + 1, 1.4, 0, 7); x.fill();
+  }
+  // the sparkly trail, then the monster on its broom
+  for (const p of br.trail) { x.globalAlpha = p.a * .8; x.fillStyle = '#FFF3C4'; x.beginPath(); x.arc(p.x - cam, p.y, 2 + p.a * 2, 0, 7); x.fill(); }
+  x.globalAlpha = 1;
+  let fx = BR_X, fy = br.y, fs = 1;
+  if (br.state === 'landing' || br.state === 'home') { const e = br.state === 'home' ? 1 : br.land * br.land * (3 - 2 * br.land); fx = BR_X + (kx - 4 - BR_X) * e; fs = 1 - .2 * e; }
+  if (br.sprite) {
+    const hgt = 98 * fs, wdt = hgt * br.sprite.width / br.sprite.height;
+    x.save(); x.translate(fx, fy); x.rotate(br.tilt + (reduced ? 0 : Math.sin(br.wob * 18) * br.wob * .5));
+    x.drawImage(br.sprite, -wdt * .52, -hgt * .7, wdt, hgt);
+    x.restore();
+  }
+  // how to fly: a finger going up and down at the right of the sky
+  if (br.state === 'ready') {
+    const gx = 236, gy = 196 + (reduced ? 0 : Math.sin(br.t * 2.6) * 44);   // below the moon, clear of the first stars
+    x.strokeStyle = 'rgba(255, 255, 255, .85)'; x.lineWidth = 3; x.setLineDash([1, 8]);
+    x.beginPath(); x.moveTo(gx, 146); x.lineTo(gx, 246); x.stroke(); x.setLineDash([]);
+    x.beginPath(); x.moveTo(gx - 10, 152); x.lineTo(gx, 140); x.lineTo(gx + 10, 152); x.moveTo(gx - 10, 240); x.lineTo(gx, 252); x.lineTo(gx + 10, 240); x.stroke();
+    x.fillStyle = 'rgba(255, 255, 255, .9)'; x.strokeStyle = '#3A2852'; x.beginPath(); x.arc(gx, gy, 12, 0, 7); x.fill(); x.stroke();
+  }
+  // the stars caught, and how far there is to go
+  x.strokeStyle = '#3A2852'; x.lineWidth = 2; brStar(x, 22, 22, 12, '#F2C828');
+  x.fillStyle = '#fff'; x.font = `700 20px ${br.font}`; x.textBaseline = 'middle'; x.fillText(String(br.caught), 40, 23);
+  const p = Math.min(1, cam / L.length);
+  x.strokeStyle = 'rgba(255, 255, 255, .35)'; x.lineWidth = 4; x.beginPath(); x.moveTo(170, 22); x.lineTo(320, 22); x.stroke();
+  x.strokeStyle = '#FFE58A'; x.beginPath(); x.moveTo(170, 22); x.lineTo(170 + 150 * p, 22); x.stroke();
+  x.fillStyle = '#4A3470'; x.strokeStyle = '#fff'; x.lineWidth = 1.5; x.beginPath(); x.moveTo(322, 30); x.lineTo(322, 20); x.lineTo(330, 13); x.lineTo(338, 20); x.lineTo(338, 30); x.closePath(); x.fill(); x.stroke();
+  x.fillStyle = '#fff'; x.beginPath(); x.arc(170 + 150 * p, 22, 5, 0, 7); x.fill();
+}
+function buildBroom() {
+  const lv = $('brLevels'); lv.textContent = '';
+  BR_LEVELS.forEach((L, i) => {
+    const b = document.createElement('button'); b.className = 'level'; b.type = 'button';
+    b.innerHTML = '<span></span><small></small>'; b.firstChild.textContent = L.name; b.lastChild.textContent = L.sub;
+    b.addEventListener('click', () => { br.level = i; brSave(); sound.click(); brNew(); });
+    lv.append(b);
+  });
+  const sky = $('brSky');
+  sky.addEventListener('pointerdown', e => {
+    e.preventDefault(); sound.unlock();
+    try { sky.setPointerCapture(e.pointerId); } catch (_) {}
+    br.ptr = e.pointerId; brAim(e); brGo();
+  });
+  sky.addEventListener('pointermove', e => { if (e.pointerId === br.ptr || (e.pointerType === 'mouse' && br.state === 'flying')) brAim(e); });
+  const up = e => { if (e.pointerId === br.ptr) br.ptr = null; };
+  sky.addEventListener('pointerup', up); sky.addEventListener('pointercancel', up);
+  sky.addEventListener('keydown', e => {
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') { e.preventDefault(); br.target = Math.max(BR_TOP, Math.min(BR_LOW, br.target + (e.key === 'ArrowUp' ? -30 : 30))); brGo(); }
+    else if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); brGo(); }
+  });
+  $('brAgain').addEventListener('click', () => { brNew(); $('brSky').scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'nearest' }); });
+  addEventListener('resize', () => { if (!$('broomgame').hidden) { brSize(); brDraw(); } });
 }
 
 // ------------------------------------------------------------- pumpkin face maker -
@@ -2737,11 +3405,16 @@ function init() {
   $('playTorch').addEventListener('click', () => openGame('torchgame'));
   $('playPumpkin').addEventListener('click', () => openGame('pumpkingame'));
   $('playMask').addEventListener('click', () => openGame('maskgame'));
-  $('playCauldron').addEventListener('click', () => openGame('cauldrongame'));
+  $('playCauldron').addEventListener('click', () => { cd.mode = 'brew'; openGame('cauldrongame'); });
+  $('playPotions').addEventListener('click', () => { cd.mode = 'shop'; openGame('cauldrongame'); });
+  $('playWand').addEventListener('click', () => openGame('wandgame'));
+  $('playBroom').addEventListener('click', () => openGame('broomgame'));
   $('playMake').addEventListener('click', () => show('make'));
   buildMasks();
   buildTorch();
   buildCauldron();
+  buildBroom();
+  buildWand();
   $('tAgain').addEventListener('click', newTorch);
   buildPumpkin();
   document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => openGame(b.dataset.go)));

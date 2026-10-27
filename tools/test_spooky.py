@@ -1,4 +1,5 @@
-"""Play Torch hunt (the bedroom and the witch's cottage), brew in the Witch's cauldron, make a pumpkin face and print monster masks,
+"""Play Torch hunt (the bedroom and the witch's cottage), make a pumpkin face and print monster masks (Spooky), and brew in the
+Witch's cauldron, serve in the Potion shop, cast Wand spells and fly the Broomstick ride (Witches),
 at phone, folding-phone and laptop sizes.
     python3 tools/test_spooky.py OUTDIR"""
 import http.server, socketserver, sys, threading, functools, math
@@ -70,6 +71,19 @@ def stir(p, turns, start=0.0, way=1, hold=False):
         p.mouse.move(*at(start + way * k * math.pi / 12)); p.wait_for_timeout(20)
     if not hold: p.mouse.up()
 
+def trace(p, frac=1.0, jitter=0.0, lift=True, back=False, start=0.0):
+    """Trace the current wand spell's shape with the mouse held down, a little wobbly, from `start` to `frac` of the way along."""
+    box = p.locator('#wdStage').bounding_box()
+    pts = p.evaluate('wdEven(wdShape(WD_SPELLS[wd.k].id), 6)')
+    if back: pts = pts[::-1]
+    pts = pts[int(len(pts) * start):max(2, int(len(pts) * frac))]
+    to = lambda x, y: (box['x'] + x / 360 * box['width'], box['y'] + y / 360 * box['height'])
+    rnd = __import__('random').Random(7)
+    p.mouse.move(*to(*pts[0])); p.mouse.down()
+    for x, y in pts[1:]:
+        p.mouse.move(*to(x + rnd.uniform(-jitter, jitter), y + rnd.uniform(-jitter, jitter))); p.wait_for_timeout(6)
+    if lift: p.mouse.up()
+
 def finger_stir(p, turns):
     """The same with a finger: touch pointer events on the picture."""
     return p.evaluate("""async turns => { const st = $('cdStage'); st.scrollIntoView({ block: 'nearest' });
@@ -84,9 +98,10 @@ with sync_playwright() as pw:
     # ---------------------------------------------------------------- phone: games page, torch hunt
     ctx, p = page_at(b, 390, 844)
     p.goto(BASE + '#games'); p.wait_for_timeout(900)
-    check('games page has 7 games, the 4 Halloween ones under Spooky', p.eval_on_selector_all('.gametile', 'e => e.length') == 7 and p.is_visible('.spooky-head') and p.is_visible('#playMask'))
-    tiles = p.eval_on_selector_all('.gametile', 'e => e.map(t => t.id)')
-    check(f'the cauldron comes straight after Torch hunt ({tiles})', tiles.index('playCauldron') == tiles.index('playTorch') + 1)
+    check('games page has 10 games', p.eval_on_selector_all('.gametile', 'e => e.length') == 10)
+    heads = p.evaluate("""[...document.querySelectorAll('.gamelist > *')].reduce((a, el) => { if (el.matches('h2')) a.push([el.textContent.trim()]); else if (el.matches('.gametile') && a.length) a[a.length - 1].push(el.id); return a; }, [])""")
+    check(f'Spooky has Torch hunt, the pumpkin and the masks; Witches has the cauldron, the potion shop, wand spells and the broomstick ride ({heads[1:]})',
+          heads[1:] == [['Spooky', 'playTorch', 'playPumpkin', 'playMask'], ['Witches', 'playCauldron', 'playPotions', 'playWand', 'playBroom']] and p.is_visible('.witch-head'))
     p.screenshot(path=OUT / 's1_games.png', full_page=True)
     p.click('#playTorch'); p.wait_for_timeout(1000)
     check('Torch tile opens #torch', p.evaluate('location.hash') == '#torch' and p.is_visible('#tRoom'))
@@ -432,6 +447,180 @@ with sync_playwright() as pw:
       return bad; })()""")
     check(f'the hat finds the top of all 30 heads{": not " + str(bad) if bad else ""}', not bad)
     ctx.close()
+    # ---------------------------------------------------------------- phone: the potion shop
+    ctx, p = page_at(b, 390, 844)
+    p.goto(BASE + '#games'); p.wait_for_timeout(900)
+    p.click('#playPotions'); p.wait_for_timeout(1000)
+    p.click('#cdLevels .level >> nth=1'); p.wait_for_timeout(900)
+    got = lambda: p.eval_on_selector_all('#cdPot span.got', 'e => e.length')
+    tray = lambda: p.eval_on_selector_all('#cdTray span', 'e => e.map(x => x.className)')
+    order = p.evaluate('ps.order'); cap = sum(c for _, c in order)
+    check(f'Potion shop opens #potions: three levels, a monster at the window asking for {p.evaluate("psSay(ps.order)")}, and a pot with room for {cap}',
+          p.evaluate('location.hash') == '#potions' and p.text_content('#cdH2') == 'Potion shop' and p.eval_on_selector_all('#cdLevels .level', 'e => e.length') == 3
+          and p.is_visible('#cdCust') and p.is_visible('#cdOrder') and p.eval_on_selector_all('#cdPot span', 'e => e.length') == cap)
+    check(f'on Medium the order is the pictures to count: {cap} of them in two kinds', p.eval_on_selector_all('#cdOrder svg', 'e => e.length') == cap and len(order) == 2
+          and p.eval_on_selector_all('#cdOrder .psn', 'e => e.length') == 0 and p.text_content('#cdHint') == 'Drop in what the monster wants')
+    check(f'five dots for five customers, the first one now ({tray()})', tray() == ['now', '', '', '', ''])
+    sb, ob = p.locator('#cdStage').bounding_box(), p.locator('#cdOrder').bounding_box()
+    check('the order fits inside the picture', ob['x'] >= sb['x'] and ob['x'] + ob['width'] <= sb['x'] + sb['width'] + 1 and ob['y'] + ob['height'] < sb['y'] + .4 * sb['height'])
+    def fill_order(o):
+        for i, c in o:
+            for _ in range(c): p.click(f'#cdShelf .cding >> nth={i}'); p.wait_for_timeout(180)
+        p.wait_for_timeout(800)
+    fill_order(order)
+    check('with the order in, the shelf shuts and it says to stir', got() == cap and p.eval_on_selector_all('#cdShelf .cding', 'e => e.every(b => b.disabled)') and p.text_content('#cdHint') == 'Now stir it round three times with your finger!')
+    face1 = p.get_attribute('#cdCust', 'src')
+    stir(p, 3.2); p.wait_for_timeout(700)
+    said = p.text_content('#cdOrder')
+    check(f'stirred three times round: the monster drinks it up ("{said}") and the first dot goes green', said in ('Yum! Thank you!', 'Mmm, just right!', 'Perfect potion!') and tray()[0] == 'got')
+    p.wait_for_timeout(2200)
+    order2 = p.evaluate('ps.order')
+    check(f'then the next monster comes to the window, wanting {p.evaluate("psSay(ps.order)")}', p.get_attribute('#cdCust', 'src') != face1 and order2 != order and got() == 0 and tray()[1] == 'now')
+    wrong = [i for i in range(6) if i not in [x for x, _ in order2]][0]
+    p.click(f'#cdShelf .cding >> nth={wrong}'); p.wait_for_timeout(200)
+    p.click('#cdEmpty'); p.wait_for_timeout(400)
+    check('Empty the pot takes it out again, and the same monster still wants the same thing', got() == 0 and p.evaluate('ps.order') == order2 and p.evaluate('ps.tries') == 0)
+    p.click(f'#cdShelf .cding >> nth={wrong}'); p.wait_for_timeout(200)
+    for _ in range(sum(c for _, c in order2) - 1): p.click(f'#cdShelf .cding >> nth={order2[0][0]}'); p.wait_for_timeout(200)
+    p.wait_for_timeout(800); stir(p, 3.2); p.wait_for_timeout(700)
+    name = p.evaluate(f'psName({wrong}, 1)')
+    check(f'the wrong potion goes yucky and the monster says what\'s wrong: "{p.text_content("#cdOrder")}"', p.text_content('#cdOrder') == f"Oops! I didn't want a {name}!" and p.get_attribute('#cdLiquid', 'fill') == '#7D8A4E')
+    p.wait_for_timeout(2600)
+    check('then the pot empties and the same monster asks again', got() == 0 and p.evaluate('ps.order') == order2 and p.evaluate('ps.n') == 1 and p.is_visible('#cdShelf'))
+    fill_order(order2); stir(p, 3.2); p.wait_for_timeout(2900)
+    check(f'right the second time: a pink dot ({tray()})', tray()[:3] == ['got', 'oops', 'now'])
+    for k in range(3):
+        fill_order(p.evaluate('ps.order')); stir(p, 3.2); p.wait_for_timeout(2900)
+    check(f'after five monsters the shop closes: "{p.text_content("#cdShopTitle")}" {p.text_content("#cdShopText")}',
+          p.is_visible('#cdShopEnd') and p.text_content('#cdShopText') == 'You made potions for 5 monsters. Well done!' and p.eval_on_selector_all('#cdShopFaces img', 'e => e.length') == 5
+          and tray() == ['got', 'oops', 'got', 'got', 'got'] and not p.is_visible('#cdShelf') and not p.is_visible('#cdCust'))
+    p.screenshot(path=OUT / 'ps1_closed.png', full_page=True)
+    p.click('#cdShopAgain'); p.wait_for_timeout(900)
+    check('Open the shop again: the first customer, five empty dots', p.is_visible('#cdCust') and tray() == ['now', '', '', '', ''] and p.is_visible('#cdShelf'))
+    # the orders at each level, a thousand times over
+    stats = p.evaluate("""() => { const out = []; const keep = ps.level;
+      for (let lv = 0; lv < 3; lv++) { ps.level = lv; ps.last = ''; let ok = true, repeat = false, prev = '', totals = new Set();
+        for (let k = 0; k < 400; k++) { const o = psOrder(), t = o.reduce((a, [, c]) => a + c, 0), key = JSON.stringify(o);
+          totals.add(t); if (key === prev) repeat = true; prev = key;
+          if (o.length !== Math.min(PS_LEVELS[lv].kinds, t) || !PS_LEVELS[lv].totals.includes(t) || o.some(([i, c]) => c < 1 || c > 3) || new Set(o.map(x => x[0])).size !== o.length) ok = false; }
+        out.push([ok, repeat, [...totals].sort()]); }
+      ps.level = keep; return out; }""")
+    check(f'Easy asks for 1 to 3 of one thing, Medium two things (3 or 4), Tricky three things (4 or 5), never the same twice running ({stats})',
+          all(x[0] and not x[1] for x in stats) and stats[0][2] == [1, 2, 3] and stats[1][2] == [3, 4] and stats[2][2] == [4, 5])
+    p.click('#cdLevels .level >> nth=2'); p.wait_for_timeout(900)
+    check(f'Tricky shows a number by each thing ({p.text_content("#cdOrder")})', p.eval_on_selector_all('#cdOrder .psn', 'e => e.length') == 3 and p.eval_on_selector_all('#cdOrder svg', 'e => e.length') == 3)
+    p.reload(); p.wait_for_timeout(1000)
+    check('Tricky is remembered next time', p.get_attribute('#cdLevels .level >> nth=2', 'aria-pressed') == 'true' and p.evaluate('location.hash') == '#potions')
+    p.goto(BASE + '#games'); p.wait_for_timeout(400); p.click('#playCauldron'); p.wait_for_timeout(800)
+    check('the cauldron tile still opens the plain cauldron: no customer, room for three, #cauldron',
+          p.text_content('#cdH2') == "Witch's cauldron" and not p.is_visible('#cdCust') and not p.is_visible('#cdLevels') and not p.is_visible('#cdTray')
+          and p.eval_on_selector_all('#cdPot span', 'e => e.length') == 3 and p.evaluate('location.hash') == '#cauldron')
+    ctx.close()
+    # ---------------------------------------------------------------- phone: wand spells
+    ctx, p = page_at(b, 390, 844)
+    p.goto(BASE + '#games'); p.wait_for_timeout(900)
+    p.click('#playWand'); p.wait_for_timeout(1500)
+    sb = p.locator('#wdStage').bounding_box()
+    book = lambda: p.eval_on_selector_all('#wdBook span', 'e => e.map(x => x.className)')
+    cls = lambda: p.evaluate("[...$('wdStage').classList].filter(c => ['big', 'float', 'rainbow', 'spin', 'sparkle'].includes(c))")
+    check(f'Wand spells opens #wand with the whole picture on screen (top {sb["y"]:.0f}, bottom {sb["y"] + sb["height"]:.0f}) and five spells in the book',
+          p.evaluate('location.hash') == '#wand' and sb['y'] >= 0 and sb['y'] + sb['height'] <= 845 and book() == ['now', '', '', '', ''])
+    check(f'a monster in a witch\'s hat on the table, the dotted circle with a green start and a finger going round, and "{p.text_content("#wdHint")}"',
+          p.eval_on_selector_all('#wdArt canvas', 'e => e.length') == 1 and p.evaluate("$('wdStage').classList.contains('hinting')") and p.eval_on_selector_all('#wdGuide .wdd', 'e => e.length') > 30
+          and p.text_content('#wdHint') == 'Trace the circle to make the monster big!' and p.evaluate("getComputedStyle($('wdStage')).touchAction") == 'none')
+    p.locator('#wdStage').click(); p.wait_for_timeout(300)
+    check('a tap isn\'t a spell', p.evaluate('wd.k') == 0 and cls() == [])
+    trace(p, .5, 6); p.wait_for_timeout(300)
+    lit, n = p.evaluate('[wd.lit, wd.dots.length]')
+    check(f'half way round, half the dots light up gold ({lit} of {n}) and nothing happens yet; lifting the finger keeps them', .35 * n < lit < .7 * n and p.evaluate('wd.k') == 0 and p.eval_on_selector_all('#wdGuide .wdd.on', 'e => e.length') == lit)
+    trace(p, 1.0, 6, start=.45); p.wait_for_timeout(400)
+    check(f'carrying on from there finishes it: "{p.text_content("#wdHint")}", and the monster grows', cls() == ['big'] and p.text_content('#wdHint') == 'Big spell!' and book()[0] == 'done')
+    p.wait_for_timeout(1500)
+    check(f'then the next page of the spell book: "{p.text_content("#wdHint")}"', p.evaluate('wd.k') == 1 and book() == ['done', 'now', '', '', ''] and p.text_content('#wdHint') == 'Trace the wave to make it float!')
+    # scribbling fizzles
+    box = p.locator('#wdStage').bounding_box(); rnd = __import__('random').Random(3)
+    p.mouse.move(box['x'] + 30, box['y'] + 30); p.mouse.down()
+    for _ in range(60): p.mouse.move(box['x'] + rnd.uniform(10, box['width'] - 10), box['y'] + rnd.uniform(10, box['height'] - 10)); p.wait_for_timeout(5)
+    p.mouse.up(); p.wait_for_timeout(150)
+    hint = p.text_content('#wdHint'); p.wait_for_timeout(900)
+    check(f'scribbling all over: "{hint}", and the wave starts again with no dots lit', hint == 'Fizzle! Follow the glowing dots' and p.evaluate('wd.k') == 1 and p.evaluate('wd.lit') == 0 and cls() == ['big'])
+    trace(p, 1.0, 8, back=True); p.wait_for_timeout(1900)
+    check('tracing it the other way round works too', cls() == ['big', 'float'] and p.evaluate('wd.k') == 2)
+    for k in (2, 3, 4):
+        trace(p, 1.0, 9); p.wait_for_timeout(1900)
+    check(f'a wobbly finger can do the zigzag, the spiral and the star; the spells stack ({cls()})', cls() == ['big', 'float', 'rainbow', 'spin', 'sparkle'] and book() == ['done'] * 5)
+    check(f'"{p.text_content("#wdTitle")}" {p.text_content("#wdText")}', p.is_visible('#wdDone') and p.text_content('#wdTitle') == 'Abracadabra!')
+    p.screenshot(path=OUT / 'wd1_done.png', full_page=True)
+    parts = p.evaluate('wd.parts')
+    p.click('#wdAgain'); p.wait_for_timeout(1200)
+    check('New monster: no spells on it, back to the circle', cls() == [] and p.evaluate('wd.k') == 0 and book()[0] == 'now' and not p.is_visible('#wdDone') and p.eval_on_selector_all('#wdArt canvas', 'e => e.length') == 1)
+    p.focus('#wdStage'); p.keyboard.press('Enter'); p.wait_for_timeout(300)
+    check('from the keyboard, Enter casts the spell', cls() == ['big'])
+    bad = p.evaluate("""WD_SPELLS.filter(S => !wdEven(wdShape(S.id), 15).every(([x, y]) => x > 20 && x < 340 && y > 20 && y < 290)).map(S => S.id)""")
+    check(f'every shape sits inside the picture, above the table{": not " + str(bad) if bad else ""}', not bad)
+    ctx.close()
+    ctx, p = page_at(b, 390, 844); p.emulate_media(reduced_motion='reduce')
+    p.goto(BASE + '#wand'); p.wait_for_timeout(1200)
+    check('with reduced motion the finger waits at the start instead of going round', p.eval_on_selector_all('#wdGuide animateMotion', 'e => e.length') == 0 and p.eval_on_selector_all('#wdGuide .wdghost', 'e => e.length') == 1)
+    ctx.close()
+    # ---------------------------------------------------------------- phone: the broomstick ride
+    ctx, p = page_at(b, 390, 844)
+    p.goto(BASE + '#games'); p.wait_for_timeout(900)
+    p.click('#playBroom'); p.wait_for_timeout(1400)
+    sky = p.locator('#brSky').bounding_box()
+    check(f'Broomstick ride opens #broom: Gentle and Speedy, Gentle first, and the whole sky on screen (top {sky["y"]:.0f}, bottom {sky["y"] + sky["height"]:.0f})',
+          p.evaluate('location.hash') == '#broom' and p.eval_on_selector_all('#brLevels .level span', 'e => e.map(x => x.textContent)') == ['Gentle', 'Speedy']
+          and p.get_attribute('#brLevels .level >> nth=0', 'aria-pressed') == 'true' and sky['y'] >= 0 and sky['y'] + sky['height'] <= 845)
+    check(f'the monster from the flip book is on its broom with a hat on, waiting; it says "{p.text_content("#brHint")}"',
+          p.evaluate('br.state') == 'ready' and p.evaluate('br.spriteFor') == p.evaluate('`${state.H}-${state.B}-${state.L}`') and p.evaluate('!!br.sprite')
+          and p.text_content('#brHint') == 'Touch the sky, and your monster flies to your finger')
+    p.wait_for_timeout(1000)
+    check('nothing moves until she touches the sky', p.evaluate('br.cam') == 0 and p.evaluate('br.caught') == 0)
+    check('the sky holds still under a finger instead of scrolling the page', p.evaluate("getComputedStyle(document.querySelector('.brsky')).touchAction") == 'none')
+    p.mouse.click(sky['x'] + sky['width'] * .7, sky['y'] + sky['height'] * .25); p.wait_for_timeout(1500)
+    cam, tgt, y = p.evaluate('[br.cam, br.target, br.y]')
+    check(f'touching the sky sets off: the sky slides along ({cam:.0f} after 1.5 s) and the monster heads for the finger ({y:.0f} towards {tgt:.0f})',
+          p.evaluate('br.state') == 'flying' and 50 < cam < 110 and abs(tgt - 80) < 2 and y < 120 and p.text_content('#brHint') == 'Catch the stars!')
+    p.mouse.move(sky['x'] + sky['width'] * .5, sky['y'] + sky['height'] * .7); p.wait_for_timeout(200)
+    check(f'a mouse only has to point ({p.evaluate("br.target"):.0f})', abs(p.evaluate('br.target') - 224) < 2)
+    p.mouse.move(sky['x'] + sky['width'] * .5, sky['y'] + 2); p.wait_for_timeout(100)
+    check(f'it never flies off the top of the sky (aiming at {p.evaluate("br.target"):.0f})', p.evaluate('br.target') == p.evaluate('BR_TOP'))
+    band = p.evaluate('br.stars.every(s => s.y >= BR_TOP && s.y <= BR_LOW) && br.bats.every(b => b.y >= BR_TOP && b.y <= BR_LOW)')
+    check(f'{p.evaluate("br.stars.length")} stars and {p.evaluate("br.bats.length")} bats, all where the monster can reach', band and p.evaluate('br.stars.length') >= 25 and p.evaluate('br.bats.length') >= 2)
+    # a bat in the way: a wobble and an "eek", nothing lost
+    eeks = p.evaluate("""() => { stopBroom(); window.__eek = 0; const e = sound.eek; sound.eek = () => { window.__eek++; e(); };
+      const bat = br.bats[0], had = br.caught; let n = 0;
+      while (!bat.hit && n++ < 6000) { br.target = bat.cy || bat.y; brUpdate(1 / 60); }
+      return [bat.hit, br.bumps, window.__eek, br.state, br.caught >= had, br.wob > 0]; }""")
+    check(f'flying into a bat: it wobbles and squeaks, and nothing is lost ({eeks})', eeks[0] and eeks[1] == 1 and eeks[2] == 1 and eeks[3] == 'flying' and eeks[4] and eeks[5])
+    run = p.evaluate("""() => { let n = 0; while (br.state !== 'home' && n++ < 60 * 90) { const fx = br.cam + BR_X, nx = br.stars.find(s => !s.got && s.x > fx - 20); if (nx) br.target = nx.y; brUpdate(1 / 60); }
+      brDraw(); return [br.state, br.caught, br.stars.length, Math.round(br.cam), BR_LEVELS[0].length, n]; }""")
+    check(f'steering at the stars catches them ({run[1]} of {run[2]}), and at the end it lands at the cottage', run[0] == 'home' and run[1] >= .8 * run[2] and run[3] == run[4])
+    p.wait_for_timeout(600)
+    check(f'"{p.text_content("#brTitle")}" {p.text_content("#brText")}', p.is_visible('#brWin') and p.text_content('#brTitle') == 'Home again!'
+          and p.text_content('#brText').startswith(f'You caught {run[1]} stars on the way.') and p.evaluate("JSON.parse(localStorage.getItem('monster-book.broom')).best[0]") == run[1])
+    p.screenshot(path=OUT / 'br1_home.png', full_page=True)
+    p.click('#brAgain'); p.wait_for_timeout(500)
+    check('Fly again: back at the start, no stars caught, a new sky', p.evaluate('br.state') == 'ready' and p.evaluate('br.cam') == 0 and p.evaluate('br.caught') == 0
+          and not p.is_visible('#brWin') and p.evaluate('br.stars.every(s => !s.got)'))
+    p.click('#brLevels .level >> nth=1'); p.wait_for_timeout(400)
+    L = p.evaluate('BR_LEVELS')
+    check(f'Speedy: faster ({L[1]["speed"]} vs {L[0]["speed"]}), more bats ({p.evaluate("br.bats.length")}), and a longer way home',
+          p.get_attribute('#brLevels .level >> nth=1', 'aria-pressed') == 'true' and L[1]['speed'] > L[0]['speed'] and L[1]['bats'] < L[0]['bats'] and L[1]['length'] > L[0]['length'])
+    p.reload(); p.wait_for_timeout(1200)
+    check('Speedy is remembered next time, and the best on Gentle too', p.get_attribute('#brLevels .level >> nth=1', 'aria-pressed') == 'true' and p.evaluate('br.best[0]') == run[1])
+    p.focus('#brSky'); p.keyboard.press('ArrowUp'); p.wait_for_timeout(300)
+    check('from the keyboard, the arrows fly it up and down', p.evaluate('br.state') == 'flying' and p.evaluate('br.target') == 120)
+    p.goto(BASE + '#games'); p.wait_for_timeout(400)
+    check('leaving part way stops the ride', p.evaluate('br.raf') == 0)
+    p.goto(BASE + '#broom'); p.wait_for_timeout(800)
+    check('and coming back starts a fresh one', p.evaluate('br.state') == 'ready' and p.evaluate('br.cam') == 0)
+    ctx.close()
+    # reduced motion: the monster waits without bobbing
+    ctx, p = page_at(b, 390, 844); p.emulate_media(reduced_motion='reduce')
+    p.goto(BASE + '#broom'); p.wait_for_timeout(700); y1 = p.evaluate('br.y'); p.wait_for_timeout(500)
+    check('with reduced motion the monster waits without bobbing', y1 == p.evaluate('br.y') == 150)
+    ctx.close()
     # with reduced motion it still has to be stirred, and then brews straight away
     ctx, p = page_at(b, 390, 844); p.emulate_media(reduced_motion='reduce')
     p.goto(BASE + '#cauldron'); p.wait_for_timeout(800)
@@ -444,9 +633,21 @@ with sync_playwright() as pw:
     # ---------------------------------------------------------------- other sizes
     for (w, h, touch, label) in ((360, 740, True, 'small phone'), (904, 1000, True, 'folding phone open'), (1280, 800, False, 'laptop')):
         ctx, p = page_at(b, w, h, touch)
-        for hsh in ('#torch', '#cauldron', '#pumpkin', '#masks', '#games'):
+        for hsh in ('#torch', '#cauldron', '#potions', '#wand', '#broom', '#pumpkin', '#masks', '#games'):
             p.goto(BASE + hsh); p.wait_for_timeout(700)
             check(f'{label} {w}px {hsh}: no sideways scroll', not p.evaluate('document.documentElement.scrollWidth > innerWidth'))
+            if hsh == '#potions':
+                p.wait_for_timeout(500)
+                sb, ob = p.locator('#cdStage').bounding_box(), p.locator('#cdOrder').bounding_box()
+                check(f'{label}: the potion order fits in the picture', ob['x'] >= sb['x'] and ob['x'] + ob['width'] <= sb['x'] + sb['width'] + 1 and ob['y'] + ob['height'] < sb['y'] + .45 * sb['height'])
+            if hsh == '#wand':
+                p.wait_for_timeout(500)
+                rb = p.locator('#wdStage').bounding_box()
+                check(f'{label}: the whole wand spells picture is on screen after opening (top {rb["y"]:.0f}, bottom {rb["y"] + rb["height"]:.0f} of {h})', rb['y'] >= 0 and rb['y'] + rb['height'] <= h + 1)
+            if hsh == '#broom':
+                p.wait_for_timeout(500)
+                rb = p.locator('#brSky').bounding_box()
+                check(f'{label}: the whole sky is on screen after opening the broomstick ride (top {rb["y"]:.0f}, bottom {rb["y"] + rb["height"]:.0f} of {h})', rb['y'] >= 0 and rb['y'] + rb['height'] <= h + 1)
             if hsh == '#torch':
                 p.wait_for_timeout(600)
                 rb = p.locator('#tRoom').bounding_box()
