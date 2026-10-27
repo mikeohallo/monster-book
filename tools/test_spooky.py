@@ -1,4 +1,5 @@
-"""Play Torch hunt and the Pumpkin face maker, and print monster masks, at phone, folding-phone and laptop sizes.
+"""Play Torch hunt (the bedroom and the witch's cottage) and the Pumpkin face maker, and print monster masks,
+at phone, folding-phone and laptop sizes.
     python3 tools/test_spooky.py OUTDIR"""
 import http.server, socketserver, sys, threading, functools
 from pathlib import Path
@@ -29,6 +30,25 @@ def page_at(b, w, h, touch=True):
     p.on('console', lambda m: m.type == 'error' and problems.append(f'console error: {m.text}'))
     p.on('pageerror', lambda e: problems.append(f'page error: {e}'))
     return ctx, p
+
+def find_all(p):
+    """Shine on every hidden monster in turn, the way a finger would: when one is off screen in the witch's cottage,
+    hold the torch at that edge until the room has slid along far enough, then move onto it."""
+    box = p.locator('#tRoom').bounding_box()
+    W = p.evaluate('tRoomDef().w') / 360          # the room's width in screens
+    n = p.evaluate('tor.hidden.length')
+    for i in range(n):
+        if p.evaluate(f'tor.hidden[{i}].found'): continue
+        mx, my = p.evaluate(f'[tor.hidden[{i}].x, tor.hidden[{i}].y]')
+        for _ in range(60):
+            cam = p.evaluate('tor.cam'); sx = mx * W - cam * (W - 1)    # where it is on screen, 0-1 across the room
+            if .2 <= sx <= .8 or (sx < .2 and cam <= 0) or (sx > .8 and cam >= 1): break
+            p.mouse.move(box['x'] + (.97 if sx > .8 else .03) * box['width'], box['y'] + .5 * box['height'])
+            p.wait_for_timeout(150)
+        cam = p.evaluate('tor.cam'); sx = mx * W - cam * (W - 1)
+        p.mouse.move(box['x'] + sx * box['width'], box['y'] + my * box['height'], steps=4)
+        p.wait_for_timeout(340)
+    return n
 
 def shine_on_all(p):
     """Move the torch onto each hidden monster in turn, the way a finger would."""
@@ -176,6 +196,102 @@ with sync_playwright() as pw:
     p.screenshot(path=OUT / 's8_masks.png', full_page=True)
     ctx.close()
 
+
+    # ---------------------------------------------------------------- the witch's cottage (phone)
+    ctx, p = page_at(b, 390, 844)
+    p.goto(BASE + '#torch'); p.wait_for_timeout(1000)
+    check('two rooms to pick, the bedroom first time', p.eval_on_selector_all('#tRooms .level', 'e => e.map(x => x.textContent)') == ['BedroomSmall and cosy', "Witch's cottageBig and spooky"]
+          and p.get_attribute('#tRooms .level >> nth=0', 'aria-pressed') == 'true')
+    check('four levels; the bedroom has 3, 5, 8 and 10 monsters', p.eval_on_selector_all('#tLevels .level small', 'e => e.map(x => x.textContent)') == ['3 monsters', '5 monsters', '8 monsters', '10 monsters'])
+    lv = p.eval_on_selector_all('#tLevels .level', 'e => e.map(x => { const r = x.getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height)]; })')
+    check(f'on a phone the four levels are two by two, each at least 2 cm wide ({lv})', all(w >= 76 for w, h in lv) and len({h for w, h in lv}) == 1)
+    # the bedroom's new top level
+    p.click('#tLevels .level >> nth=3'); p.wait_for_timeout(900)
+    check('bedroom Tiny torch: 10 monsters, a smaller torch, 3 faces to find first', p.evaluate('tor.hidden.length') == 10 and p.evaluate('TLEVELS[3].r') < p.evaluate('TLEVELS[2].r')
+          and p.eval_on_selector_all('#tTray span.want', 'e => e.length') == 3)
+    find_all(p); p.wait_for_timeout(1400)
+    check('bedroom Tiny torch can be finished', p.is_visible('#tWin') and p.evaluate('tor.found') == 10)
+    # into the cottage
+    p.click('#tRooms .level >> nth=1'); p.click('#tLevels .level >> nth=0'); p.wait_for_timeout(1000)
+    check("the cottage: 4, 7, 10 and 12 monsters; the words say it's the witch's cottage",
+          p.eval_on_selector_all('#tLevels .level small', 'e => e.map(x => x.textContent)') == ['4 monsters', '7 monsters', '10 monsters', '12 monsters']
+          and "witch's cottage" in p.text_content('#tLede') and p.get_attribute('#tBg', 'viewBox') == '0 0 720 480')
+    view = p.evaluate("(() => { const r = $('tRoom').getBoundingClientRect(), w = $('tWorld').getBoundingClientRect(); return [r.width, w.width, w.left - r.left]; })()")
+    check(f'the cottage is twice as wide as the room on screen ({view[1]:.0f} of {view[0]:.0f} px) and starts at the left', abs(view[1] - 2 * view[0]) < 1 and abs(view[2]) < 1)
+    check('an arrow on the right says there is more room that way, none on the left', p.evaluate("$('tPanR').classList.contains('on') && !$('tPanL').classList.contains('on')"))
+    p.screenshot(path=OUT / 'c1_cottage_dark.png', full_page=True)
+    # hold the torch at the right edge: the room slides all the way, then stops
+    box = p.locator('#tRoom').bounding_box()
+    p.mouse.move(box['x'] + box['width'] * .5, box['y'] + box['height'] * .1, steps=3)
+    p.mouse.move(box['x'] + box['width'] * .97, box['y'] + box['height'] * .1, steps=3); p.wait_for_timeout(700)
+    mid = p.evaluate('tor.cam')
+    p.wait_for_timeout(2500)
+    view = p.evaluate("(() => { const r = $('tRoom').getBoundingClientRect(), w = $('tWorld').getBoundingClientRect(); return [w.right - r.right, tor.cam]; })()")
+    check(f'at the right edge the room slides along (part way after 0.7 s: {mid:.2f}) to its far end (cam {view[1]:.2f}, edges {view[0]:.1f} px apart)', 0 < mid < 1 and view[1] == 1 and abs(view[0]) < 1)
+    check('then the arrow points back left, not right', p.evaluate("$('tPanL').classList.contains('on') && !$('tPanR').classList.contains('on')"))
+    p.mouse.move(box['x'] + box['width'] * .5, box['y'] + box['height'] * .1, steps=3); p.wait_for_timeout(200)
+    c0 = p.evaluate('tor.cam'); p.mouse.move(box['x'] + box['width'] * .03, box['y'] + box['height'] * .1, steps=2); p.wait_for_timeout(400)
+    c1 = p.evaluate('tor.cam'); p.mouse.move(box['x'] + box['width'] * .5, box['y'] + box['height'] * .1, steps=2); p.wait_for_timeout(500)
+    check(f'in the middle it stays put; at the left edge it slides back; back in the middle it stops ({c0:.2f}, {c1:.2f}, {p.evaluate("tor.cam"):.2f})', c0 == 1 and c1 < 1 and abs(p.evaluate('tor.cam') - c1) < .03)
+    # a finger: it slides while the finger is down at the edge and stops when it lifts
+    p.evaluate("""(() => { const r = $('tRoom').getBoundingClientRect(), o = { bubbles: true, pointerType: 'touch', pointerId: 7, clientX: r.left + r.width * .97, clientY: r.top + r.height * .2 };
+      $('tRoom').dispatchEvent(new PointerEvent('pointermove', o)); })()""")
+    p.wait_for_timeout(500); t1 = p.evaluate('tor.cam')
+    p.evaluate("$('tRoom').dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerType: 'touch', pointerId: 7 }))")
+    p.wait_for_timeout(100); t2 = p.evaluate('tor.cam'); p.wait_for_timeout(600); t3 = p.evaluate('tor.cam')
+    check(f'a finger held at the edge slides the room ({c1:.2f} -> {t1:.2f}) and lifting it stops it ({t2:.2f} = {t3:.2f})', t1 > c1 and abs(t3 - t2) < .001)
+    # every level, finding them all by sliding along
+    for lvl, n in ((0, 4), (1, 7), (2, 10), (3, 12)):
+        p.click(f'#tLevels .level >> nth={lvl}'); p.wait_for_timeout(900)
+        want = p.eval_on_selector_all('#tTray span.want', 'e => e.length')
+        check(f'cottage level {lvl + 1}: {n} monsters hidden, {want} faces to find first', p.evaluate('tor.hidden.length') == n and want == (3 if lvl >= 2 else 0)
+              and p.eval_on_selector_all('#tTray span:not(.got)', 'e => e.length') == n)
+        if lvl == 3:
+            deep = p.evaluate('tor.hidden.filter(m => m.deep).length')
+            check(f'Tiny torch: some hide deeper, so only part of them shows ({deep} of 12)', 3 <= deep <= 6)
+        if lvl == 2:
+            # the third face to find fills its own slot, not the first
+            box = p.locator('#tRoom').bounding_box(); W = 2
+            mx, my = p.evaluate('[tor.hidden[2].x, tor.hidden[2].y]')
+            p.evaluate(f"tor.cam = Math.min(1, Math.max(0, ({mx} * 2 - .5))); drawTorch()")
+            cam = p.evaluate('tor.cam'); sx = mx * W - cam
+            p.mouse.move(box['x'] + sx * box['width'], box['y'] + my * box['height'], steps=4); p.wait_for_timeout(500)
+            cls = p.eval_on_selector_all('#tTray span', 'e => e.slice(0, 3).map(x => x.className)')
+            check(f'finding the third face fills the third slot ({cls})', cls[2] == 'got' and cls[0] == 'want' and cls[1] == 'want')
+            # the giggle hint: near a monster it giggles, far from all of them it doesn't
+            p.evaluate("window.__peeps = []; const o = sound.peep.bind(sound); sound.peep = v => { window.__peeps.push(v); o(v); }")
+            m = p.evaluate("(() => { const i = tor.hidden.findIndex(m => !m.found); return [tor.hidden[i].x, tor.hidden[i].y]; })()")
+            p.evaluate(f"tor.cam = Math.min(1, Math.max(0, ({m[0]} * 2 - .5))); drawTorch()")
+            cam = p.evaluate('tor.cam'); sx = m[0] * 2 - cam; R = p.evaluate('TLEVELS[2].r')
+            p.mouse.move(box['x'] + (sx + R * 1.2 * (1 if sx < .5 else -1)) * box['width'], box['y'] + m[1] * box['height'], steps=3); p.wait_for_timeout(1600)
+            peeps = p.evaluate('window.__peeps.length')
+            check(f'Hard: with the torch close to a monster, it giggles ({peeps} times in 1.6 s)', peeps >= 1)
+        find_all(p); p.wait_for_timeout(1400)
+        check(f"cottage level {lvl + 1}: found all {n}, lights on, and it says the witch's cottage",
+              p.evaluate('tor.found') == n and p.is_visible('#tWin') and "witch's cottage" in p.text_content('#tWinText'))
+        if lvl == 3: p.screenshot(path=OUT / 'c2_cottage_lit.png', full_page=True)
+    # Easy never giggles: it's only a help on the harder levels
+    p.click('#tLevels .level >> nth=0'); p.wait_for_timeout(700)
+    p.evaluate("window.__peeps = []")
+    box = p.locator('#tRoom').bounding_box()
+    for k in range(12): p.mouse.move(box['x'] + box['width'] * (.25 + .04 * k), box['y'] + box['height'] * (.3 + .03 * k)); p.wait_for_timeout(100)
+    check('Easy: no giggle hints', p.evaluate('window.__peeps.length') == 0)
+    # the room is remembered, and #cottage goes straight there
+    p.goto(BASE + '#torch'); p.wait_for_timeout(900)
+    check('the cottage is remembered next time', p.get_attribute('#tRooms .level >> nth=1', 'aria-pressed') == 'true' and p.get_attribute('#tBg', 'viewBox') == '0 0 720 480')
+    p.click('#tRooms .level >> nth=0'); p.wait_for_timeout(500)
+    p.goto(BASE + '#games'); p.wait_for_timeout(300); p.goto(BASE + '#cottage'); p.wait_for_timeout(900)
+    check('#cottage opens Torch hunt in the witch\'s cottage', p.is_visible('#tRoom') and p.get_attribute('#tRooms .level >> nth=1', 'aria-pressed') == 'true')
+    # hiding spots: all inside their room, no two overlapping, and the same with the Tiny torch places
+    bad = p.evaluate("""(() => { const bad = [];
+      for (const [id, R] of Object.entries(ROOMS)) for (const deep of [false, true]) {
+        const box = R.spots.map(sp => { const x = sp.x + (deep && sp.d ? sp.d[0] : 0), y = sp.y + (deep && sp.d ? sp.d[1] : 0); return [x - sp.s / 2, y - sp.s / 2, x + sp.s / 2, y + sp.s / 2]; });
+        box.forEach((a, i) => { if (a[0] < 0 || a[1] < 0 || a[2] > R.w || a[3] > 480) bad.push(`${id} spot ${i} outside`);
+          box.forEach((c, j) => { if (j > i && a[0] < c[2] && c[0] < a[2] && a[1] < c[3] && c[1] < a[3]) bad.push(`${id} spots ${i} and ${j} overlap${deep ? ' (deep)' : ''}`); }); }); }
+      return bad; })()""")
+    check(f'every hiding spot is inside its room and no two overlap{": " + str(bad) if bad else ""}', not bad)
+    ctx.close()
+
     # ---------------------------------------------------------------- other sizes
     for (w, h, touch, label) in ((360, 740, True, 'small phone'), (904, 1000, True, 'folding phone open'), (1280, 800, False, 'laptop')):
         ctx, p = page_at(b, w, h, touch)
@@ -190,6 +306,14 @@ with sync_playwright() as pw:
         shine_on_all(p); p.wait_for_timeout(1400)
         check(f'{label}: torch hunt can be finished', p.is_visible('#tWin'))
         p.screenshot(path=OUT / f's7_{w}.png', full_page=True)
+        p.goto(BASE + '#games'); p.wait_for_timeout(300); p.goto(BASE + '#cottage'); p.wait_for_timeout(1300)
+        rb = p.locator('#tRoom').bounding_box()
+        check(f"{label}: the witch's cottage is all on screen after opening (top {rb['y']:.0f}, bottom {rb['y'] + rb['height']:.0f} of {h})", rb['y'] >= 0 and rb['y'] + rb['height'] <= h + 1)
+        p.click(f'#tLevels .level >> nth={3 if w == 360 else 1}'); p.wait_for_timeout(900)
+        n = find_all(p); p.wait_for_timeout(1400)
+        check(f"{label}: the witch's cottage can be finished ({n} monsters, {'Tiny torch' if w == 360 else 'Medium'})", p.is_visible('#tWin') and p.evaluate('tor.found') == n)
+        check(f'{label}: still no sideways scroll in the cottage', not p.evaluate('document.documentElement.scrollWidth > innerWidth'))
+        p.screenshot(path=OUT / f'c3_{w}.png', full_page=True)
         ctx.close()
     b.close()
 srv.shutdown()

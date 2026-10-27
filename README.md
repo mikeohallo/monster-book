@@ -31,11 +31,15 @@ Then it got things the book can't do: games made from the same 30 monsters. The 
 
 For Halloween, three spooky ones:
 
-- **Torch hunt.** The bedroom's lights are off and monsters are hiding behind the couch, in the toy box, under the bed and behind the curtains. Drag a finger to shine the torch; hold it on a monster and it pops out with a friendly "boo!" and a giggle. Find them all and the lights come on. Easy hides 3, Hard hides 8.
+- **Torch hunt.** The lights are off and monsters are hiding. Drag a finger to shine the torch; hold it on a monster and it pops out with a friendly "boo!" and a giggle. Find them all and the lights come on. Two rooms:
+  - **The bedroom:** behind the couch, in the toy box, under the bed and behind the curtains. Easy hides 3, Tiny torch hides 10.
+  - **The witch's cottage:** twice as wide as the screen, so the room slides along when the torch gets near an edge. Monsters hide in the cauldron, under the witch's hat, between the spell books, behind the black cat, upside down in the drying herbs and in 12 other places. Easy hides 4, Tiny torch hides 12.
+
+  On Hard and Tiny torch three of the faces wait in the tray to be found first, and a hidden monster giggles when the torch gets close, louder the closer it gets. Tiny torch has a much smaller beam, and some monsters hide deeper, so only their horns or eyes show.
 - **Pumpkin face maker.** Tap the pumpkin's eyes, nose or mouth to change them, light it up, save the picture. Then print the face as a carving stencil on A4, at a real size (a 12, 15 or 18 cm face), with a 5 cm bar to check the printer didn't shrink it.
 - **Monster masks.** Pick any of the 30 monsters' heads and print it on A4 as a mask to wear: kid size (eye holes 5 cm apart) or grown-up size (6.3 cm), with a grey line to cut along, eye holes, two dots for elastic and the same 5 cm check bar.
 
-Each game has its own link (`/#make`, `/#match`, `/#whack`, `/#bedtime`, `/#torch`, `/#pumpkin`, `/#masks`), and best scores are kept on the device.
+Each game has its own link (`/#make`, `/#match`, `/#whack`, `/#bedtime`, `/#torch`, `/#cottage`, `/#pumpkin`, `/#masks`), and best scores are kept on the device.
 
 The counting and letter games started here too, then outgrew the monster site and moved to their own: the **Learning Lab**, at [learn.mikeohalloran.au](https://learn.mikeohalloran.au/) ([learning-lab](https://github.com/mikeohallo/learning-lab)). Old `/#letters`, `/#count` and `/#quick` links go there.
 
@@ -75,7 +79,7 @@ That was the main design decision. The obvious version of this site has user acc
 | `tools/test_match.py` | Plays the match game: a wrong pair flips back, a full game ends in a win, the best score sticks, every level fits a phone |
 | `tools/test_links.py` | The tab bar fits at 360–430 px; the plain link opens on the games page with Make a monster first; the `#make`, `#match`, `#whack`, `#bedtime` and `#monsters` links and gift links work; and the old Letters and Numbers links go to the Learning Lab |
 | `tools/test_games.py` | Plays Whack-a-monster and Monster bedtime with the page clock fast-forwarded: a perfect round, an empty round, a sleepy monster on Hard, a full bedtime from tuck-in to Good morning |
-| `tools/test_spooky.py` | Plays Torch hunt at every level by moving the torch onto each monster, and the Pumpkin face maker: changing parts, lighting it, saving the picture, measuring each printed stencil (12, 15 and 18 cm, and the 5 cm bar), and checking all 144 faces fit the page at every size; prints masks at both sizes and checks the eye-hole spacing, and that all 30 heads fit the page with the eye holes and elastic dots on the monster |
+| `tools/test_spooky.py` | Plays Torch hunt at every level in both rooms by moving the torch onto each monster (in the witch's cottage, holding it at the edge until the room slides along), checks the sliding with a mouse and a finger, the faces to find first, the giggle hints, that no two hiding places overlap, and the cottage at four screen sizes; and the Pumpkin face maker: changing parts, lighting it, saving the picture, measuring each printed stencil (12, 15 and 18 cm, and the 5 cm bar), and checking all 144 faces fit the page at every size; prints masks at both sizes and checks the eye-hole spacing, and that all 30 heads fit the page with the eye holes and elastic dots on the monster |
 | `docs/` | Screenshots |
 
 The monster images aren't in the repo; they're the book. Nor is `site/app.html`, the working copy that `build_site.py` wraps into `index.html`, so that script won't run from a clean clone; `index.html` is its built result and is complete. The image tools and the tests are all here.

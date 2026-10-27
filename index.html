@@ -248,6 +248,8 @@ button { cursor: pointer; }
 .mute svg { width: 22px; height: 22px; fill: none; stroke: var(--ink); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
 .mute svg .cone { fill: var(--ink); }
 .levels.three { grid-template-columns: repeat(3, 1fr); }
+.levels.two, .levels.fourup { grid-template-columns: repeat(2, 1fr); }
+@media (min-width: 600px) { .levels.fourup { grid-template-columns: repeat(4, 1fr); } }
 
 /* ---------- whack-a-monster ---------- */
 .wdots { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin: -4px 0; }
@@ -417,6 +419,17 @@ button { cursor: pointer; }
   touch-action: none; user-select: none; -webkit-user-select: none; cursor: none; background: #2A2147;
 }
 .troom svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.tworld { position: absolute; top: 0; left: 0; width: 100%; height: 100%; will-change: transform; }
+.tfound { will-change: transform; }
+.tpan { position: absolute; z-index: 7; top: 50%; width: 30px; height: 64px; margin-top: -32px; display: grid; place-items: center; pointer-events: none; opacity: 0; transition: opacity .35s; }
+.tpan.l { left: 2px; } .tpan.r { right: 2px; }
+.troom .tpan svg { position: static; width: 24px; height: 38px; fill: none; stroke: #FFF3C4; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .7)); }
+.tpan.on { opacity: .9; }
+.tpan.on.l svg { animation: nudgel 1.3s ease-in-out infinite; } .tpan.on.r svg { animation: nudger 1.3s ease-in-out infinite; }
+@keyframes nudger { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(5px); } }
+@keyframes nudgel { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-5px); } }
+.tray span.want { border: 2.5px solid var(--purple); }
+.tray span.want img { opacity: .5; filter: grayscale(1); }
 .tbg { z-index: 0; }
 .tmons img { position: absolute; z-index: 1; translate: -50% -50%; pointer-events: none; -webkit-user-drag: none; }
 .tfg { z-index: 2; pointer-events: none; }
@@ -430,7 +443,7 @@ button { cursor: pointer; }
 @keyframes popout { 0% { transform: translateY(0) scale(1); } 100% { transform: translateY(-14%) scale(1.25); } }
 @keyframes wave { 0%, 100% { transform: translateY(-14%) scale(1.25) rotate(-6deg); } 50% { transform: translateY(-20%) scale(1.25) rotate(6deg); } }
 .troom .hint { position: absolute; z-index: 7; left: 50%; bottom: 14px; translate: -50% 0; color: #FFF3C4; font-family: var(--font-display); font-weight: 600; font-size: 17px; pointer-events: none; transition: opacity .4s; text-shadow: 0 2px 6px rgba(0,0,0,.6); white-space: nowrap; }
-@media (prefers-reduced-motion: reduce) { .tfound img, .tray span.got { animation: none; } .tdark { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .tfound img, .tray span.got, .tpan.on svg { animation: none; } .tdark { transition: none; } }
 
 /* ---------- pumpkin face maker ---------- */
 .pkstage { border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; background: #FFF3DC; transition: background .6s; touch-action: manipulation; }
@@ -582,7 +595,7 @@ button { cursor: pointer; }
       <h2 class="h2 spooky-head"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"/></svg>Spooky</h2>
       <button class="gametile" id="playTorch" type="button">
         <span class="gpic torchpic" aria-hidden="true"><img src="faces/F26.webp" alt=""><span class="beam"></span></span>
-        <span><b>Torch hunt</b><small>Shine the torch to find who's hiding in the dark</small></span></button>
+        <span><b>Torch hunt</b><small>Shine the torch in the bedroom or the witch's cottage</small></span></button>
       <button class="gametile" id="playPumpkin" type="button">
         <span class="gpic pumpkinpic" aria-hidden="true"><svg viewBox="0 0 100 100"><path d="M47 22c-1-6 1-11 6-14l4 3c-4 3-5 7-4 11z" fill="#6B8E3A" stroke="#3A2852" stroke-width="2.5" stroke-linejoin="round"/><ellipse cx="34" cy="58" rx="24" ry="33" fill="#E06C1A" stroke="#3A2852" stroke-width="3"/><ellipse cx="66" cy="58" rx="24" ry="33" fill="#E06C1A" stroke="#3A2852" stroke-width="3"/><ellipse cx="50" cy="58" rx="22" ry="36" fill="#F4882C" stroke="#3A2852" stroke-width="3"/><path d="M30 44l8 12H22zM70 44l8 12H62z" fill="#FFD85C"/><path d="M28 66q22 20 44 0q-22 9-44 0z" fill="#FFD85C"/></svg></span>
         <span><b>Pumpkin face maker</b><small>Make a jack-o'-lantern, then print a stencil to carve</small></span></button>
@@ -658,18 +671,23 @@ button { cursor: pointer; }
     <div class="gamebar"><button class="back" type="button" data-go="games"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>All games</button><button class="mute" type="button"></button></div>
     <div class="panel">
       <h2 class="h2">Torch hunt</h2>
-      <p class="lede">It's dark! Drag your finger to shine the torch and find the monsters hiding in the bedroom.</p>
-      <div class="levels three" id="tLevels" role="group" aria-label="How many monsters"></div>
+      <p class="lede" id="tLede">It's dark! Drag your finger to shine the torch and find the monsters hiding in the bedroom.</p>
+      <div class="levels two" id="tRooms" role="group" aria-label="Which room"></div>
+      <div class="levels fourup" id="tLevels" role="group" aria-label="How many monsters"></div>
     </div>
     <div class="tray" id="tTray" aria-live="polite"></div>
     <div class="troom" id="tRoom" role="application" aria-label="A dark bedroom. Drag to move the torch.">
-      <svg class="tbg" viewBox="0 0 360 480" preserveAspectRatio="none" aria-hidden="true" id="tBg"></svg>
-      <div class="tmons" id="tMons"></div>
-      <svg class="tfg" viewBox="0 0 360 480" preserveAspectRatio="none" aria-hidden="true" id="tFg"></svg>
-      <div class="tmons front" id="tMonsFront"></div>
-      <svg class="tfg2" viewBox="0 0 360 480" preserveAspectRatio="none" aria-hidden="true" id="tFg2"></svg>
+      <div class="tworld" id="tWorld">
+        <svg class="tbg" viewBox="0 0 360 480" preserveAspectRatio="none" aria-hidden="true" id="tBg"></svg>
+        <div class="tmons" id="tMons"></div>
+        <svg class="tfg" viewBox="0 0 360 480" preserveAspectRatio="none" aria-hidden="true" id="tFg"></svg>
+        <div class="tmons front" id="tMonsFront"></div>
+        <svg class="tfg2" viewBox="0 0 360 480" preserveAspectRatio="none" aria-hidden="true" id="tFg2"></svg>
+      </div>
       <div class="tdark" id="tDark"></div>
       <div class="tfound" id="tFound"></div>
+      <div class="tpan l" id="tPanL" aria-hidden="true"><svg viewBox="0 0 26 40"><path d="M19 4L6 20l13 16"/></svg></div>
+      <div class="tpan r" id="tPanR" aria-hidden="true"><svg viewBox="0 0 26 40"><path d="M7 4l13 16L7 36"/></svg></div>
     </div>
     <div class="panel win" id="tWin" hidden>
       <h2 class="h2">You found them all!</h2>
@@ -1146,6 +1164,7 @@ function openGame(id) {
 function route() {
   const h = location.hash.toLowerCase();
   if (MOVED[h]) { location.replace(learnURL(MOVED[h])); return; }
+  if (h === '#cottage') { tor.room = 'cottage'; openGame('torchgame'); return; }
   const id = Object.keys(HASHES).find(k => HASHES[k] && HASHES[k] === h);
   if (id === 'library') { renderLibrary(); show('library'); }
   else if (id === 'make') show('make');
@@ -1399,6 +1418,7 @@ const sound = (() => {
       env(g, t, .14, .04, .5); o.connect(g); g.connect(master); o.start(t); lfo.start(t); o.stop(t + .55); lfo.stop(t + .55);
     },
     giggle() { [0, .1, .2, .3].forEach((at, i) => tone({ f0: 700 + i * 60, f1: 900 + i * 60, dur: .08, vol: .07, at: .45 + at })); },
+    peep(v) { [0, .09].forEach((at, i) => tone({ f0: 760 + i * 90, f1: 980 + i * 90, dur: .06, vol: .012 + .045 * v, at })); },   // a little giggle from the dark
     whoosh() { hiss({ dur: .6, f0: 300, f1: 1800, q: .6, vol: .08, attack: .15 }); [659.25, 880, 1318.5].forEach((f, i) => tone({ f0: f, dur: .5, vol: .05, at: .35 + i * .08 })); },
     chime() { [784, 1046.5, 1318.5].forEach((f, i) => tone({ f0: f, dur: .35, vol: .06, at: i * .07 })); },
     out() { const c = ac(); return c ? { ctx: c, master } : null; },   // for the recorded voices in Letters
@@ -1650,8 +1670,8 @@ function goodMorning() {
 }
 
 // ------------------------------------------------------------- torch hunt -
-// The room is drawn twice: the wall and floor behind the monsters, the furniture in front, so a
-// monster peeks over the couch or out of the toy box. A dark layer on top has a hole where the torch is.
+// Each room is drawn in three layers: the wall and floor behind the monsters, the furniture in front, and a front
+// layer, so a monster peeks over the couch or out of the toy box. A dark layer on top has a hole where the torch is.
 const T_BG = `<rect width="360" height="300" fill="#EBDDF4"/>
   <g fill="#E1CFEE">${Array.from({ length: 12 }, (_, i) => `<rect x="${i * 30 + 8}" y="0" width="13" height="300"/>`).join('')}</g>
   <rect y="300" width="360" height="180" fill="#C99A6B"/>
@@ -1694,24 +1714,173 @@ const T_FG2 = `<g stroke="#3A2852" stroke-width="4" stroke-linejoin="round">
   <rect x="122" y="398" width="90" height="12" rx="4" fill="#F4882C"/>
   <path d="M167 418l5 10 11 1-8 7 3 11-11-6-10 6 3-11-8-7 11-1z" fill="#fff" stroke-width="2"/>
 </g>`;
-// where monsters can hide (centre and size in room units, 360 x 480); front: in front of the couch, behind the toy box
+// where monsters can hide (centre and size in room units; every room is 480 high); front: in front of the
+// furniture, behind the front layer; d: where it hides deeper on Tiny torch, so only part of it shows; rot: upside down
 const T_SPOTS = [
-  { x: 126, y: 300, s: 46 }, { x: 182, y: 302, s: 44 }, { x: 80, y: 410, s: 32 }, { x: 300, y: 250, s: 40 },
-  { x: 300, y: 406, s: 32 }, { x: 167, y: 394, s: 46, front: true }, { x: 114, y: 424, s: 34, front: true }, { x: 296, y: 134, s: 44 },
-  { x: 220, y: 190, s: 40 }, { x: 58, y: 102, s: 44 }, { x: 108, y: 232, s: 40 }, { x: 178, y: 66, s: 32 },
+  { x: 126, y: 300, s: 46, d: [0, 5] }, { x: 182, y: 302, s: 44, d: [0, 5] }, { x: 80, y: 410, s: 32, d: [0, -4] }, { x: 300, y: 250, s: 40, d: [0, 5] },
+  { x: 300, y: 406, s: 32, d: [0, -3] }, { x: 167, y: 394, s: 46, front: true, d: [0, 5] }, { x: 114, y: 424, s: 34, front: true, d: [4, 0] }, { x: 296, y: 134, s: 44 },
+  { x: 220, y: 190, s: 40 }, { x: 58, y: 102, s: 44, d: [0, 5] }, { x: 108, y: 232, s: 40, d: [-4, 0] }, { x: 178, y: 66, s: 32, d: [-3, 0] },
 ];
+// The witch's cottage is twice as wide as the screen (720 x 480): the room slides along when the torch nears an edge.
+// Left to right: the fireplace with the cauldron, the hat on its hook and the broom, the spell-book case, the window
+// over the table, the black cat, the rocking chair and the cupboard, with herbs hanging from the beam.
+const C_BG = `<rect width="720" height="300" fill="#5E4E93"/>
+  <g fill="#6B5BA2">${Array.from({ length: 9 }, (_, r) => Array.from({ length: 13 }, (_, i) => `<rect x="${i * 60 - (r % 2) * 30 - 4}" y="${r * 30 + 28}" width="52" height="24" rx="9"/>`).join('')).join('')}</g>
+  <rect width="720" height="24" fill="#6B4A2E"/><rect y="20" width="720" height="5" fill="#553820"/>
+  <rect y="300" width="720" height="180" fill="#9A6A44"/>
+  <g stroke="#85593A" stroke-width="2">${[334, 370, 410, 452].map(y => `<line x1="0" y1="${y}" x2="720" y2="${y}"/>`).join('')}</g>
+  <rect y="294" width="720" height="9" fill="#46386E"/>
+  <ellipse cx="430" cy="450" rx="150" ry="24" fill="#7C5CB8"/><ellipse cx="430" cy="450" rx="116" ry="15" fill="none" stroke="#A880D6" stroke-width="5"/>
+  <rect x="18" y="24" width="152" height="276" fill="#7A6A9E"/>
+  <g fill="#8A7AAE">${[0, 1, 2, 3].map(r => (r % 2 ? [[26, 18], [48, 40], [94, 40], [140, 24]] : [[26, 40], [72, 40], [118, 40]])
+      .map(([x, w]) => `<rect x="${x}" y="${r * 26 + 32}" width="${w}" height="20" rx="6"/>`).join('')).join('')}
+    ${[166, 192, 218, 244, 270].map(y => `<rect x="22" y="${y}" width="16" height="20" rx="5"/><rect x="150" y="${y}" width="16" height="20" rx="5"/>`).join('')}</g>
+  <path d="M42 300V232a52 48 0 0 1 104 0V300z" fill="#241A33"/>
+  <rect x="56" y="284" width="76" height="12" rx="6" fill="#6B4A2E"/>
+  <path d="M64 286c-6-20 8-28 10-44 8 12 16 18 12 44z M88 286c-8-26 10-38 12-58 10 16 22 26 14 58z M114 286c-4-16 6-24 8-36 6 10 12 16 8 36z" fill="#F4882C"/>
+  <path d="M74 286c-2-10 4-14 6-22 4 6 8 10 6 22z M96 286c-4-14 6-20 8-32 6 10 10 16 6 32z" fill="#F2C828"/>
+  <rect x="8" y="296" width="172" height="16" rx="4" fill="#8A7AAE" stroke="#3A2852" stroke-width="3"/>
+  <rect x="4" y="140" width="180" height="14" rx="3" fill="#8A5A36" stroke="#3A2852" stroke-width="4"/>
+  <circle cx="214" cy="132" r="5" fill="#C9A06A" stroke="#3A2852" stroke-width="3"/>
+  <rect x="240" y="80" width="92" height="220" fill="#33264D"/>
+  <path d="M352 196V100a48 48 0 0 1 96 0V196z" fill="#1E1A45"/>
+  <circle cx="424" cy="88" r="14" fill="#FFE58A"/><circle cx="418" cy="84" r="13" fill="#1E1A45"/>
+  <g fill="#fff">${[[366, 116], [384, 160], [432, 150], [372, 182], [440, 120], [410, 70]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.6"/>`).join('')}</g>
+  <path d="M366 92q6-8 12-2q4-6 8 0q6-6 12 2q-8-2-10 4q-2-4-6-4q-4 0-6 4q-2-6-10-4z" fill="#0E0B22"/>
+  <rect x="642" y="72" width="76" height="356" fill="#241C3A"/>
+  <g stroke="#3A2C55" stroke-width="4">${[150, 300].map(y => `<line x1="642" y1="${y}" x2="718" y2="${y}"/>`).join('')}</g>
+  <g stroke="#B9AEDB" stroke-width="1.5" fill="none" opacity=".8"><path d="M562 25l40 40M582 25l20 40M562 45l40 20"/><path d="M568 31q8 4 10-6M574 41q12 4 16-16M580 53q16 2 22-28"/></g>
+  <ellipse cx="95" cy="338" rx="46" ry="10" fill="#2E2440" stroke="#3A2852" stroke-width="4"/>`;
+const C_FG = `<g stroke="#3A2852" stroke-width="4" stroke-linejoin="round">
+  <rect x="14" y="122" width="20" height="18" rx="5" fill="#54A6E2"/><rect x="18" y="115" width="12" height="8" rx="2" fill="#C9A06A" stroke-width="3"/>
+  <rect x="48" y="116" width="26" height="24" rx="6" fill="#68B242"/><rect x="54" y="107" width="14" height="10" rx="2" fill="#C9A06A" stroke-width="3"/>
+  <rect x="76" y="120" width="22" height="20" rx="6" fill="#EC6AA8"/><rect x="81" y="112" width="12" height="9" rx="2" fill="#C9A06A" stroke-width="3"/>
+  <rect x="150" y="112" width="12" height="28" rx="3" fill="#FFF8EC"/><path d="M156 94c-6 8-6 14 0 18 6-4 6-10 0-18z" fill="#F2C828" stroke-width="2"/>
+  <rect x="60" y="398" width="10" height="16" rx="3" fill="#2E2440"/><rect x="120" y="398" width="10" height="16" rx="3" fill="#2E2440"/>
+  <path d="M49 338c0 46 20 70 46 70s46-24 46-70z" fill="#2E2440"/>
+  <ellipse cx="95" cy="338" rx="41" ry="7" fill="#7BD35A" stroke="none"/>
+  <path d="M49 338a46 10 0 0 0 92 0" fill="none" stroke-width="6"/>
+  <circle cx="62" cy="327" r="5" fill="#A6E98A" stroke-width="2.5"/><circle cx="130" cy="324" r="4" fill="#A6E98A" stroke-width="2.5"/><circle cx="125" cy="312" r="2.5" fill="#A6E98A" stroke-width="2"/>
+  <path d="M180 202C186 176 192 156 202 140C208 130 216 128 222 132C212 140 208 156 214 202z" fill="#4A3470"/>
+  <ellipse cx="198" cy="204" rx="35" ry="8" fill="#4A3470"/>
+  <path d="M182 192h33l1 9h-35z" fill="#A880D6" stroke-width="3"/>
+  <rect x="192" y="190" width="11" height="12" rx="2" fill="none" stroke="#F2C828" stroke-width="3"/>
+  <line x1="214" y1="236" x2="238" y2="396" stroke-width="11" stroke-linecap="round"/>
+  <line x1="214" y1="236" x2="238" y2="396" stroke="#B07A4F" stroke-width="5" stroke-linecap="round"/>
+  <path d="M226 394h26l16 58h-60z" fill="#E8B860"/>
+  <g stroke="#C8943E" stroke-width="2">${[218, 230, 242, 254].map(x => `<line x1="${x + 6}" y1="402" x2="${x}" y2="448"/>`).join('')}</g>
+  <rect x="223" y="389" width="32" height="10" rx="3" fill="#A880D6" stroke-width="3"/>
+  <rect x="228" y="70" width="112" height="12" rx="3" fill="#8A5A36"/>
+  <rect x="234" y="80" width="10" height="226" fill="#8A5A36"/><rect x="328" y="80" width="10" height="226" fill="#8A5A36"/>
+  <rect x="242" y="146" width="88" height="8" fill="#8A5A36"/><rect x="242" y="220" width="88" height="8" fill="#8A5A36"/>
+  ${[[246, 104, 12, '#EC6AA8'], [258, 98, 13, '#54A6E2'], [271, 108, 12, '#F2C828'], [283, 100, 13, '#68B242'], [296, 106, 12, '#A880D6'], [308, 96, 11, '#F4882C'], [319, 110, 8, '#EC6AA8'],
+     [246, 170, 12, '#68B242'], [258, 176, 10, '#F4882C'], [268, 166, 8, '#54A6E2'], [298, 168, 12, '#A880D6'], [310, 176, 10, '#F2C828'], [320, 172, 8, '#EC6AA8']]
+      .map(([x, y, w, c]) => `<rect x="${x}" y="${y}" width="${w}" height="${(y < 146 ? 146 : 220) - y}" rx="2" fill="${c}" stroke-width="2.5"/>`).join('')}
+  <rect x="248" y="278" width="54" height="18" rx="3" fill="#7A4E9E"/><rect x="252" y="266" width="44" height="12" rx="3" fill="#54A6E2"/>
+  <rect x="306" y="258" width="20" height="38" rx="6" fill="#CDE8F5"/>
+  ${[[312, 272], [320, 282], [313, 288]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="4" fill="#fff" stroke-width="1.5"/><circle cx="${x + 1}" cy="${y}" r="1.6" fill="#3A2852" stroke="none"/>`).join('')}
+  <rect x="230" y="296" width="112" height="12" rx="3" fill="#8A5A36"/>
+  <rect x="250" y="48" width="12" height="24" rx="4" fill="#54A6E2"/>
+  <circle cx="292" cy="62" r="10" fill="#68B242"/><rect x="288" y="44" width="8" height="10" fill="#C9A06A" stroke-width="3"/>
+  <rect x="306" y="54" width="14" height="18" rx="4" fill="#EC6AA8"/><rect x="309" y="46" width="8" height="9" fill="#C9A06A" stroke-width="3"/>
+  <path d="M352 196V100a48 48 0 0 1 96 0V196z" fill="none" stroke-width="13"/>
+  <path d="M352 196V100a48 48 0 0 1 96 0V196z" fill="none" stroke="#C9A06A" stroke-width="7"/>
+  <path d="M400 52V196M352 134H448" stroke-width="10"/><path d="M400 54V196M354 134H446" stroke="#C9A06A" stroke-width="5"/>
+  <rect x="340" y="194" width="120" height="12" rx="3" fill="#C9A06A"/>
+  <path d="M342 288H486V404${Array.from({ length: 12 }, (_, i) => `L${486 - (i + .5) * 12} 412L${486 - (i + 1) * 12} 404`).join('')}Z" fill="#A880D6"/>
+  ${[[372, 330], [420, 312], [462, 340], [396, 372], [446, 384], [358, 382]].map(([x, y]) => `<path d="M${x} ${y - 6}l2 4 4 2-4 2-2 4-2-4-4-2 4-2z" fill="#F2C828" stroke-width="1.5"/>`).join('')}
+  <ellipse cx="371" cy="288" rx="14" ry="4" fill="#C9A06A" stroke-width="3"/>
+  <rect x="364" y="256" width="14" height="32" rx="3" fill="#FFF8EC"/><path d="M371 238c-6 8-6 14 0 18 6-4 6-10 0-18z" fill="#F2C828" stroke-width="2"/>
+  <ellipse cx="444" cy="276" rx="26" ry="18" fill="#F4882C"/><ellipse cx="444" cy="276" rx="11" ry="18" fill="none" stroke="#D96A1A" stroke-width="2.5"/>
+  <path d="M432 272l5-7 5 7z M446 272l5-7 5 7z" fill="#FFD45A" stroke-width="2"/><path d="M430 281q14 12 28 0q-14 5-28 0z" fill="#FFD45A" stroke-width="2"/>
+  <path d="M520 432c26 2 32-22 16-34" fill="none" stroke-width="12" stroke-linecap="round"/>
+  <path d="M520 432c26 2 32-22 16-34" fill="none" stroke="#2A2140" stroke-width="5" stroke-linecap="round"/>
+  <ellipse cx="502" cy="420" rx="26" ry="22" fill="#2A2140"/>
+  <path d="M486 378l1-20 13 10z M516 378l-1-20-13 10z" fill="#2A2140"/>
+  <circle cx="501" cy="386" r="17" fill="#2A2140"/>
+  <ellipse cx="494" cy="386" rx="4" ry="5" fill="#C6F25A" stroke-width="1.5"/><ellipse cx="508" cy="386" rx="4" ry="5" fill="#C6F25A" stroke-width="1.5"/>
+  <path d="M494 383v6M508 383v6" stroke-width="2"/><path d="M498 395l3 2 3-2" fill="none" stroke="#EC6AA8" stroke-width="2"/>
+  <path d="M530 424c34 18 92 18 128 0" fill="none" stroke-width="13" stroke-linecap="round"/>
+  <path d="M530 424c34 18 92 18 128 0" fill="none" stroke="#8A5A36" stroke-width="6" stroke-linecap="round"/>
+  <rect x="552" y="358" width="10" height="72" fill="#8A5A36"/><rect x="626" y="358" width="10" height="72" fill="#8A5A36"/>
+  <rect x="554" y="206" width="10" height="156" rx="4" fill="#8A5A36"/><rect x="624" y="206" width="10" height="156" rx="4" fill="#8A5A36"/>
+  ${[574, 590, 606].map(x => `<rect x="${x}" y="222" width="8" height="132" rx="3" fill="#B07A4F" stroke-width="3"/>`).join('')}
+  <path d="M548 216c22-14 70-14 92 0v14c-22-12-70-12-92 0z" fill="#8A5A36"/>
+  <rect x="544" y="348" width="100" height="14" rx="4" fill="#B07A4F"/>
+  <path d="M552 346h84c6 20 4 40 0 58l-12-6-12 6-12-6-12 6-12-6-12 6-12-6c-4-18-6-38 0-52z" fill="#EC6AA8"/>
+  <path d="M556 366h76M556 384h76" stroke="#F7C6DD" stroke-width="5"/>
+  <rect x="632" y="62" width="88" height="12" rx="3" fill="#8F64B4"/>
+  <rect x="636" y="72" width="12" height="356" fill="#7A4E9E"/>
+  <path d="M668 74h54v352h-54z" fill="#8F64B4"/>
+  <rect x="678" y="94" width="32" height="140" rx="4" fill="none" stroke="#7A4E9E" stroke-width="4"/><rect x="678" y="256" width="32" height="150" rx="4" fill="none" stroke="#7A4E9E" stroke-width="4"/>
+  <circle cx="676" cy="246" r="5" fill="#F2C828" stroke-width="3"/>
+  <rect x="634" y="424" width="88" height="12" rx="3" fill="#8F64B4"/>
+  <rect x="674" y="42" width="22" height="22" rx="6" fill="#A6E98A"/><rect x="679" y="35" width="12" height="8" fill="#C9A06A" stroke-width="3"/>
+  ${[[480, 8], [517, 5], [556, 8]].map(([c, k]) => `<line x1="${c}" y1="24" x2="${c}" y2="36" stroke-width="2.5"/>
+    <ellipse cx="${c - k}" cy="54" rx="5" ry="16" fill="#5AA03A" stroke-width="2.5" transform="rotate(14 ${c - k} 54)"/>
+    <ellipse cx="${c + k}" cy="54" rx="5" ry="16" fill="#5AA03A" stroke-width="2.5" transform="rotate(-14 ${c + k} 54)"/>
+    <ellipse cx="${c}" cy="57" rx="5" ry="17" fill="#7BC24E" stroke-width="2.5"/>
+    <rect x="${c - 7}" y="34" width="14" height="7" rx="2" fill="#B07A4F" stroke-width="2.5"/>`).join('')}
+</g>`;
+const C_FG2 = `<g stroke="#3A2852" stroke-width="4" stroke-linejoin="round">
+  <rect x="282" y="420" width="70" height="50" rx="6" fill="#B07A4F"/>
+  <rect x="278" y="412" width="78" height="14" rx="5" fill="#8A5A36"/>
+  <rect x="296" y="426" width="8" height="44" fill="#C9A06A" stroke-width="2.5"/><rect x="330" y="426" width="8" height="44" fill="#C9A06A" stroke-width="2.5"/>
+  <path d="M317 438a10 10 0 1 0 6 18a8 8 0 1 1-6-18z" fill="#F2C828" stroke-width="2"/>
+  <ellipse cx="652" cy="458" rx="22" ry="16" fill="#F4882C"/><ellipse cx="694" cy="460" rx="20" ry="14" fill="#F59A3C"/><ellipse cx="674" cy="440" rx="17" ry="13" fill="#F4882C"/>
+  <path d="M652 443v30M694 447v26M674 428v24" stroke="#D96A1A" stroke-width="2.5"/>
+  <rect x="670" y="422" width="7" height="8" rx="2" fill="#68B242" stroke-width="2.5"/>
+  <rect x="150" y="452" width="46" height="16" rx="3" fill="#7A4E9E"/><path d="M156 457h34" stroke="#F2C828" stroke-width="2"/>
+</g>`;
+const C_SPOTS = [
+  { x: 95, y: 328, s: 44, d: [0, 5] },                // in the cauldron
+  { x: 72, y: 118, s: 40, d: [0, 5] },                // on the mantelpiece, behind the jars
+  { x: 262, y: 420, s: 38, d: [-5, 0] },              // behind the broom
+  { x: 198, y: 214, s: 34, d: [0, -4] },               // under the hat on its hook
+  { x: 287, y: 190, s: 36 },                           // between the spell books
+  { x: 300, y: 62, s: 34, d: [0, 5] },                // on top of the bookcase
+  { x: 400, y: 128, s: 44 },                           // at the window
+  { x: 414, y: 418, s: 40, d: [0, -5] },              // under the tablecloth
+  { x: 444, y: 260, s: 34, d: [0, 5] },               // behind the jack-o'-lantern
+  { x: 524, y: 396, s: 38, d: [-4, 3] },               // behind the cat
+  { x: 590, y: 410, s: 34, d: [0, -4] },               // under the rocking chair
+  { x: 594, y: 204, s: 40, d: [0, 5] },               // over the back of the rocking chair
+  { x: 660, y: 226, s: 40, d: [3, 0] },                // in the gap by the cupboard door
+  { x: 696, y: 52, s: 30, d: [0, 4] },                 // on top of the cupboard
+  { x: 517, y: 52, s: 30, rot: 180, d: [0, -3] },      // hanging upside down in the herbs
+  { x: 676, y: 420, s: 38, front: true, d: [0, 4] },  // behind the pumpkins
+  { x: 316, y: 414, s: 42, front: true, d: [0, 5] },  // in the chest
+];
+const ROOMS = {
+  bedroom: { name: 'Bedroom', sub: 'Small and cosy', w: 360, bg: T_BG, fg: T_FG, fg2: T_FG2, spots: T_SPOTS, counts: [3, 5, 8, 10], place: 'the bedroom',
+    lede: "It's dark! Drag your finger to shine the torch and find the monsters hiding in the bedroom." },
+  cottage: { name: "Witch's cottage", sub: 'Big and spooky', w: 720, bg: C_BG, fg: C_FG, fg2: C_FG2, spots: C_SPOTS, counts: [4, 7, 10, 12], place: "the witch's cottage",
+    lede: "It's dark in the witch's cottage! Drag your finger to shine the torch, and take it to the edge to see the rest of the room." },
+};
+// want: that many monsters are shown in the tray first, to find by face; peep: a giggle from the dark when the torch is close
 const TLEVELS = [
-  { name: 'Easy', sub: '3 monsters', n: 3, r: .25, s: 1 },
-  { name: 'Medium', sub: '5 monsters', n: 5, r: .2, s: .95 },
-  { name: 'Hard', sub: '8 monsters', n: 8, r: .16, s: .8 },
+  { name: 'Easy', r: .25, s: 1 },
+  { name: 'Medium', r: .2, s: .95 },
+  { name: 'Hard', r: .16, s: .8, want: 3, peep: true },
+  { name: 'Tiny torch', r: .11, s: .8, want: 3, peep: true, deep: true },
 ];
-const tor = { level: 0, hidden: [], found: 0, x: .5, y: .55, timer: null, running: false, moved: false };
+const T_ROOM_KEY = 'monster-book.torchRoom', T_EDGE = .17;
+const tor = { room: 'bedroom', drawn: '', level: 0, hidden: [], want: [], found: 0, others: 0, x: .5, y: .55, cam: 0,
+  active: false, timer: null, raf: 0, last: 0, running: false, moved: false, peep: 0 };
+try { const r = localStorage.getItem(T_ROOM_KEY); if (ROOMS[r]) tor.room = r; } catch (e) {}
+const tRoomDef = () => ROOMS[tor.room];
 function buildTorch() {
-  $('tBg').innerHTML = T_BG; $('tFg').innerHTML = T_FG; $('tFg2').innerHTML = T_FG2;
+  const rooms = $('tRooms'); rooms.textContent = '';
+  Object.entries(ROOMS).forEach(([id, R]) => {
+    const b = document.createElement('button'); b.className = 'level'; b.type = 'button'; b.dataset.room = id;
+    b.innerHTML = '<span></span><small></small>'; b.firstChild.textContent = R.name; b.lastChild.textContent = R.sub;
+    b.addEventListener('click', () => { tor.room = id; try { localStorage.setItem(T_ROOM_KEY, id); } catch (e) {} newTorch(); });
+    rooms.append(b);
+  });
   const lv = $('tLevels'); lv.textContent = '';
   TLEVELS.forEach((L, i) => {
     const b = document.createElement('button'); b.className = 'level'; b.type = 'button';
-    b.innerHTML = '<span></span><small></small>'; b.firstChild.textContent = L.name; b.lastChild.textContent = L.sub;
+    b.innerHTML = '<span></span><small></small>'; b.firstChild.textContent = L.name;
     b.addEventListener('click', () => { tor.level = i; newTorch(); });
     lv.append(b);
   });
@@ -1720,40 +1889,85 @@ function buildTorch() {
     const r = room.getBoundingClientRect();
     tor.x = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
     tor.y = Math.min(1, Math.max(0, (e.clientY - r.top) / r.height));
+    tor.active = true;
     if (!tor.moved) { tor.moved = true; const h = room.querySelector('.hint'); if (h) h.style.opacity = '0'; }
-    drawTorch(); checkTorch();
+    drawTorch(); checkTorch(); panTorch();
   };
+  // a finger pans while it's down; a mouse pans while it's over the room
+  const off = e => { if (e.type === 'pointerleave' || e.pointerType !== 'mouse') tor.active = false; };
   room.addEventListener('pointerdown', e => { sound.unlock(); room.setPointerCapture?.(e.pointerId); move(e); });
   room.addEventListener('pointermove', move);
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(t => room.addEventListener(t, off));
   addEventListener('resize', () => { if (!$('torchgame').hidden) drawTorch(); });
 }
+function torchView() {   // the room's size on screen, and how far it has slid along (px)
+  const room = $('tRoom'), w = room.clientWidth, h = room.clientHeight, ww = w * tRoomDef().w / 360;
+  return { w, h, ww, cam: tor.cam * (ww - w) };
+}
 function drawTorch() {
-  const room = $('tRoom'), w = room.clientWidth, h = room.clientHeight;
-  const R = TLEVELS[tor.level].r * w, x = tor.x * w, y = tor.y * h;
-  $('tDark').style.background = `radial-gradient(circle at ${x}px ${y}px, rgba(255, 232, 160, .10) 0, rgba(255, 232, 160, .06) ${R * .62}px, rgba(10, 8, 30, .96) ${R}px)`;
+  const V = torchView(), R = tRoomDef();
+  for (const id of ['tWorld', 'tFound']) { const el = $(id); el.style.width = `${R.w / 3.6}%`; el.style.transform = `translateX(${-V.cam}px)`; }
+  const r = TLEVELS[tor.level].r * V.w, x = tor.x * V.w, y = tor.y * V.h;
+  $('tDark').style.background = `radial-gradient(circle at ${x}px ${y}px, rgba(255, 232, 160, .10) 0, rgba(255, 232, 160, .06) ${r * .62}px, rgba(10, 8, 30, .96) ${r}px)`;
+  $('tPanL').classList.toggle('on', R.w > 360 && tor.cam > .01);
+  $('tPanR').classList.toggle('on', R.w > 360 && tor.cam < .99);
+}
+function panTorch() {   // near an edge, the room slides along: faster the closer to the edge
+  if (tor.raf || tRoomDef().w <= 360) return;
+  tor.last = performance.now();
+  const step = now => {
+    tor.raf = 0;
+    if ($('torchgame').hidden || !tor.active) return;
+    const dt = Math.min(.05, (now - tor.last) / 1000); tor.last = now;
+    const depth = tor.x > 1 - T_EDGE ? (tor.x - 1 + T_EDGE) / T_EDGE : tor.x < T_EDGE ? -(T_EDGE - tor.x) / T_EDGE : 0;
+    if (depth) {
+      const before = tor.cam;
+      tor.cam = Math.min(1, Math.max(0, tor.cam + Math.sign(depth) * (.35 + .75 * Math.abs(depth)) * dt));
+      if (tor.cam !== before) { drawTorch(); checkTorch(); }
+    }
+    tor.raf = requestAnimationFrame(step);
+  };
+  tor.raf = requestAnimationFrame(step);
 }
 function stopTorch() { clearInterval(tor.timer); tor.timer = null; tor.running = false; }
+function applyRoom() {
+  const R = tRoomDef();
+  if (tor.drawn !== tor.room) {
+    tor.drawn = tor.room;
+    [['tBg', R.bg], ['tFg', R.fg], ['tFg2', R.fg2]].forEach(([id, art]) => { const s = $(id); s.setAttribute('viewBox', `0 0 ${R.w} 480`); s.innerHTML = art; });
+    $('tLede').textContent = R.lede;
+  }
+  document.querySelectorAll('#tRooms .level').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.room === tor.room)));
+  document.querySelectorAll('#tLevels .level small').forEach((s, i) => { s.textContent = `${R.counts[i]} monsters`; });
+}
 function newTorch() {
-  stopTorch();
-  const L = TLEVELS[tor.level];
+  stopTorch(); applyRoom();
+  const R = tRoomDef(), L = TLEVELS[tor.level], n = R.counts[tor.level];
   document.querySelectorAll('#tLevels .level').forEach((b, i) => b.setAttribute('aria-pressed', String(i === tor.level)));
   const room = $('tRoom'); room.classList.remove('lit');
   $('tMons').textContent = ''; $('tMonsFront').textContent = ''; $('tFound').textContent = ''; $('tWin').hidden = true;
   room.querySelector('.hint')?.remove();
   const hint = document.createElement('div'); hint.className = 'hint'; hint.textContent = 'Drag to shine the torch'; room.append(hint);
-  const spots = shuffleArr([...T_SPOTS]).slice(0, L.n);
-  const faces = shuffleArr([...Array(N).keys()].map(i => i + 1)).slice(0, L.n);
+  const spots = shuffleArr([...R.spots]).slice(0, n);
+  const faces = shuffleArr([...Array(N).keys()].map(i => i + 1)).slice(0, n);
   tor.hidden = spots.map((sp, i) => {
+    const deep = !!(L.deep && sp.d && i % 2 === 0);   // on Tiny torch every other monster hides deeper, so only part of it shows
+    const x = sp.x + (deep ? sp.d[0] : 0), y = sp.y + (deep ? sp.d[1] : 0), size = sp.s * L.s;
     const img = new Image(); img.alt = ''; img.draggable = false; img.src = `faces/F${pad(faces[i])}.webp`;
-    const size = sp.s * L.s;
-    Object.assign(img.style, { left: `${sp.x / 3.6}%`, top: `${sp.y / 4.8}%`, width: `${size / 3.6}%` });
+    Object.assign(img.style, { left: `${x / R.w * 100}%`, top: `${y / 4.8}%`, width: `${size / R.w * 100}%` });
+    if (sp.rot) img.style.rotate = `${sp.rot}deg`;
     (sp.front ? $('tMonsFront') : $('tMons')).append(img);
-    return { el: img, n: faces[i], x: sp.x / 360, y: sp.y / 480, size, found: false, litSince: 0 };
+    return { el: img, n: faces[i], x: x / R.w, y: y / 480, size, deep, found: false, litSince: 0 };
   });
+  tor.want = L.want ? tor.hidden.slice(0, L.want) : [];
   const tray = $('tTray'); tray.textContent = '';
-  tor.hidden.forEach(() => tray.append(document.createElement('span')));
-  tor.found = 0; tor.x = .5; tor.y = .55; tor.moved = false; tor.running = true;
-  room.setAttribute('aria-label', `A dark bedroom with ${L.n} monsters hiding. Drag to move the torch.`);
+  tor.hidden.forEach((m, i) => {
+    const slot = document.createElement('span');
+    if (i < tor.want.length) { slot.className = 'want'; const im = new Image(); im.alt = `Find ${mon(m.n).name}`; im.src = m.el.src; slot.append(im); }
+    tray.append(slot);
+  });
+  tor.found = 0; tor.others = 0; tor.x = .5; tor.y = .55; tor.cam = 0; tor.moved = false; tor.running = true; tor.peep = 0;
+  room.setAttribute('aria-label', `${R.place[0].toUpperCase()}${R.place.slice(1)}, dark, with ${n} monsters hiding. Drag to move the torch${R.w > 360 ? ', and to the edge to see more of the room' : ''}.`);
   drawTorch();
   tor.timer = setInterval(checkTorch, 90);   // a torch held still still finds things
   // bring the whole room into view (the instructions sit above it)
@@ -1761,31 +1975,36 @@ function newTorch() {
 }
 function checkTorch() {
   if (!tor.running || !tor.moved) return;   // nothing counts until she starts moving the torch
-  const room = $('tRoom'), w = room.clientWidth, h = room.clientHeight, R = TLEVELS[tor.level].r * w, now = performance.now();
+  const V = torchView(), L = TLEVELS[tor.level], R = L.r * V.w, now = performance.now(), tx = tor.x * V.w, ty = tor.y * V.h;
+  let near = Infinity;
   for (const m of tor.hidden) {
     if (m.found) continue;
-    const d = Math.hypot((m.x - tor.x) * w, (m.y - tor.y) * h);
+    const d = Math.hypot(m.x * V.ww - V.cam - tx, m.y * V.h - ty);
     if (d < R * .6) {
       if (!m.litSince) m.litSince = now;
       else if (now - m.litSince > 180) foundTorch(m);
-    } else m.litSince = 0;
+    } else { m.litSince = 0; near = Math.min(near, d); }
   }
+  // on the harder levels a monster giggles when the torch gets close: quiet and slow when warm, louder and quicker when nearly there
+  const zone = R * 1.8;
+  if (L.peep && tor.running && near < zone && now - tor.peep > 450 + 1100 * (near / zone)) { tor.peep = now; sound.peep(1 - near / zone); }
 }
 function foundTorch(m) {
   m.found = true; tor.found++;
   m.el.remove();
   const pop = new Image(); pop.alt = mon(m.n).name; pop.src = m.el.src;
-  Object.assign(pop.style, { left: m.el.style.left, top: m.el.style.top, width: m.el.style.width });
+  Object.assign(pop.style, { left: m.el.style.left, top: m.el.style.top, width: m.el.style.width, rotate: m.el.style.rotate });
   $('tFound').append(pop);
   sound.boo(); sound.giggle();
-  const slot = $('tTray').children[tor.found - 1];
-  if (slot) { slot.className = 'got'; const i = new Image(); i.alt = mon(m.n).name; i.src = m.el.src; slot.append(i); }
+  const w = tor.want.indexOf(m);   // one of the faces she was looking for fills its own slot; anyone else fills the next free one
+  const slot = $('tTray').children[w >= 0 ? w : tor.want.length + tor.others++];
+  if (slot) { slot.className = 'got'; slot.textContent = ''; const i = new Image(); i.alt = mon(m.n).name; i.src = m.el.src; slot.append(i); }
   if (tor.found === tor.hidden.length) {
     stopTorch();
     setTimeout(() => {
       if ($('torchgame').hidden) return;
       $('tRoom').classList.add('lit'); sound.morning();
-      $('tWinText').textContent = `All ${tor.hidden.length} monsters found. Lights on!`;
+      $('tWinText').textContent = `All ${tor.hidden.length} monsters found in ${tRoomDef().place}. Lights on!`;
       $('tWin').hidden = false;
     }, 900);
   }
