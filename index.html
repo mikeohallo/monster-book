@@ -445,6 +445,43 @@ button { cursor: pointer; }
 .troom .hint { position: absolute; z-index: 7; left: 50%; bottom: 14px; translate: -50% 0; color: #FFF3C4; font-family: var(--font-display); font-weight: 600; font-size: 17px; pointer-events: none; transition: opacity .4s; text-shadow: 0 2px 6px rgba(0,0,0,.6); white-space: nowrap; }
 @media (prefers-reduced-motion: reduce) { .tfound img, .tray span.got, .tpan.on svg { animation: none; } .tdark { transition: none; } }
 
+/* ---------- witch's cauldron ---------- */
+.gpic.cauldronpic { background: #2E2660; display: grid; place-items: center; }
+.gpic.cauldronpic svg { width: 86px; height: 86px; }
+.cdstage { position: relative; width: 100%; max-width: 520px; margin: 0 auto; aspect-ratio: 360 / 320; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); background: #3D3270; }
+.cdstage > svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.cdbg { z-index: 0; }
+.cdfg { z-index: 2; pointer-events: none; }
+.cdmon { position: absolute; z-index: 1; left: 50%; bottom: 47%; height: 50%; translate: -50% 0; pointer-events: none; }
+.cdmon canvas { display: block; height: 100%; width: auto; filter: drop-shadow(0 0 12px rgba(166, 233, 138, .55)); }
+.cdfx { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+.cddrop { position: absolute; left: 42%; top: 0; width: 16%; }
+.cddrop svg { display: block; width: 100%; height: auto; }
+.cdsplash, .cdpuff { position: absolute; left: 50%; top: 51%; border-radius: 50%; translate: -50% -50%; }
+.cdsplash { width: 14px; height: 14px; border: 2.5px solid #3A2852; }
+.cdpuff { width: 46px; height: 46px; background: #F4EFFF; opacity: 0; }
+.cdb { transform-box: fill-box; transform-origin: center; animation: cdbub 2.2s ease-in infinite; }
+.cdstage.stirring .cdb { animation-duration: .6s; }
+@keyframes cdbub { 0% { transform: translateY(0) scale(.6); opacity: 0; } 30% { opacity: 1; } 100% { transform: translateY(-26px) scale(1.1); opacity: 0; } }
+#cdSpoon { transition: opacity .3s; transform-origin: 214px 170px; }
+.cdstage.stirring #cdSpoon { animation: cdstir .5s ease-in-out infinite alternate; }
+@keyframes cdstir { from { transform: translateX(-70px) rotate(-14deg); } to { transform: translateX(0) rotate(8deg); } }
+.cdpot { display: flex; justify-content: center; gap: 10px; min-height: 56px; }
+.cdpot span { width: 54px; height: 54px; border-radius: 50%; border: 2.5px dashed var(--line); background: var(--card); display: grid; place-items: center; }
+.cdpot span.got { border: 2.5px solid var(--purple); background: #F3ECFB; animation: bounce .5s ease; }
+.cdpot svg { width: 40px; height: 40px; }
+.cdhint { margin: 0; text-align: center; color: var(--ink-soft); font-weight: 800; font-size: 15px; min-height: 1.3em; }
+.cdshelf { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.cding { border: 2px solid var(--line); border-radius: 16px; background: var(--card); padding: 8px 4px 6px; display: grid; justify-items: center; gap: 2px; min-height: 92px;
+  font-family: var(--font-body); font-weight: 800; font-size: 14px; color: var(--ink); box-shadow: var(--shadow); }
+.cding svg { width: 54px; height: 54px; }
+.cding:disabled { opacity: .45; }
+.cding:not(:disabled):active { transform: scale(.95); }
+#cdStir.ready { animation: cdready 1.3s ease-in-out infinite; }
+@keyframes cdready { 0%, 100% { scale: 1; } 50% { scale: 1.04; } }
+.cdsecrets { margin: 0; text-align: center; color: var(--ink-soft); font-weight: 800; font-size: 13px; }
+@media (prefers-reduced-motion: reduce) { .cdb, .cdstage.stirring #cdSpoon, #cdStir.ready, .cdpot span.got { animation: none; } }
+
 /* ---------- pumpkin face maker ---------- */
 .pkstage { border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; background: #FFF3DC; transition: background .6s; touch-action: manipulation; }
 .pkstage.lit { background: #1B1638; }
@@ -596,6 +633,9 @@ button { cursor: pointer; }
       <button class="gametile" id="playTorch" type="button">
         <span class="gpic torchpic" aria-hidden="true"><img src="faces/F26.webp" alt=""><span class="beam"></span></span>
         <span><b>Torch hunt</b><small>Shine the torch in the bedroom or the witch's cottage</small></span></button>
+      <button class="gametile" id="playCauldron" type="button">
+        <span class="gpic cauldronpic" aria-hidden="true"><svg viewBox="0 0 100 100"><g stroke="#3A2852" stroke-width="3" stroke-linejoin="round"><path d="M38 34C42 22 47 13 55 7c4-3 8-2 10 1-5 3-7 11-2 26z" fill="#4A3470"/><ellipse cx="51" cy="35" rx="19" ry="4.5" fill="#4A3470"/><ellipse cx="50" cy="56" rx="34" ry="8" fill="#2E2440"/><ellipse cx="50" cy="57" rx="30" ry="5.5" fill="#7BD35A" stroke="none"/><path d="M16 56c0 26 14 36 34 36s34-10 34-36" fill="#2E2440"/><path d="M16 56a34 8 0 0 0 68 0" fill="none" stroke-width="4"/><circle cx="34" cy="48" r="4" fill="#A6E98A" stroke-width="2"/><circle cx="68" cy="46" r="3" fill="#A6E98A" stroke-width="2"/></g></svg></span>
+        <span><b>Witch's cauldron</b><small>Brew a potion and see who climbs out</small></span></button>
       <button class="gametile" id="playPumpkin" type="button">
         <span class="gpic pumpkinpic" aria-hidden="true"><svg viewBox="0 0 100 100"><path d="M47 22c-1-6 1-11 6-14l4 3c-4 3-5 7-4 11z" fill="#6B8E3A" stroke="#3A2852" stroke-width="2.5" stroke-linejoin="round"/><ellipse cx="34" cy="58" rx="24" ry="33" fill="#E06C1A" stroke="#3A2852" stroke-width="3"/><ellipse cx="66" cy="58" rx="24" ry="33" fill="#E06C1A" stroke="#3A2852" stroke-width="3"/><ellipse cx="50" cy="58" rx="22" ry="36" fill="#F4882C" stroke="#3A2852" stroke-width="3"/><path d="M30 44l8 12H22zM70 44l8 12H62z" fill="#FFD85C"/><path d="M28 66q22 20 44 0q-22 9-44 0z" fill="#FFD85C"/></svg></span>
         <span><b>Pumpkin face maker</b><small>Make a jack-o'-lantern, then print a stencil to carve</small></span></button>
@@ -707,6 +747,33 @@ button { cursor: pointer; }
     <p class="mkhint" id="mkHint">Prints on A4 at real size. Card or thick paper is best.</p>
     <h2 class="h2">Pick a monster</h2>
     <div class="mkpick" id="mkPick" role="group" aria-label="Monsters"></div>
+  </section>
+
+  <!-- WITCH'S CAULDRON -->
+  <section id="cauldrongame" class="stack" hidden aria-label="Witch's cauldron">
+    <div class="gamebar"><button class="back" type="button" data-go="games"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>All games</button><button class="mute" type="button"></button></div>
+    <div class="panel">
+      <h2 class="h2">Witch's cauldron</h2>
+      <p class="lede">Drop three things into the cauldron, give it a stir, and see who climbs out!</p>
+    </div>
+    <div class="cdstage" id="cdStage">
+      <svg class="cdbg" viewBox="0 0 360 320" aria-hidden="true" id="cdBg"></svg>
+      <div class="cdmon" id="cdMon"></div>
+      <svg class="cdfg" viewBox="0 0 360 320" aria-hidden="true" id="cdFg"></svg>
+      <div class="cdfx" id="cdFx"></div>
+    </div>
+    <div class="cdpot" id="cdPot" role="group" aria-label="In the pot"></div>
+    <p class="cdhint" id="cdHint" aria-live="polite"></p>
+    <div class="cdshelf" id="cdShelf" role="group" aria-label="Things to drop in"></div>
+    <button class="btn primary" id="cdStir" type="button" disabled>Stir the pot</button>
+    <div class="panel win" id="cdDone" hidden>
+      <h2 class="h2" id="cdTitle"></h2>
+      <p class="lede" id="cdText"></p>
+      <button class="btn primary" id="cdMeet" type="button">Meet your monster</button>
+      <button class="btn quiet" id="cdAgain" type="button">Brew another</button>
+    </div>
+    <button class="btn quiet" id="cdEmpty" type="button">Empty the pot</button>
+    <p class="cdsecrets" id="cdSecrets"></p>
   </section>
 
   <section id="pumpkingame" class="stack" hidden aria-label="Pumpkin face maker">
@@ -1126,9 +1193,9 @@ async function renderCard(rec) {
 }
 
 // ------------------------------------------------------------- screens ---
-const screens = ['make', 'meet', 'card', 'games', 'matchgame', 'whackgame', 'bedgame', 'torchgame', 'pumpkingame', 'maskgame', 'library'];
-const GAME_SCREENS = ['games', 'matchgame', 'whackgame', 'bedgame', 'torchgame', 'pumpkingame', 'maskgame'];
-const HASHES = { make: '#make', games: '', matchgame: '#match', whackgame: '#whack', bedgame: '#bedtime', torchgame: '#torch', pumpkingame: '#pumpkin', maskgame: '#masks', library: '#monsters' };
+const screens = ['make', 'meet', 'card', 'games', 'matchgame', 'whackgame', 'bedgame', 'torchgame', 'cauldrongame', 'pumpkingame', 'maskgame', 'library'];
+const GAME_SCREENS = ['games', 'matchgame', 'whackgame', 'bedgame', 'torchgame', 'cauldrongame', 'pumpkingame', 'maskgame'];
+const HASHES = { make: '#make', games: '', matchgame: '#match', whackgame: '#whack', bedgame: '#bedtime', torchgame: '#torch', cauldrongame: '#cauldron', pumpkingame: '#pumpkin', maskgame: '#masks', library: '#monsters' };
 // Letters and the Numbers games moved to the Learning Lab; old links (and home-screen icons) go there
 const MOVED = { '#letters': '#letters', '#count': '#count', '#quick': '#quick' };
 function learnURL(hash) {
@@ -1156,6 +1223,7 @@ function openGame(id) {
   else if (id === 'whackgame') { show('whackgame'); resetWhack(); }
   else if (id === 'bedgame') openBedtime();
   else if (id === 'torchgame') { show('torchgame'); newTorch(); }
+  else if (id === 'cauldrongame') { show('cauldrongame'); openCauldron(); }
   else if (id === 'pumpkingame') { show('pumpkingame'); drawPumpkin(); }
   else if (id === 'maskgame') openMasks();
   else { show('games'); drawMakeTile(); }
@@ -1418,6 +1486,8 @@ const sound = (() => {
       env(g, t, .14, .04, .5); o.connect(g); g.connect(master); o.start(t); lfo.start(t); o.stop(t + .55); lfo.stop(t + .55);
     },
     giggle() { [0, .1, .2, .3].forEach((at, i) => tone({ f0: 700 + i * 60, f1: 900 + i * 60, dur: .08, vol: .07, at: .45 + at })); },
+    plop() { tone({ f0: 560, f1: 150, dur: .17, vol: .12 }); hiss({ dur: .12, f0: 900, q: 1.5, vol: .03, at: .03 }); },   // something drops into the potion
+    bubble() { [0, .14, .3, .45, .62, .8, 1, 1.2].forEach((at, i) => tone({ f0: 260 + (i % 3) * 60, f1: 640 + (i % 4) * 70, dur: .07, vol: .05, at })); },
     peep(v) { [0, .09].forEach((at, i) => tone({ f0: 760 + i * 90, f1: 980 + i * 90, dur: .06, vol: .012 + .045 * v, at })); },   // a little giggle from the dark
     whoosh() { hiss({ dur: .6, f0: 300, f1: 1800, q: .6, vol: .08, attack: .15 }); [659.25, 880, 1318.5].forEach((f, i) => tone({ f0: f, dur: .5, vol: .05, at: .35 + i * .08 })); },
     chime() { [784, 1046.5, 1318.5].forEach((f, i) => tone({ f0: f, dur: .35, vol: .06, at: i * .07 })); },
@@ -2010,6 +2080,213 @@ function foundTorch(m) {
   }
 }
 
+// ------------------------------------------------------------- witch's cauldron -
+// Tap three ingredients into the pot, stir, and a monster climbs out wearing a witch's hat. The three ingredients
+// (in any order) pick its head, body and legs, so the same three always make the same monster; three the same make
+// one of six secret whole monsters from the book.
+const CD_ING = [
+  { id: 'frog', name: 'Frog', colour: '#68B242', secret: 10,
+    art: `<ellipse cx="32" cy="40" rx="22" ry="15" fill="#68B242"/><circle cx="21" cy="25" r="8" fill="#68B242"/><circle cx="43" cy="25" r="8" fill="#68B242"/>
+      <circle cx="21" cy="25" r="4" fill="#fff" stroke-width="2"/><circle cx="43" cy="25" r="4" fill="#fff" stroke-width="2"/><circle cx="22" cy="26" r="1.8" fill="#3A2852" stroke="none"/><circle cx="44" cy="26" r="1.8" fill="#3A2852" stroke="none"/>
+      <path d="M20 42q12 9 24 0" fill="none" stroke-width="3"/><circle cx="17" cy="38" r="2.5" fill="#EC6AA8" stroke="none"/><circle cx="47" cy="38" r="2.5" fill="#EC6AA8" stroke="none"/>` },
+  { id: 'bat', name: 'Bat wing', colour: '#8F64B4', secret: 14,
+    art: `<path d="M6 40C12 22 24 14 32 12c2 9 8 13 16 11 2 6 8 9 10 13-8 0-12 4-14 10-6-4-12-2-16 4-4-6-12-10-24-10z" fill="#4A3470"/><path d="M32 12c-2 10-6 20-12 28M32 12c2 10 2 22 0 34" fill="none" stroke="#8F64B4" stroke-width="2"/>` },
+  { id: 'spider', name: 'Spider', colour: '#4A4466', secret: 5,
+    art: `<g fill="none" stroke-width="3" stroke-linecap="round">${[-1, 1].map(s => [[14, -10], [16, 0], [15, 10], [12, 18]].map(([dx, dy]) => `<path d="M32 36q${s * dx * .6} ${dy - 8} ${s * dx * 1.6} ${dy}"/>`).join('')).join('')}</g>
+      <ellipse cx="32" cy="38" rx="11" ry="12" fill="#2A2140"/><circle cx="32" cy="23" r="7" fill="#2A2140"/>
+      <circle cx="29" cy="22" r="2.2" fill="#fff" stroke="none"/><circle cx="35" cy="22" r="2.2" fill="#fff" stroke="none"/>` },
+  { id: 'star', name: 'Star', colour: '#F2C828', secret: 1,
+    art: `<path d="M32 6l7 15 16 2-12 11 3 16-14-8-14 8 3-16-12-11 16-2z" fill="#F2C828"/><path d="M32 16l3 7 7 1" fill="none" stroke="#FFF3C4" stroke-width="2.5" stroke-linecap="round"/>` },
+  { id: 'slime', name: 'Slime', colour: '#A6E98A', secret: 27,
+    art: `<path d="M10 36c0-14 10-24 22-24s22 10 22 24c0 6-3 8-6 8v6a4 4 0 0 1-8 0v-6h-4v10a4 4 0 0 1-8 0V44h-4v4a4 4 0 0 1-8 0v-4c-3 0-6-2-6-8z" fill="#7BD35A"/><ellipse cx="24" cy="24" rx="5" ry="3" fill="#C8F5B0" stroke="none" transform="rotate(-30 24 24)"/>` },
+  { id: 'mushroom', name: 'Mushroom', colour: '#EC6AA8', secret: 16,
+    art: `<path d="M24 34h16l2 20H22z" fill="#FFF8EC"/><path d="M6 34C6 18 18 8 32 8s26 10 26 26z" fill="#E5484D"/>
+      <circle cx="20" cy="24" r="4" fill="#fff" stroke="none"/><circle cx="36" cy="17" r="3.5" fill="#fff" stroke="none"/><circle cx="46" cy="28" r="3.5" fill="#fff" stroke="none"/><circle cx="31" cy="29" r="2.5" fill="#fff" stroke="none"/>` },
+];
+const cdIcon = (ing, cls = '') => `<svg viewBox="0 0 64 64" class="${cls}" aria-hidden="true"><g stroke="#3A2852" stroke-width="3.5" stroke-linejoin="round">${ing.art}</g></svg>`;
+const CD_START = '#7A6AAE';   // the pot starts a murky purple
+// the scene is 360 x 320: the wall and the fire behind, the potion, spoon and pot in front, so a monster rises out of the potion
+const CD_BG = `<rect width="360" height="250" fill="#3D3270"/>
+  <g fill="#4A3E80">${Array.from({ length: 8 }, (_, r) => Array.from({ length: 7 }, (_, i) => `<rect x="${i * 60 - (r % 2) * 30 - 4}" y="${r * 30 + 6}" width="52" height="24" rx="9"/>`).join('')).join('')}</g>
+  <rect y="250" width="360" height="70" fill="#6B4A2E"/><rect y="246" width="360" height="7" fill="#2E2660"/>
+  <g stroke="#5A3D26" stroke-width="2">${[272, 298].map(y => `<line x1="0" y1="${y}" x2="360" y2="${y}"/>`).join('')}</g>
+  <circle cx="62" cy="62" r="40" fill="#1E1A45" stroke="#C9A06A" stroke-width="7"/><path d="M22 62h80M62 22v80" stroke="#C9A06A" stroke-width="4"/>
+  <circle cx="76" cy="46" r="11" fill="#FFE58A"/><circle cx="71" cy="43" r="10" fill="#1E1A45"/>
+  <g fill="#fff">${[[40, 44], [48, 82], [84, 80], [36, 70]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.5"/>`).join('')}</g>
+  <rect x="240" y="96" width="104" height="9" rx="3" fill="#8A5A36" stroke="#3A2852" stroke-width="3"/>
+  <g stroke="#3A2852" stroke-width="3"><rect x="250" y="72" width="18" height="24" rx="5" fill="#54A6E2"/><circle cx="290" cy="84" r="12" fill="#EC6AA8"/><rect x="310" y="66" width="16" height="30" rx="5" fill="#F2C828"/>
+    <rect x="254" y="64" width="10" height="9" fill="#C9A06A"/><rect x="286" y="66" width="8" height="8" fill="#C9A06A"/><rect x="313" y="58" width="10" height="9" fill="#C9A06A"/></g>
+  <g stroke="#3A2852" stroke-width="3" stroke-linejoin="round"><rect x="124" y="290" width="112" height="14" rx="7" fill="#6B4A2E"/>
+    <path d="M136 292c-6-16 8-24 10-36 8 12 14 18 10 36z M168 292c-8-22 10-32 12-48 10 14 20 24 12 48z M202 292c-4-14 6-22 8-32 6 10 12 16 8 32z" fill="#F4882C"/>
+    <path d="M146 292c-2-8 4-12 6-18 4 6 8 8 6 18z M176 292c-4-12 6-18 8-28 6 10 10 14 6 28z" fill="#F2C828"/></g>
+  <ellipse cx="180" cy="168" rx="96" ry="18" fill="#2E2440" stroke="#3A2852" stroke-width="5"/>`;
+const CD_FG = `<g stroke="#3A2852" stroke-width="5" stroke-linejoin="round">
+  <ellipse id="cdLiquid" cx="180" cy="168" rx="88" ry="13" fill="${CD_START}" stroke="none"/>
+  <g id="cdBubbles" fill="#fff" fill-opacity=".55" stroke="none">${[[132, 166, 5, 0], [168, 170, 4, .5], [204, 165, 6, .9], [228, 170, 3.5, 1.3], [150, 172, 3, 1.7]].map(([x, y, r, d]) => `<circle class="cdb" cx="${x}" cy="${y}" r="${r}" style="animation-delay:${d}s"/>`).join('')}</g>
+  <g id="cdSpoon"><line x1="214" y1="170" x2="256" y2="72" stroke-width="12" stroke-linecap="round"/><line x1="214" y1="170" x2="256" y2="72" stroke="#B07A4F" stroke-width="6" stroke-linecap="round"/></g>
+  <rect x="104" y="262" width="16" height="30" rx="5" fill="#2E2440"/><rect x="240" y="262" width="16" height="30" rx="5" fill="#2E2440"/>
+  <path d="M84 168c0 72 34 106 96 106s96-34 96-106z" fill="#2E2440"/>
+  <path d="M108 196c4 30 20 52 44 62" fill="none" stroke="#4A3E66" stroke-width="7" stroke-linecap="round"/>
+  <path d="M84 168a96 18 0 0 0 192 0" fill="none" stroke-width="8"/>
+</g>`;
+const CD_KEY = 'monster-book.cauldron';
+const cd = { pot: [], busy: false, done: false, parts: null, secrets: [], brew: 0 };   // brew counts up each time the pot is emptied, so a stir or a drop from before doesn't land in the new pot
+try { cd.secrets = JSON.parse(localStorage.getItem(CD_KEY) || '{}').secrets || []; } catch (e) {}
+const CD_POTS = [];   // the 50 pots that aren't three the same, each written smallest first
+for (let a = 0; a < 6; a++) for (let b = a; b < 6; b++) for (let c = b; c < 6; c++) if (a !== c) CD_POTS.push(`${a}${b}${c}`);
+function cdParts(pot) {   // the head, body and legs a pot makes; the order she put them in doesn't matter, and no two pots make the same monster
+  const [a, b, c] = [...pot].sort((x, y) => x - y);
+  if (a === c) { const n = CD_ING[a].secret; return [n, n, n]; }
+  const k = CD_POTS.indexOf(`${a}${b}${c}`);
+  const h = (k * 7 + 3) % N + 1, bo = (k * 11 + 9 + Math.floor(k / N) * 5) % N + 1;
+  let l = (k * 13 + 21) % N + 1;
+  if (h === bo && bo === l) l = l % N + 1;   // a whole monster is only ever a secret
+  return [h, bo, l];
+}
+function buildCauldron() {
+  $('cdBg').innerHTML = CD_BG; $('cdFg').innerHTML = CD_FG;
+  const shelf = $('cdShelf'); shelf.textContent = '';
+  CD_ING.forEach((ing, i) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'cding';
+    b.innerHTML = `${cdIcon(ing)}<span></span>`; b.lastChild.textContent = ing.name; b.setAttribute('aria-label', `Drop in a ${ing.name.toLowerCase()}`);
+    b.addEventListener('click', () => cdAdd(i));
+    shelf.append(b);
+  });
+  $('cdStir').addEventListener('click', cdStir);
+  $('cdEmpty').addEventListener('click', () => { sound.click(); cdReset(); });
+  $('cdAgain').addEventListener('click', () => { cdReset(); $('cdStage').scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' }); });
+  $('cdMeet').addEventListener('click', cdMeet);
+}
+function cdReset() {
+  cd.pot = []; cd.busy = false; cd.done = false; cd.parts = null; cd.brew++;
+  $('cdMon').textContent = ''; $('cdFx').textContent = ''; $('cdDone').hidden = true;
+  $('cdLiquid').setAttribute('fill', CD_START); $('cdSpoon').style.opacity = '';
+  $('cdStage').classList.remove('stirring', 'brewed');
+  cdRender();
+}
+function openCauldron() { cdReset(); }
+function cdRender() {
+  const slots = $('cdPot'); slots.textContent = '';
+  for (let k = 0; k < 3; k++) {
+    const s = document.createElement('span');
+    if (cd.pot[k] !== undefined) { s.className = 'got'; s.innerHTML = cdIcon(CD_ING[cd.pot[k]]); s.setAttribute('aria-label', CD_ING[cd.pot[k]].name); }
+    slots.append(s);
+  }
+  const full = cd.pot.length === 3;
+  document.querySelectorAll('#cdShelf .cding').forEach(b => { b.disabled = full || cd.done; });
+  $('cdStir').disabled = !full || cd.busy || cd.done;
+  $('cdStir').classList.toggle('ready', full && !cd.busy && !cd.done);
+  ['cdShelf', 'cdStir', 'cdEmpty'].forEach(id => { $(id).hidden = cd.done; });   // once it's brewed, the monster and what next
+  $('cdHint').textContent = cd.done ? '' : full ? 'Now stir the pot!' : `Tap ${['three things', 'two more', 'one more'][cd.pot.length]} to drop in the pot`;
+  const found = cd.secrets.length;
+  $('cdSecrets').textContent = found ? `Secret monsters found: ${found} of 6` : '';
+}
+function cdAdd(i) {
+  if (cd.pot.length >= 3 || cd.done) return;
+  sound.unlock();
+  cd.pot.push(i); cdRender();
+  const ing = CD_ING[i], fx = $('cdFx'), brew = cd.brew;
+  const drop = document.createElement('div'); drop.className = 'cddrop'; drop.innerHTML = cdIcon(ing); fx.append(drop);
+  const land = () => {
+    drop.remove();
+    if (brew !== cd.brew || $('cauldrongame').hidden) return;
+    $('cdLiquid').setAttribute('fill', ing.colour);
+    sound.plop();
+    for (let k = 0; k < 7; k++) {   // a splash in the potion's new colour
+      const s = document.createElement('i'); s.className = 'cdsplash'; s.style.background = ing.colour; fx.append(s);
+      const a = Math.PI * (1.05 + k * .9 / 6), r = 40 + (k % 3) * 14;
+      if (reduced) { setTimeout(() => s.remove(), 200); continue; }
+      s.animate([{ transform: 'translate(0, 0) scale(1)', opacity: 1 }, { transform: `translate(${Math.cos(a) * r}px, ${Math.sin(a) * r}px) scale(.4)`, opacity: 0 }], { duration: 520, easing: 'ease-out' }).onfinish = () => s.remove();
+    }
+  };
+  if (reduced) land();
+  else {
+    const sh = $('cdStage').clientHeight, dh = drop.offsetHeight;
+    drop.animate([{ transform: `translateY(${-dh}px) rotate(-20deg) scale(1)` }, { transform: `translateY(${sh * .5 - dh * .5}px) rotate(200deg) scale(.55)` }], { duration: 560, easing: 'cubic-bezier(.5, 0, .9, .6)', fill: 'forwards' }).onfinish = land;
+  }
+}
+async function cdStir() {
+  if (cd.pot.length < 3 || cd.busy || cd.done) return;
+  cd.busy = true; cdRender(); sound.unlock();
+  const brew = cd.brew, gone = () => brew !== cd.brew || $('cauldrongame').hidden;   // emptied, or she went off somewhere else
+  const stage = $('cdStage'); stage.classList.add('stirring'); sound.bubble();
+  stage.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'nearest' });
+  const parts = cdParts(cd.pot);
+  const art = cdMonsterArt(...parts);   // start drawing while she stirs
+  await new Promise(r => setTimeout(r, reduced ? 50 : 1500));
+  if (gone()) return;
+  stage.classList.remove('stirring'); $('cdSpoon').style.opacity = '0';
+  // poof: a puff of smoke, then the monster climbs out of the potion
+  sound.whoosh();
+  const fx = $('cdFx');
+  for (let k = 0; k < 9; k++) {
+    const p = document.createElement('i'); p.className = 'cdpuff'; fx.append(p);
+    const a = (k / 9) * Math.PI * 2;
+    if (reduced) { setTimeout(() => p.remove(), 300); continue; }
+    p.animate([{ transform: 'translate(0, 0) scale(.3)', opacity: .95 }, { transform: `translate(${Math.cos(a) * 70}px, ${Math.sin(a) * 34 - 30}px) scale(1.6)`, opacity: 0 }], { duration: 900, easing: 'ease-out' }).onfinish = () => p.remove();
+  }
+  const c = await art;
+  if (gone()) return;
+  const box = $('cdMon'); box.textContent = ''; box.append(c);
+  stage.classList.add('brewed');
+  if (!reduced) box.animate([{ transform: 'translateY(100%)' }, { transform: 'translateY(-8%)', offset: .7 }, { transform: 'translateY(0)' }], { duration: 1100, easing: 'ease-out' });
+  cd.parts = parts; cd.done = true; cd.busy = false;
+  const [h, b, l] = parts, names = cd.pot.map(i => CD_ING[i].name.toLowerCase());
+  const secret = h === b && b === l;
+  if (secret && !cd.secrets.includes(cd.pot[0])) {
+    cd.secrets.push(cd.pot[0]);
+    try { localStorage.setItem(CD_KEY, JSON.stringify({ secrets: cd.secrets })); } catch (e) {}
+  }
+  setTimeout(() => { if (!gone()) sound.giggle(); }, reduced ? 0 : 500);
+  setTimeout(() => { if (!gone()) $('cdMeet').scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'nearest' }); }, reduced ? 0 : 1200);
+  $('cdTitle').textContent = secret ? `A secret monster: the whole ${mon(h).name}!` : 'Bubble, bubble! Out climbs a monster!';
+  $('cdText').textContent = secret
+    ? `Three ${names[0]}s make ${/^[aeiou]/i.test(mon(h).name) ? 'an' : 'a'} ${mon(h).name}. There are six secret monsters to find.`
+    : `${mon(h).name} head, ${mon(b).name} body and ${mon(l).name} legs, from a ${names[0]}, a ${names[1]} and a ${names[2]}. The same three always make this monster.`;
+  $('cdDone').hidden = false;
+  cdRender();
+}
+function cdHatSpot(m) {   // the top of the head in the middle (thin horns, stalks and side ears don't count), and how wide the head is just below it and where its middle is
+  const W = m.width, rows = Math.round(m.height * .45);
+  try {
+    const d = m.getContext('2d').getImageData(0, 0, W, rows).data, on = (x, y) => d[(y * W + x) * 4 + 3] > 160;
+    const x0 = Math.round(W * .4), x1 = Math.round(W * .6);
+    let top = -1;
+    for (let y = 0; y < rows && top < 0; y++) { let n = 0; for (let x = x0; x < x1; x++) if (on(x, y)) n++; if (n > (x1 - x0) * .6) top = y; }
+    if (top < 0) throw 0;
+    const y = Math.min(rows - 1, top + Math.round(W * .12));
+    let L = -1, R = -1; for (let x = 0; x < W; x++) if (on(x, y)) { if (L < 0) L = x; R = x; }
+    return { top, width: R - L, cx: (L + R) / 2 };
+  } catch (e) { return { top: m.height * .05, width: W * .55, cx: W / 2, guess: true }; }
+}
+async function cdMonsterArt(h, b, l) {   // the monster with a witch's hat on, as a canvas
+  const m = await monsterCanvas(h, b, l);
+  const W = m.width, spot = cdHatSpot(m);
+  const hatW = Math.min(W * .62, Math.max(W * .42, spot.width * 1.04)), s = hatW / 100;
+  const brim = spot.top + 5 * s;                       // the brim sits a little way down onto the head
+  const off = Math.max(0, Math.ceil(66 * s - brim));   // room above for the tip of the hat
+  const c = document.createElement('canvas'); c.width = W; c.height = Math.round(m.height + off);
+  c.setAttribute('role', 'img'); c.setAttribute('aria-label', `A monster with a witch's hat: ${mon(h).name} head, ${mon(b).name} body and ${mon(l).name} legs`);
+  const x = c.getContext('2d');
+  x.drawImage(m, 0, off);
+  x.save(); x.translate(spot.cx - 50 * s, off + brim - 64 * s); x.scale(s, s);
+  x.lineJoin = 'round'; x.lineWidth = 3.5; x.strokeStyle = '#3A2852';
+  const cone = new Path2D('M24 62C30 40 40 22 56 8C62 2 70 2 76 8C66 14 62 30 76 62z');
+  x.fillStyle = '#4A3470'; x.fill(cone); x.stroke(cone);
+  const band = new Path2D('M27 52h48l2 10H25z'); x.fillStyle = '#A880D6'; x.fill(band); x.stroke(band);
+  x.beginPath(); x.ellipse(50, 64, 48, 10, 0, 0, Math.PI * 2); x.fillStyle = '#4A3470'; x.fill(); x.stroke();
+  x.strokeStyle = '#F2C828'; x.lineWidth = 3; x.strokeRect(44, 51, 12, 12);
+  x.restore();
+  return c;
+}
+function cdMeet() {   // on to Meet your monster with the brewed one, and the flip book turns to it too
+  if (!cd.parts) return;
+  const [h, b, l] = cd.parts;
+  draft = { h, b, l, name: '', food: '', friend: '', grumpy: '' };
+  PARTS.forEach((p, k) => { if (state[p] !== cd.parts[k]) goTo(p, cd.parts[k], 1); });
+  openMeet(true);
+}
+
 // ------------------------------------------------------------- pumpkin face maker -
 // Every shape is one piece of pumpkin to cut out, with teeth and tongues joined to the edge,
 // so nothing falls out when it's carved. Coordinates are in the 400 x 380 pumpkin picture.
@@ -2353,9 +2630,11 @@ function init() {
   $('playTorch').addEventListener('click', () => openGame('torchgame'));
   $('playPumpkin').addEventListener('click', () => openGame('pumpkingame'));
   $('playMask').addEventListener('click', () => openGame('maskgame'));
+  $('playCauldron').addEventListener('click', () => openGame('cauldrongame'));
   $('playMake').addEventListener('click', () => show('make'));
   buildMasks();
   buildTorch();
+  buildCauldron();
   $('tAgain').addEventListener('click', newTorch);
   buildPumpkin();
   document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => openGame(b.dataset.go)));

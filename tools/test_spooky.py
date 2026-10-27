@@ -1,4 +1,4 @@
-"""Play Torch hunt (the bedroom and the witch's cottage) and the Pumpkin face maker, and print monster masks,
+"""Play Torch hunt (the bedroom and the witch's cottage), brew in the Witch's cauldron, make a pumpkin face and print monster masks,
 at phone, folding-phone and laptop sizes.
     python3 tools/test_spooky.py OUTDIR"""
 import http.server, socketserver, sys, threading, functools
@@ -64,7 +64,9 @@ with sync_playwright() as pw:
     # ---------------------------------------------------------------- phone: games page, torch hunt
     ctx, p = page_at(b, 390, 844)
     p.goto(BASE + '#games'); p.wait_for_timeout(900)
-    check('games page has 6 games, the 3 Halloween ones under Spooky', p.eval_on_selector_all('.gametile', 'e => e.length') == 6 and p.is_visible('.spooky-head') and p.is_visible('#playMask'))
+    check('games page has 7 games, the 4 Halloween ones under Spooky', p.eval_on_selector_all('.gametile', 'e => e.length') == 7 and p.is_visible('.spooky-head') and p.is_visible('#playMask'))
+    tiles = p.eval_on_selector_all('.gametile', 'e => e.map(t => t.id)')
+    check(f'the cauldron comes straight after Torch hunt ({tiles})', tiles.index('playCauldron') == tiles.index('playTorch') + 1)
     p.screenshot(path=OUT / 's1_games.png', full_page=True)
     p.click('#playTorch'); p.wait_for_timeout(1000)
     check('Torch tile opens #torch', p.evaluate('location.hash') == '#torch' and p.is_visible('#tRoom'))
@@ -292,10 +294,111 @@ with sync_playwright() as pw:
     check(f'every hiding spot is inside its room and no two overlap{": " + str(bad) if bad else ""}', not bad)
     ctx.close()
 
+    # ---------------------------------------------------------------- phone: the witch's cauldron
+    ctx, p = page_at(b, 390, 844)
+    p.goto(BASE + '#games'); p.wait_for_timeout(900)
+    p.click('#playCauldron'); p.wait_for_timeout(800)
+    fill = lambda: p.get_attribute('#cdLiquid', 'fill')
+    got = lambda: p.eval_on_selector_all('#cdPot span.got', 'e => e.length')
+    check('Cauldron tile opens #cauldron: 6 things on the shelf, 3 empty places in the pot, Stir not ready yet',
+          p.evaluate('location.hash') == '#cauldron' and p.eval_on_selector_all('#cdShelf .cding', 'e => e.length') == 6 and got() == 0 and p.is_disabled('#cdStir'))
+    check(f'it says what to do ("{p.text_content("#cdHint")}") and the potion starts murky purple', p.text_content('#cdHint') == 'Tap three things to drop in the pot' and fill() == '#7A6AAE')
+    colours = []
+    for i in (0, 3, 4):     # a frog, a star and some slime
+        p.click(f'#cdShelf .cding >> nth={i}'); p.wait_for_timeout(900); colours.append(fill())
+    check(f'each one splashes in and turns the potion its colour ({colours})', colours == ['#68B242', '#F2C828', '#A6E98A'])
+    check('three in: the shelf is shut, Stir is ready, and it says to stir',
+          got() == 3 and p.eval_on_selector_all('#cdShelf .cding', 'e => e.every(b => b.disabled)') and not p.is_disabled('#cdStir') and p.text_content('#cdHint') == 'Now stir the pot!')
+    p.click('#cdShelf .cding >> nth=1', force=True); p.wait_for_timeout(300)
+    check('a fourth tap does nothing', p.evaluate('cd.pot.length') == 3)
+    p.click('#cdStir', force=True); p.wait_for_timeout(400)
+    check('stirring: the bubbles go faster and Stir cannot be pressed again', p.evaluate("$('cdStage').classList.contains('stirring')") and p.is_disabled('#cdStir'))
+    p.wait_for_timeout(3000)
+    parts = p.evaluate('cd.parts'); names = p.evaluate('cd.parts.map(n => mon(n).name)')
+    check(f'a monster climbs out ({names}) and it says what it is made of',
+          p.is_visible('#cdMon canvas') and p.is_visible('#cdDone') and p.text_content('#cdText').startswith(f'{names[0]} head, {names[1]} body and {names[2]} legs, from a frog, a star and a slime.'))
+    hat = p.evaluate("""(() => { const c = document.querySelector('#cdMon canvas'), d = c.getContext('2d').getImageData(0, 0, c.width, Math.round(c.height * .3)).data;
+      let n = 0; for (let i = 0; i < d.length; i += 4) if (d[i] === 0x4A && d[i + 1] === 0x34 && d[i + 2] === 0x70 && d[i + 3] === 255) n++; return n; })()""")
+    check(f'it is wearing a witch\'s hat ({hat} hat-coloured pixels at the top)', hat > 1500)
+    sb, mb, vh = p.locator('#cdStage').bounding_box(), p.locator('#cdMon canvas').bounding_box(), p.evaluate('innerHeight')
+    check(f'it stands in the potion, all inside the picture (monster {mb["y"] - sb["y"]:.0f} to {mb["y"] + mb["height"] - sb["y"]:.0f} of {sb["height"]:.0f} px)',
+          mb['y'] >= sb['y'] - 1 and mb['x'] >= sb['x'] - 1 and mb['x'] + mb['width'] <= sb['x'] + sb['width'] + 1 and mb['y'] + mb['height'] > sb['y'] + .45 * sb['height'])
+    meet = p.locator('#cdMeet').bounding_box()
+    check(f'the monster and Meet your monster are both on screen (monster from {mb["y"]:.0f}, button ends {meet["y"] + meet["height"]:.0f} of {vh})', mb['y'] + mb['height'] / 2 >= 0 and meet['y'] + meet['height'] <= vh + 1)
+    check('the shelf and Stir go away; Meet your monster and Brew another are there',
+          not p.is_visible('#cdShelf') and not p.is_visible('#cdStir') and p.is_visible('#cdMeet') and p.is_visible('#cdAgain'))
+    p.screenshot(path=OUT / 'cd1_brewed.png', full_page=True)
+    p.click('#cdAgain'); p.wait_for_timeout(700)
+    check('Brew another: an empty pot, murky purple again, the shelf back, no monster',
+          got() == 0 and fill() == '#7A6AAE' and p.is_visible('#cdShelf') and not p.is_visible('#cdDone') and p.eval_on_selector_all('#cdMon canvas', 'e => e.length') == 0)
+    for i in (4, 0, 3):     # the same three, in another order
+        p.click(f'#cdShelf .cding >> nth={i}'); p.wait_for_timeout(250)
+    p.wait_for_timeout(800); p.click('#cdStir', force=True); p.wait_for_timeout(3400)
+    check(f'the same three in another order make the same monster ({p.evaluate("cd.parts")})', p.evaluate('cd.parts') == parts)
+    p.click('#cdMeet'); p.wait_for_timeout(1200)
+    check('Meet your monster opens with that monster, and the flip book has turned to it',
+          p.is_visible('#meet') and p.text_content('#meetParts').startswith(f'{names[0]} head, {names[1]} body and {names[2]} legs') and p.evaluate('[state.H, state.B, state.L]') == parts)
+    p.fill('#q_name', 'Sam'); p.click('#toCard'); p.wait_for_timeout(1800); p.click('#saveLib'); p.wait_for_timeout(600)
+    check(f'and it saves to My monsters ({p.text_content("#libCount").strip()})', 'Saved' in p.text_content('#saveLib') and p.text_content('#libCount').strip() == '1')
+    # emptying, or leaving, part way through doesn't leave a stray drop or monster behind
+    p.goto(BASE + '#cauldron'); p.wait_for_timeout(700)
+    p.click('#cdShelf .cding >> nth=5'); p.wait_for_timeout(100); p.click('#cdEmpty'); p.wait_for_timeout(900)
+    check(f'a drop still falling when the pot is emptied doesn\'t colour the new pot ({fill()})', fill() == '#7A6AAE' and got() == 0)
+    for i in (1, 2, 5): p.click(f'#cdShelf .cding >> nth={i}'); p.wait_for_timeout(250)
+    p.wait_for_timeout(800); p.click('#cdStir', force=True); p.wait_for_timeout(500)
+    p.click('#cdEmpty'); p.wait_for_timeout(3200)
+    check('emptying the pot while it stirs: nobody climbs out', not p.evaluate('cd.done') and p.eval_on_selector_all('#cdMon canvas', 'e => e.length') == 0 and got() == 0 and p.is_visible('#cdShelf'))
+    for i in (1, 2, 5): p.click(f'#cdShelf .cding >> nth={i}'); p.wait_for_timeout(250)
+    p.wait_for_timeout(800); p.click('#cdStir', force=True); p.wait_for_timeout(400)
+    p.goto(BASE + '#games'); p.wait_for_timeout(300); p.goto(BASE + '#cauldron'); p.wait_for_timeout(3200)
+    check('leaving while it stirs and coming straight back: a fresh pot, nobody climbs out', not p.evaluate('cd.done') and p.eval_on_selector_all('#cdMon canvas', 'e => e.length') == 0 and got() == 0)
+    # the secret monsters
+    check('no secret monsters found yet, so it doesn\'t say anything about them', p.text_content('#cdSecrets') == '')
+    frog = p.evaluate('mon(10).name')
+    for _ in range(3): p.click('#cdShelf .cding >> nth=0'); p.wait_for_timeout(250)
+    p.wait_for_timeout(800); p.click('#cdStir', force=True); p.wait_for_timeout(3400)
+    check(f'three frogs make a secret monster: the whole {frog} ("{p.text_content("#cdTitle")}")',
+          p.evaluate('cd.parts') == [10, 10, 10] and p.text_content('#cdTitle') == f'A secret monster: the whole {frog}!' and p.text_content('#cdSecrets') == 'Secret monsters found: 1 of 6')
+    p.screenshot(path=OUT / 'cd2_secret.png', full_page=True)
+    p.reload(); p.wait_for_timeout(900)
+    check('the secret it found is remembered next time', p.text_content('#cdSecrets') == 'Secret monsters found: 1 of 6')
+    for _ in range(3): p.click('#cdShelf .cding >> nth=0'); p.wait_for_timeout(250)
+    p.wait_for_timeout(800); p.click('#cdStir', force=True); p.wait_for_timeout(3400)
+    check('finding the same secret again doesn\'t count twice', p.text_content('#cdSecrets') == 'Secret monsters found: 1 of 6')
+    words = p.evaluate("""(async () => { const out = []; for (let i = 0; i < 6; i++) { cdReset(); cd.pot = [i, i, i]; await cdStir(); out.push($('cdText').textContent); } cdReset(); return out; })()""")
+    check(f'the words for all six secrets read right ({words[2]})', all(w.startswith('Three ') for w in words) and not any(' a A' in w or ' a E' in w or ' a I' in w or ' a O' in w or ' a U' in w for w in words))
+    # every recipe: 56 different pots (the order doesn't matter)
+    r = p.evaluate("""(() => { const out = [], perms = ([a, b, c]) => [[a, b, c], [a, c, b], [b, a, c], [b, c, a], [c, a, b], [c, b, a]];
+      for (let a = 0; a < 6; a++) for (let b = a; b < 6; b++) for (let c = b; c < 6; c++) {
+        const all = perms([a, b, c]).map(cdParts).map(String);
+        out.push({ pot: [a, b, c], parts: cdParts([a, b, c]), same: all.every(x => x === all[0]) }); }
+      return out; })()""")
+    whole = [x for x in r if len(set(x['parts'])) == 1]
+    other = [x for x in r if len(set(x['parts'])) > 1]
+    secrets = p.evaluate('CD_ING.map(i => i.secret)')
+    check(f'{len(r)} different pots, and putting them in any order makes the same monster', len(r) == 56 and all(x['same'] for x in r))
+    check(f'only three the same make a whole monster, and the 6 secrets are 6 different monsters ({secrets})',
+          sorted(tuple(x['pot']) for x in whole) == [(i, i, i) for i in range(6)] and all(x['parts'][0] == secrets[x['pot'][0]] for x in whole) and len(set(secrets)) == 6)
+    check(f'the other {len(other)} pots each make a different monster, all from the book', len({tuple(x['parts']) for x in other}) == len(other) == 50 and all(1 <= n <= 30 for x in r for n in x['parts']))
+    # the hat sits on every head
+    bad = p.evaluate("""(async () => { const bad = [];
+      for (let h = 1; h <= 30; h++) { const m = await monsterCanvas(h, 12, 8), s = cdHatSpot(m);
+        if (s.guess || !(s.top < m.height * .3 && s.width > m.width * .2 && Math.abs(s.cx - m.width / 2) < m.width * .15)) bad.push(h); }
+      return bad; })()""")
+    check(f'the hat finds the top of all 30 heads{": not " + str(bad) if bad else ""}', not bad)
+    ctx.close()
+    # with reduced motion it brews straight away
+    ctx, p = page_at(b, 390, 844); p.emulate_media(reduced_motion='reduce')
+    p.goto(BASE + '#cauldron'); p.wait_for_timeout(800)
+    for i in (1, 2, 5): p.click(f'#cdShelf .cding >> nth={i}')
+    c = fill(); p.click('#cdStir'); p.wait_for_timeout(700)
+    check(f'with reduced motion: the potion changes at once ({c}) and the monster is there straight away', c == '#EC6AA8' and p.is_visible('#cdDone') and p.is_visible('#cdMon canvas'))
+    ctx.close()
+
     # ---------------------------------------------------------------- other sizes
     for (w, h, touch, label) in ((360, 740, True, 'small phone'), (904, 1000, True, 'folding phone open'), (1280, 800, False, 'laptop')):
         ctx, p = page_at(b, w, h, touch)
-        for hsh in ('#torch', '#pumpkin', '#masks', '#games'):
+        for hsh in ('#torch', '#cauldron', '#pumpkin', '#masks', '#games'):
             p.goto(BASE + hsh); p.wait_for_timeout(700)
             check(f'{label} {w}px {hsh}: no sideways scroll', not p.evaluate('document.documentElement.scrollWidth > innerWidth'))
             if hsh == '#torch':
@@ -314,6 +417,14 @@ with sync_playwright() as pw:
         check(f"{label}: the witch's cottage can be finished ({n} monsters, {'Tiny torch' if w == 360 else 'Medium'})", p.is_visible('#tWin') and p.evaluate('tor.found') == n)
         check(f'{label}: still no sideways scroll in the cottage', not p.evaluate('document.documentElement.scrollWidth > innerWidth'))
         p.screenshot(path=OUT / f'c3_{w}.png', full_page=True)
+        p.goto(BASE + '#cauldron'); p.wait_for_timeout(800)
+        for i in (2, 3, 5): p.click(f'#cdShelf .cding >> nth={i}'); p.wait_for_timeout(250)
+        p.wait_for_timeout(800); p.click('#cdStir', force=True); p.wait_for_timeout(3400)
+        sb, mb, meet = p.locator('#cdStage').bounding_box(), p.locator('#cdMon canvas').bounding_box(), p.locator('#cdMeet').bounding_box()
+        check(f'{label}: the cauldron brews, and the monster in its hat is inside the picture', p.is_visible('#cdDone') and mb['y'] >= sb['y'] - 1 and mb['x'] >= sb['x'] - 1 and mb['x'] + mb['width'] <= sb['x'] + sb['width'] + 1)
+        check(f'{label}: the monster and Meet your monster are both on screen (monster middle {mb["y"] + mb["height"] / 2:.0f}, button ends {meet["y"] + meet["height"]:.0f} of {h})', mb['y'] + mb['height'] / 2 >= 0 and meet['y'] + meet['height'] <= h + 1)
+        check(f'{label}: no sideways scroll in the cauldron', not p.evaluate('document.documentElement.scrollWidth > innerWidth'))
+        p.screenshot(path=OUT / f'cd3_{w}.png', full_page=True)
         ctx.close()
     b.close()
 srv.shutdown()
