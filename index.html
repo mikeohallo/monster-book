@@ -166,12 +166,30 @@ button { cursor: pointer; }
 .lede { margin: 0; color: var(--ink-soft); font-weight: 700; }
 .meet-top { display: grid; grid-template-columns: 112px 1fr; gap: 14px; align-items: center; }
 .meet-top canvas { width: 112px; height: auto; display: block; }
-.q { display: grid; grid-template-columns: 52px 1fr; gap: 10px; align-items: center; border: 2.5px solid var(--qc, var(--line)); border-radius: 999px; padding: 6px 16px 6px 8px; background: var(--card); }
+.qblock { display: flex; flex-direction: column; gap: 8px; }
+.qblock + .qblock { margin-top: 6px; }
+.q { display: grid; grid-template-columns: 52px 1fr auto; gap: 10px; align-items: center; border: 2.5px solid var(--qc, var(--line)); border-radius: 999px; padding: 6px 16px 6px 8px; background: var(--card); }
 .q img { width: 52px; height: 52px; }
 .q label { display: block; font-weight: 800; font-size: 14px; color: var(--ink-soft); line-height: 1.2; }
 .q input { width: 100%; min-width: 0; border: 0; background: transparent; outline: none; font-family: var(--font-body); font-weight: 900; font-size: 19px; padding: 2px 0; }
 .q input::placeholder { color: #B6A9C6; font-weight: 700; }
 .q:focus-within { box-shadow: 0 0 0 3px rgba(84, 166, 226, .35); }
+.say { width: 42px; height: 42px; border-radius: 50%; border: 0; background: var(--paper-deep); display: grid; place-items: center; padding: 0; }
+.say svg { width: 24px; height: 24px; fill: none; stroke: var(--ink); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.picks { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 8px; }
+.pick { border: 3px solid transparent; background: var(--paper-deep); border-radius: 16px; padding: 7px 4px 6px; min-height: 80px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-align: center;
+  font-weight: 800; font-size: 13px; line-height: 1.12; color: var(--ink); }
+.pick .pe { font-size: 34px; line-height: 1.05; font-family: 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif; }
+.pick img { width: 42px; height: 42px; object-fit: contain; }
+.pick img.pp { width: 52px; height: 52px; margin-top: -2px; }
+.pick .pw { overflow-wrap: anywhere; }
+.pick[aria-pressed="true"] { border-color: var(--qc); background: #fff; box-shadow: 0 3px 0 var(--qc); }
+.pick:active { translate: 0 1px; }
+.picks.names { display: flex; flex-wrap: wrap; }
+.picks.names .pick { min-height: 0; padding: 9px 16px; border-radius: 999px; font-family: var(--font-display); font-weight: 600; font-size: 18px; }
+.picks.names .pick.dice { padding: 4px 12px; }
+.picks.names .pick.dice .pe { font-size: 28px; }
 .linkish { border: 0; background: none; padding: 0; color: var(--ink); font-weight: 800; text-decoration: underline; text-underline-offset: 3px; font-size: 15px; justify-self: start; }
 .stack { display: flex; flex-direction: column; gap: 10px; }
 
@@ -591,6 +609,12 @@ button { cursor: pointer; }
 .empty { text-align: center; display: flex; flex-direction: column; gap: 12px; align-items: center; padding: 22px 10px; }
 .empty img { width: 96px; height: 96px; }
 .settings { display: flex; flex-direction: column; gap: 12px; }
+.kpline a { color: var(--ink); }
+.kpfaces { display: flex; gap: 12px; justify-content: center; margin: 4px 0; }
+.kpfaces figure { margin: 0; text-align: center; font-family: var(--font-display); font-weight: 700; font-size: 22px; }
+.kpfaces img { display: block; width: min(26vw, 140px); aspect-ratio: 1; object-fit: contain; background: var(--paper); border: 3px solid var(--line); border-radius: 22px; padding: 6px; }
+.kpwait { animation: twbob 1.6s ease-in-out infinite; }
+.kpmsg { color: var(--danger); }
 .field { display: flex; flex-direction: column; gap: 6px; font-weight: 800; font-size: 15px; }
 .field input, .field textarea { border: 2px solid var(--line); border-radius: 12px; padding: 10px 12px; background: var(--paper); font-weight: 700; width: 100%; min-width: 0; }
 .field textarea { min-height: 90px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
@@ -625,6 +649,75 @@ button { cursor: pointer; }
 .mkgo svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 2.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
 .ghead { display: flex; align-items: center; gap: 8px; margin: 10px 0 -2px; font-size: 22px; }
 .ghead svg { width: 26px; height: 22px; fill: var(--purple); }
+
+/* ---------- the town: the first screen ---------- */
+body.townmode .app { max-width: none; }
+.townwrap { position: relative; border: 3px solid var(--ink); border-radius: 24px; overflow: hidden; background: #A6DC84; box-shadow: var(--shadow); }
+.townbox { overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; scrollbar-width: thin; }
+.townworld { position: relative; -webkit-user-select: none; user-select: none; }
+.twvalley { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; }
+.twlayer { position: absolute; inset: 0; }
+.townhint { position: absolute; top: 10px; left: 50%; translate: -50% 0; margin: 0; width: max-content; max-width: calc(100% - 24px); z-index: 6;
+  padding: 6px 16px; border-radius: 999px; background: rgba(255, 255, 255, .93); box-shadow: 0 2px 0 rgba(58, 40, 82, .15);
+  font-family: var(--font-display); font-weight: 600; font-size: 17px; line-height: 1.25; text-align: center; pointer-events: none; }
+@media (max-width: 480px) { .townhint { font-size: 15px; padding: 5px 12px; } }
+.twlayer button { position: absolute; padding: 0; border: 0; background: none; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.twlayer button:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; border-radius: 12px; }
+.twhouse { translate: -49.92% -73.49%; }
+.twhouse img { display: block; width: 100%; height: auto; filter: drop-shadow(0 calc(var(--u) * 6) calc(var(--u) * 6) rgba(40, 60, 20, .25)); }
+.twhouse.far img { filter: blur(.5px) drop-shadow(0 2px 2px rgba(40, 60, 20, .2)); }
+.twname { position: absolute; left: 50%; top: 88%; translate: -50% 0; white-space: nowrap; padding: .05em .55em .1em; border-radius: .5em;
+  background: #fff; border: 2px solid var(--ink); font-family: var(--font-display); font-weight: 600; color: var(--ink); line-height: 1.15; pointer-events: none; }
+.twplot { translate: -50% -50%; aspect-ratio: 3 / 1; border-radius: 50%; }
+.twplus { position: absolute; left: 50%; top: 50%; translate: -50% -50%; aspect-ratio: 1; min-width: 30px; border-radius: 50%; background: #fff;
+  border: 3px solid var(--ink); box-shadow: 0 3px 0 rgba(58, 40, 82, .25); }
+.twplus::before, .twplus::after { content: ''; position: absolute; left: 50%; top: 50%; translate: -50% -50%; width: 54%; height: 15%; border-radius: 9px; background: var(--green); }
+.twplus::after { width: 15%; height: 54%; }
+.twplot.ready .twplus { animation: twpulse 1.4s ease-in-out infinite; }
+@keyframes twpulse { 50% { scale: 1.14; } }
+.twfig { display: block; height: 100%; }
+.twfig img { display: block; width: 100%; }
+.twfig.tw3d img { height: 100%; object-fit: contain; }
+.twleaner .twfig:not(.tw3d) { filter: drop-shadow(0 .35em .3em rgba(60, 30, 10, .45)); }   /* the flat book monster: a soft shadow on the room behind */
+.twleaner.waving .tw3d img { transform-origin: 50% 85%; animation: twsway .5s ease-in-out .45s 4 alternate; }
+.twfirst, .twwait, .twsoon, .twwalker, .twmore { translate: -50% -100%; }
+.twwalker { position: absolute; pointer-events: none; }
+.twwait { position: absolute; filter: saturate(.9); }
+.twbob { animation: twbob 1.6s ease-in-out infinite; }
+@keyframes twbob { 50% { translate: 0 -3%; } }
+.twsoon { aspect-ratio: 2 / 3; border: calc(var(--u) * 5) dashed var(--ink) !important; border-radius: 45% 45% 18% 18% !important; background: rgba(255, 255, 255, .45) !important; }
+.twq { font-family: var(--font-display); font-weight: 700; font-size: calc(var(--u) * 120); color: var(--ink); opacity: .55; }
+.twmore { position: absolute; display: grid; place-items: center; width: calc(var(--u) * 80); aspect-ratio: 1; border-radius: 50%; background: var(--purple);
+  color: #fff; border: 3px solid var(--ink); font-family: var(--font-display); font-weight: 700; font-size: calc(var(--u) * 34); }
+.twbubble { position: absolute; z-index: 1500; translate: -86% -100%; display: flex; flex-direction: column; align-items: center; padding: .45em .9em;
+  background: #fff; border: 3px solid var(--ink); border-radius: 16px; font-family: var(--font-display); font-weight: 700; color: var(--ink);
+  font-size: max(15px, calc(var(--u) * 40)); line-height: 1.2; white-space: nowrap; pointer-events: none; }
+.twbubble::after { content: ''; position: absolute; right: 12%; bottom: -14px; width: 20px; height: 20px; background: #fff; border-right: 3px solid var(--ink); border-bottom: 3px solid var(--ink); rotate: 45deg; }
+.twpost { position: absolute; }
+.twpost img { display: block; width: 100%; height: auto; }
+.twlayer .twarm { display: flex; align-items: center; justify-content: center; gap: .3em; font-family: var(--font-display); font-weight: 700; color: var(--ink);
+  font-size: calc(var(--u) * 44); line-height: 1; }
+.twarm svg { height: 1.25em; width: auto; flex: none; }
+.twarm:active { translate: 0 2px; }
+.twclose { position: relative; overflow: hidden; background: #A6DC84; }
+.twroom { position: absolute; z-index: 1; border-radius: 40% 40% 6px 6px / 30% 30% 6px 6px; background: radial-gradient(ellipse at 50% 70%, #FFD98A, #C8803E 60%, #5A3420); }
+.twclosepic { position: absolute; top: 0; z-index: 2; display: block; max-width: none; pointer-events: none; }
+.twlean { position: absolute; top: 0; z-index: 3; overflow: hidden; pointer-events: none; }
+.twleaner { position: absolute; padding: 0; border: 0; background: none; cursor: pointer; pointer-events: auto; translate: 0 62%; transition: translate .55s cubic-bezier(.3, 1.45, .5, 1); }
+.twleaner.waving { translate: 0 0; }
+.twleaner .twhead, .twleaner .twbody { transform-origin: 50% 100%; }
+.twleaner.waving .twhead { animation: twnod .5s ease-in-out .45s 4 alternate; }
+.twleaner.waving .twbody { animation: twsway .5s ease-in-out .45s 4 alternate; }
+@keyframes twnod { from { rotate: -8deg; } to { rotate: 8deg; translate: 0 -3%; } }
+@keyframes twsway { from { rotate: 3deg; } to { rotate: -3deg; } }
+.twcloseName { position: absolute; z-index: 4; left: 50%; bottom: 12px; translate: -50% 0; margin: 0; padding: 6px 16px; border-radius: 999px; background: #fff;
+  border: 3px solid var(--ink); font-family: var(--font-display); font-weight: 700; font-size: 18px; white-space: nowrap; }
+.twback { position: absolute; z-index: 5; left: 10px; top: 10px; display: inline-flex; align-items: center; gap: 4px; padding: 6px 14px 6px 10px; border-radius: 999px;
+  border: 3px solid var(--ink); background: #fff; font-family: var(--font-display); font-weight: 700; font-size: 17px; color: var(--ink); }
+.twback svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.townwrap:has(.twclose:not([hidden])) .townhint { display: none; }
+@media (prefers-reduced-motion: reduce) { .kpwait { animation: none; } .twleaner { transition: none; } .twleaner.waving .twhead, .twleaner.waving .twbody, .twbob, .twplot.ready .twplus { animation: none; } }
+@media (max-width: 400px) { .tab { min-width: 0; padding: 6px 9px 5px; } }
 </style>
 </head>
 <body>
@@ -632,11 +725,26 @@ button { cursor: pointer; }
   <header class="top">
     <h1 class="title" id="title" aria-label="My Monster Lab"></h1>
     <nav class="tabs" role="tablist" aria-label="Sections">
-      <button class="tab" role="tab" id="tabGames" aria-selected="true"><svg class="ticon pad" viewBox="0 0 40 34" aria-hidden="true"><path d="M11 7h18c5.5 0 8.6 4.6 9.3 10.4.7 5.9-1 10.6-5 10.6-3 0-4.6-2.9-6.6-5H13.3c-2 2.1-3.6 5-6.6 5-4 0-5.7-4.7-5-10.6C2.4 11.6 5.5 7 11 7z" fill="#A880D6" stroke="#3A2852" stroke-width="2.4" stroke-linejoin="round"/><path d="M8.5 16.5h7M12 13v7" stroke="#fff" stroke-width="3" stroke-linecap="round"/><circle cx="27" cy="14.5" r="2.4" fill="#EC6AA8"/><circle cx="31.5" cy="19" r="2.4" fill="#F2C828"/></svg><span class="tlabel">Play</span></button>
+      <button class="tab" role="tab" id="tabTown" aria-selected="true"><svg class="ticon" viewBox="0 0 34 34" aria-hidden="true"><path d="M5 16 17 5l12 11" fill="#EC6AA8" stroke="#3A2852" stroke-width="2.4" stroke-linejoin="round"/><path d="M8 15h18v14H8z" fill="#FFF3DC" stroke="#3A2852" stroke-width="2.4" stroke-linejoin="round"/><rect x="14" y="20" width="6" height="9" rx="2" fill="#B07A4F" stroke="#3A2852" stroke-width="2"/></svg><span class="tlabel">Town</span></button>
+      <button class="tab" role="tab" id="tabGames" aria-selected="false"><svg class="ticon pad" viewBox="0 0 40 34" aria-hidden="true"><path d="M11 7h18c5.5 0 8.6 4.6 9.3 10.4.7 5.9-1 10.6-5 10.6-3 0-4.6-2.9-6.6-5H13.3c-2 2.1-3.6 5-6.6 5-4 0-5.7-4.7-5-10.6C2.4 11.6 5.5 7 11 7z" fill="#A880D6" stroke="#3A2852" stroke-width="2.4" stroke-linejoin="round"/><path d="M8.5 16.5h7M12 13v7" stroke="#fff" stroke-width="3" stroke-linecap="round"/><circle cx="27" cy="14.5" r="2.4" fill="#EC6AA8"/><circle cx="31.5" cy="19" r="2.4" fill="#F2C828"/></svg><span class="tlabel">Play</span></button>
       <button class="tab" role="tab" id="tabMake" aria-selected="false"><img class="ticon" src="faces/F01.webp" alt=""><span class="tlabel">Make</span></button>
       <button class="tab" role="tab" id="tabLib" aria-selected="false"><span class="ticon heartwrap" aria-hidden="true"><svg class="heart" viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.2 0 3.7 1.2 5.3 3.1 1.6-1.9 3.1-3.1 5.3-3.1 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z"/></svg><span class="count" id="libCount">0</span></span><span class="tlabel">My monsters</span></button>
     </nav>
   </header>
+
+  <!-- TOWN -->
+  <section id="town" class="stack" aria-label="Monster town">
+    <div class="townwrap" id="townWrap">
+      <div class="townbox" id="townBox">
+        <div class="townworld" id="townWorld">
+          <img class="twvalley" id="twValley" src="town/valley-2400.webp" srcset="town/valley-2400.webp 2400w, town/valley-3800.webp 3800w" sizes="1400px" alt="" draggable="false">
+          <div class="twlayer" id="twLayer" role="group" aria-label="Your monster town"></div>
+        </div>
+      </div>
+      <div class="twclose" id="twClose" hidden></div>
+      <p class="townhint" id="townHint" aria-live="polite"></p>
+    </div>
+  </section>
 
   <!-- MAKE -->
   <section id="make" class="stack" hidden aria-label="Make a monster">
@@ -673,7 +781,6 @@ button { cursor: pointer; }
         </div>
       </div>
       <div class="stack" id="questions"></div>
-      <button class="linkish" id="makeName" type="button">Stuck? Make up a name</button>
     </div>
     <button class="btn primary" id="toCard">Make their card</button>
     <button class="btn quiet" id="backFlip">Back to flipping</button>
@@ -684,6 +791,7 @@ button { cursor: pointer; }
     <div class="card-wrap"><img class="card-img" id="cardImg" alt=""></div>
     <p class="hint" id="saveHint">Press and hold the card to save the picture.</p>
     <button class="btn primary" id="saveLib">Save to My monsters</button>
+    <button class="btn primary" id="toTown" hidden>Find them a home</button>
     <div class="row2">
       <button class="btn" id="dl" hidden>Save picture</button>
       <button class="btn" id="share" hidden>Share</button>
@@ -696,7 +804,7 @@ button { cursor: pointer; }
   </section>
 
   <!-- GAMES -->
-  <section id="games" class="stack" aria-label="Games">
+  <section id="games" class="stack" hidden aria-label="Games">
     <div class="gamelist">
       <button class="maketile" id="playMake" type="button">
         <span class="mkstack" aria-hidden="true"><img id="mkH" src="strips/H01.webp" alt=""><img id="mkB" src="strips/B02.webp" alt=""><img id="mkL" src="strips/L03.webp" alt=""></span>
@@ -952,7 +1060,8 @@ button { cursor: pointer; }
       <h2 class="h2">Whose book is this?</h2>
       <label class="field" for="owner">Name on the book and cards
         <input id="owner" maxlength="20" autocomplete="off" placeholder="e.g. Max"></label>
-      <p class="note">Your monsters are saved on this device only. Nothing you type is sent anywhere.</p>
+      <p class="note" id="libNote">Your monsters are saved on this device only. Nothing you type is sent anywhere.</p>
+      <p class="note kpline" id="kpLine" hidden><a href="#keep"></a></p>
       <div class="row2">
         <button class="btn" id="backup">Back up</button>
         <button class="btn" id="restoreBtn">Restore</button>
@@ -964,6 +1073,10 @@ button { cursor: pointer; }
         <button class="btn" id="restoreText">Restore from this code</button>
       </div>
     </div>
+  </section>
+
+  <section id="keep" class="stack" hidden aria-label="Keep these monsters safe">
+    <div class="panel keep" id="keepPanel"></div>
   </section>
 
   <p class="more"><a id="morePlay" href="https://play.mikeohalloran.au/">More to play<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></a></p>
@@ -1026,6 +1139,7 @@ function load() {
 function persist() {
   try { localStorage.setItem(KEY, JSON.stringify(store)); }
   catch (e) { storageOK = false; toast("This browser won't keep saved monsters. Use Back up to keep them."); }
+  try { kpSaveSoon(); } catch (e) {}   // a linked phone copies it to the family's store too
 }
 const store = load();
 // a gift link (?for=Max) names the book on that device the first time it's opened
@@ -1303,6 +1417,7 @@ async function renderCard(rec) {
   x.drawImage(m, (W - mw) / 2, top + (boxH - mhh), mw, mhh); x.restore();
   // answers
   const faces = await Promise.all(QUESTIONS.slice(1).map(q => loadImg(`faces/F${q.face}.webp`)));
+  const pics = await Promise.all(QUESTIONS.slice(1).map(q => { const p = pickSrc(q.key, rec[q.key] || ''); return p ? loadImg(p).catch(() => null) : null; }));
   let y = 1120;
   QUESTIONS.slice(1).forEach((q, i) => {
     const rh = 112, rx = 110, rw = W - 220;
@@ -1310,12 +1425,13 @@ async function renderCard(rec) {
     x.lineWidth = 7; x.strokeStyle = COLOURS[q.colour]; x.stroke();
     x.drawImage(faces[i], rx + 18, y + 12, 88, 88);
     x.fillStyle = INK_SOFT; x.font = `800 26px ${BODY}`; x.fillText(q.label, rx + 128, y + 42);
-    const ans = (rec[q.key] || '').trim() || 'Not sure yet';
+    const said = (rec[q.key] || '').trim(), ans = said || 'Not sure yet', room = pics[i] ? rw - 270 : rw - 170;
+    if (pics[i]) x.drawImage(pics[i], rx + rw - 112, y + 8, 96, 96);
     x.fillStyle = INK;
-    let fs = fitFont(x, ans, BODY, 900, 44, 30, rw - 170);
+    let fs = fitFont(x, ans, BODY, 900, 44, 30, room);
     x.font = `900 ${fs}px ${BODY}`;
-    const line = wrap(x, ans, rw - 170)[0];
-    x.fillText(line === ans ? ans : line.replace(/\s*\S*$/, '') + '…', rx + 128, y + 90, rw - 160);
+    const line = wrap(x, ans, room)[0];
+    x.fillText(line === ans ? ans : line.replace(/\s*\S*$/, '') + '…', rx + 128, y + 90, room + 10);
     y += rh + 20;
   });
   // footer: who made it, when, and the codes
@@ -1335,9 +1451,9 @@ async function renderCard(rec) {
 }
 
 // ------------------------------------------------------------- screens ---
-const screens = ['make', 'meet', 'card', 'games', 'matchgame', 'whackgame', 'bedgame', 'torchgame', 'cauldrongame', 'wandgame', 'broomgame', 'pumpkingame', 'maskgame', 'library'];
+const screens = ['town', 'make', 'meet', 'card', 'games', 'matchgame', 'whackgame', 'bedgame', 'torchgame', 'cauldrongame', 'wandgame', 'broomgame', 'pumpkingame', 'maskgame', 'library', 'keep'];
 const GAME_SCREENS = ['games', 'matchgame', 'whackgame', 'bedgame', 'torchgame', 'cauldrongame', 'wandgame', 'broomgame', 'pumpkingame', 'maskgame'];
-const HASHES = { make: '#make', games: '', matchgame: '#match', whackgame: '#whack', bedgame: '#bedtime', torchgame: '#torch', cauldrongame: '#cauldron', wandgame: '#wand', broomgame: '#broom', pumpkingame: '#pumpkin', maskgame: '#masks', library: '#monsters' };
+const HASHES = { town: '', make: '#make', games: '#games', matchgame: '#match', whackgame: '#whack', bedgame: '#bedtime', torchgame: '#torch', cauldrongame: '#cauldron', wandgame: '#wand', broomgame: '#broom', pumpkingame: '#pumpkin', maskgame: '#masks', library: '#monsters', keep: '#keep' };
 // Letters and the Numbers games moved to the Learning Lab; old links (and home-screen icons) go there
 const MOVED = { '#letters': '#letters', '#count': '#count', '#quick': '#quick' };
 function learnURL(hash) {
@@ -1350,7 +1466,10 @@ function show(id) {
   if (id !== 'bedgame') bedQuiet();
   if (id !== 'torchgame') stopTorch();
   if (id !== 'broomgame') stopBroom();
+  if (id !== 'keep') kpStopPoll();
   screens.forEach(s => { $(s).hidden = s !== id; });
+  document.body.classList.toggle('townmode', id === 'town');
+  $('tabTown').setAttribute('aria-selected', String(id === 'town'));
   $('tabMake').setAttribute('aria-selected', String(['make', 'meet', 'card'].includes(id)));
   $('tabGames').setAttribute('aria-selected', String(GAME_SCREENS.includes(id)));
   $('tabLib').setAttribute('aria-selected', String(id === 'library'));
@@ -1382,8 +1501,10 @@ function route() {
   if (h === '#cauldron') cd.mode = 'brew';
   const id = Object.keys(HASHES).find(k => HASHES[k] && HASHES[k] === h);
   if (id === 'library') { renderLibrary(); show('library'); }
+  else if (id === 'keep') openKeep();
   else if (id === 'make') show('make');
-  else openGame(id || 'games');     // the plain link opens on the games page
+  else if (id) openGame(id);
+  else openTown();                  // the plain link (and #town) opens on the town
 }
 function drawMakeTile() {           // the games page's Make card shows whichever monster is on the flip book
   PARTS.forEach(p => { const im = $('mk' + p); if (im) im.src = stripSrc(p, state[p]); });
@@ -1397,21 +1518,27 @@ let cardURL = null, cardBlob = null;
 function buildQuestions() {
   const box = $('questions');
   for (const q of QUESTIONS) {
-    const row = document.createElement('div'); row.className = 'q'; row.style.setProperty('--qc', COLOURS[q.colour]);
-    row.innerHTML = `<img src="faces/F${q.face}.webp" alt=""><div><label for="q_${q.key}"></label><input id="q_${q.key}" maxlength="${q.key === 'name' ? 24 : 40}" autocomplete="off"></div>`;
-    row.querySelector('label').textContent = q.q;
-    row.querySelector('input').placeholder = q.eg;
-    box.append(row);
+    const block = document.createElement('div'); block.className = 'qblock'; block.style.setProperty('--qc', COLOURS[q.colour]);
+    block.innerHTML = `<div class="q"><img src="faces/F${q.face}.webp" alt=""><div><label for="q_${q.key}"></label><input id="q_${q.key}" maxlength="${q.key === 'name' ? 24 : 40}" autocomplete="off"></div>
+      <button class="say" type="button" data-say="${q.key}" aria-label="Read the question out"><svg viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4.2 4.2 0 0 1 0 6M18 6.5a7.6 7.6 0 0 1 0 11"/></svg></button></div>
+      <div class="picks${q.key === 'name' ? ' names' : ''}" id="p_${q.key}" role="group" aria-label="Answers to pick"></div>`;
+    block.querySelector('label').textContent = q.q;
+    block.querySelector('input').placeholder = q.key === 'name' ? 'Pick a name, or type one' : 'Pick one, or type your own';
+    box.append(block);
   }
+  buildPicks();
 }
 async function openMeet(keep) {
   const same = draft && draft.h === state.H && draft.b === state.B && draft.l === state.L;
   if (!keep && !same) draft = { h: state.H, b: state.B, l: state.L, name: '', food: '', friend: '', grumpy: '' };
+  const parts = [draft.h, draft.b, draft.l].join('-');
+  if (parts !== nameIdeasFor) { nameIdeas = makeNameIdeas(draft); nameIdeasFor = parts; }   // the same ideas until the monster changes
   QUESTIONS.forEach(q => { $('q_' + q.key).value = draft[q.key] || ''; });
+  renderPicks();
   const [mh, mb, ml] = [mon(draft.h), mon(draft.b), mon(draft.l)];
   $('meetParts').textContent = draft.h === draft.b && draft.b === draft.l
-    ? `The whole ${mh.name}. Ask these four questions and type the answers.`
-    : `${mh.name} head, ${mb.name} body and ${ml.name} legs. Ask these four questions and type the answers.`;
+    ? `The whole ${mh.name}. Pick an answer for each question, or type your own.`
+    : `${mh.name} head, ${mb.name} body and ${ml.name} legs. Pick an answer for each question, or type your own.`;
   viewing = null;
   show('meet');
   const m = await monsterCanvas(draft.h, draft.b, draft.l);
@@ -1420,13 +1547,10 @@ async function openMeet(keep) {
   const s = Math.min(pc.width / m.width, pc.height / m.height);
   x.drawImage(m, (pc.width - m.width * s) / 2, pc.height - m.height * s, m.width * s, m.height * s);
 }
-function readAnswers() { QUESTIONS.forEach(q => { draft[q.key] = $('q_' + q.key).value.trim(); }); }
-function silly() {
-  const parts = [mon(draft.h).name, mon(draft.b).name, mon(draft.l).name].map(s => s.replace(/\s.*/, ''));
-  const ends = ['bert', 'ella', 'bop', 'kins', 'boo', 'ster', 'ina', 'wump', 'doodle', 'pop'];
-  const a = parts[0].slice(0, Math.min(4, Math.max(3, Math.ceil(parts[0].length / 2))));
-  const b = parts[2].toLowerCase().slice(-3);
-  return (a + b + ends[Math.floor(Math.random() * ends.length)]).replace(/^./, c => c.toUpperCase());
+function readAnswers() {
+  QUESTIONS.forEach(q => { draft[q.key] = $('q_' + q.key).value.trim(); });
+  // a best friend picked from your monsters is remembered (so they can live next door one day), until the answer changes
+  if (draft.friendId && !store.monsters.some(m => m.id === draft.friendId && twName(m) === draft.friend)) delete draft.friendId;
 }
 async function openCard(rec, saved) {
   viewing = saved ? rec : null;
@@ -1444,6 +1568,7 @@ async function openCard(rec, saved) {
   $('saveLib').hidden = saved;
   $('saveLib').disabled = !!same;
   $('saveLib').textContent = same ? 'Saved in My monsters' : stored ? 'Save changes' : 'Save to My monsters';
+  $('toTown').hidden = !stored || tw.houses.some(h => h.id === rec.id);
   $('del').hidden = !saved; $('del').textContent = 'Delete this monster'; delArmed = false;
   $('another').textContent = saved ? 'Back to My monsters' : 'Make another';
   $('dl').hidden = !canSaveFiles();
@@ -3418,7 +3543,7 @@ function thumb(rec) {
   return thumbs.get(key);
 }
 let delArmed = false, delTimer;
-function backupText() { return JSON.stringify({ app: 'monster-book', version: 1, owner: store.owner, monsters: store.monsters }); }
+function backupText() { return JSON.stringify({ app: 'monster-book', version: 1, owner: store.owner, monsters: store.monsters, town: { v: 1, houses: tw.houses } }); }
 function restoreFrom(text) {
   let d;
   try { d = JSON.parse(text); } catch (e) { toast("That isn't a monster backup."); return; }
@@ -3430,7 +3555,641 @@ function restoreFrom(text) {
   store.monsters.sort((a, b) => String(a.created).localeCompare(String(b.created)));
   if (!store.owner && d.owner) store.owner = d.owner;
   persist(); renderTitle(); renderLibrary();
+  // the houses come back too, wherever their plot and their monster are both free
+  const plots = new Set(tw.houses.map(h => h.plot)), housed = new Set(tw.houses.map(h => h.id)), ids = new Set(store.monsters.map(m => m.id));
+  for (const h of twClean(d.town && d.town.houses)) if (!plots.has(h.plot) && !housed.has(h.id) && ids.has(h.id)) { tw.houses.push(h); plots.add(h.plot); housed.add(h.id); }
+  twSave(); if (!$('town').hidden) renderTown();
   toast(added.length ? `Restored ${added.length} monster${added.length > 1 ? 's' : ''}.` : 'Those monsters are already here.');
+}
+
+// ------------------------------------------------------------- the town -
+// The Monster Lab opens on a valley where your monsters live: one painted picture (town/valley-*.webp), with cottages
+// placed on its 22 plots by the page. Monsters from My monsters without a house wait at the town gate ("Fuzzbert needs a
+// home!"). Tap a plot: a cottage in the monster's colour pops up and the first monster in the queue hops over and moves
+// in. Tap a cottage for a close-up of that part of the valley, with the monster leaning out of its window and waving.
+// The signpost at the gate goes to the games, Make, the Learning Lab and Seek. Everything is saved on this device as
+// soon as it happens (monster-book.town), Back up saves the town with the monsters, and a linked phone copies it to
+// the family's store (see "keeping them safe").
+const TW_KEY = 'monster-book.town', TW_U = 3168, TW_V = 1344;   // the valley picture is 3168 by 1344 units
+const TW_GATE = { x: 800, y: 1050 };                              // where the first monster waits, just inside the gate
+const TW_PLOTS = [   // [area, x, y, width] of each plot's ground, in valley units (the middle of the bare earth)
+  ['lane', 1255, 1095, 340], ['lane', 1460, 1005, 260], ['lane', 1808, 1040, 300], ['lane', 2188, 1068, 300],
+  ['lane', 2623, 1045, 345], ['lane', 1075, 925, 280], ['lane', 1300, 865, 175], ['lane', 1963, 890, 225], ['lane', 2288, 905, 260],
+  ['forest', 2503, 830, 220], ['forest', 2808, 955, 310], ['forest', 2928, 812, 130],
+  ['lake', 2208, 512, 115], ['lake', 2328, 527, 115], ['lake', 2478, 545, 125], ['lake', 2490, 632, 160], ['lake', 2308, 670, 190],
+  ['hill', 795, 660, 200], ['hill', 1040, 575, 140],
+  ['mountain', 2678, 315, 85], ['mountain', 2818, 285, 85], ['mountain', 2908, 298, 90]];
+const TW_COT = { disc: .9953, cx: .4992, cy: .7349, ratio: 513 / 640 };   // the cottage picture: its grass disc's width and middle
+const TW_WIN = [.2613, .3278, .5521, .6855];                             // the close-ups' open window: x0, x1, y0, y1 of the picture
+const TW_CLOSE_RATIO = 2200 / 1228;
+const tw = { houses: [], busy: false, brew: 0, next: null, u: 1, open: null };
+function twLoad() {
+  try {
+    const t = JSON.parse(localStorage.getItem(TW_KEY) || '{}');
+    tw.houses = twClean(t.houses);
+  } catch (e) { tw.houses = []; }
+}
+function twClean(list) {   // one house per plot and one plot per monster, whatever's in the saved data
+  const plots = new Set(), ids = new Set(), out = [];
+  for (const h of Array.isArray(list) ? list : []) {
+    if (!h || !Number.isInteger(h.plot) || h.plot < 0 || h.plot >= TW_PLOTS.length || typeof h.id !== 'string' || plots.has(h.plot) || ids.has(h.id)) continue;
+    plots.add(h.plot); ids.add(h.id); out.push({ plot: h.plot, id: h.id });
+  }
+  return out;
+}
+twLoad();
+function twSave() {
+  try { localStorage.setItem(TW_KEY, JSON.stringify({ v: 1, houses: tw.houses })); } catch (e) { storageOK = false; }
+  try { kpSaveSoon(); } catch (e) {}
+}
+const twMon = id => store.monsters.find(m => m.id === id);
+function twWaiting() {   // monsters with no house yet, oldest first (or the one just sent here from its card)
+  const housed = new Set(tw.houses.map(h => h.id)), w = store.monsters.filter(m => !housed.has(m.id)), k = w.findIndex(m => m.id === tw.next);
+  if (k > 0) w.unshift(...w.splice(k, 1));
+  return w;
+}
+const twName = m => (m && typeof m.name === 'string' && m.name.trim()) || '';
+const twEsc = s => String(s).replace(/[<&>"]/g, c => ({ '<': '&lt;', '&': '&amp;', '>': '&gt;', '"': '&quot;' })[c]);
+const twColour = m => (m ? DATA.monsters[m.h - 1].colour : 'purple');          // the cottage's roof: the colour of the monster's head
+const twPct = (v, of) => `${(v / of * 100).toFixed(3)}%`;
+function twFigure(m, cls = '') {   // a whole monster, as tall as its box: in 3D if it's been made, or from its three strips
+  const a = kp.art.get(kpCombo(m));
+  if (a) return `<span class="twfig tw3d ${cls}" style="aspect-ratio: ${a.w} / ${a.h}"><img src="${a.url}" alt=""></span>`;
+  const T = G.heights.H + G.heights.B + G.heights.L;
+  return `<span class="twfig ${cls}" style="aspect-ratio: ${G.width} / ${T}">
+    <img class="twhead" src="${stripSrc('H', m.h)}" alt="" style="height: ${(G.heights.H / T * 100).toFixed(2)}%">
+    <img class="twbody" src="${stripSrc('B', m.b)}" alt="" style="height: ${(G.heights.B / T * 100).toFixed(2)}%">
+    <img class="twlegs" src="${stripSrc('L', m.l)}" alt="" style="height: ${(G.heights.L / T * 100).toFixed(2)}%"></span>`;
+}
+function twPlace(x, y) { return `left: ${twPct(x, TW_U)}; top: ${twPct(y, TW_V)}; z-index: ${Math.round(y)}`; }
+function twCottage(i, m) {   // a cottage on plot i, its grass disc covering the plot
+  const [area, x, y, w] = TW_PLOTS[i], name = twName(m), wide = w / TW_COT.disc;
+  const tag = name && w >= 150 ? `<span class="twname" style="font-size: calc(var(--u) * ${Math.round(w * .13)})">${twEsc(name.length > 14 ? name.slice(0, 13) + '…' : name)}</span>` : '';
+  return `<button class="twhouse${m ? '' : ' empty'}${y < 700 ? ' far' : ''}" type="button" data-plot="${i}" data-area="${area}"
+      style="${twPlace(x, y)}; width: ${twPct(wide, TW_U)}" aria-label="${m ? `${twEsc(name || 'A monster')}'s house` : 'An empty house'}">
+    <img src="town/cottage-${twColour(m)}.webp" alt="" draggable="false">${tag}</button>`;
+}
+function twEmpty(i, someone) {   // a plot to build on: an invisible button over its ground, with a pulsing plus when someone's waiting
+  const [area, x, y, w] = TW_PLOTS[i];
+  return `<button class="twplot${someone ? ' ready' : ''}" type="button" data-plot="${i}" data-area="${area}"
+      style="${twPlace(x, y)}; width: ${twPct(w * 1.1, TW_U)}" aria-label="${someone ? 'Build a house here' : 'An empty plot'}">
+    ${someone ? `<span class="twplus" style="width: calc(var(--u) * ${Math.round(Math.max(60, w * .32))})"></span>` : ''}</button>`;
+}
+const TW_SIGNS = [   // the four arms of the signpost at the town gate, over the blank arms of town/signpost.webp
+  { id: 'games', label: 'Games', box: [.17, .86, .07, .21], icon: '<path d="M7 9h14c4 0 6 3.4 6.5 7.6.5 4.3-.7 7.4-3.6 7.4-2.2 0-3.4-2.1-4.8-3.6H8.9c-1.5 1.5-2.6 3.6-4.8 3.6-2.9 0-4.1-3.1-3.6-7.4C1 12.4 3 9 7 9z" fill="#A880D6"/><path d="M6 15.5h5M8.5 13v5" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><circle cx="19.5" cy="14" r="1.8" fill="#EC6AA8" stroke="none"/><circle cx="22.8" cy="17.3" r="1.8" fill="#F2C828" stroke="none"/>' },
+  { id: 'make', label: 'Make', box: [.13, .86, .255, .385], icon: '<rect x="5" y="2" width="18" height="7.5" rx="2" fill="#EC6AA8"/><rect x="5" y="10.5" width="18" height="6.5" rx="2" fill="#A880D6"/><rect x="5" y="18" width="18" height="7.5" rx="2" fill="#68B242"/>' },
+  { id: 'learn', label: 'Learn', box: [.18, .80, .435, .555], icon: '<rect x="2" y="6" width="11" height="13" rx="2.5" fill="#68B242"/><rect x="15" y="6" width="11" height="13" rx="2.5" fill="#F2C828"/><text x="7.5" y="16.5" text-anchor="middle" font-size="10" font-weight="700" fill="#fff" stroke="none" font-family="Fredoka, sans-serif">A</text><text x="20.5" y="16.5" text-anchor="middle" font-size="10" font-weight="700" fill="#3A2852" stroke="none" font-family="Fredoka, sans-serif">1</text>' },
+  { id: 'seek', label: 'Seek', box: [.17, .84, .61, .73], icon: '<circle cx="12" cy="12" r="7.5" fill="#fff" stroke-width="2.6"/><path d="M17.5 17.5l6 6" stroke-width="4" stroke-linecap="round"/>' },
+];
+function twSignpost() {   // standing over the little painted one by the gate: 360 units wide, its foot at y 1312
+  const w = 360, h = w * 900 / 619, x0 = 22, y0 = 1312 - h;
+  const arms = TW_SIGNS.map(s => `<button class="twarm" type="button" data-sign="${s.id}" aria-label="${s.label}"
+      style="left: ${(s.box[0] * 100).toFixed(1)}%; width: ${((s.box[1] - s.box[0]) * 100).toFixed(1)}%; top: ${(s.box[2] * 100).toFixed(1)}%; height: ${((s.box[3] - s.box[2]) * 100).toFixed(1)}%">
+      <svg viewBox="0 0 28 28" aria-hidden="true" stroke="#3A2852" stroke-width="1.6" stroke-linejoin="round">${s.icon}</svg><span>${s.label}</span></button>`).join('');
+  return `<div class="twpost" style="left: ${twPct(x0, TW_U)}; top: ${twPct(y0, TW_V)}; width: ${twPct(w, TW_U)}; z-index: 1320">
+    <img src="town/signpost.webp" alt="" draggable="false">${arms}</div>`;
+}
+function twQueue(waiting) {   // the monsters waiting just inside the gate, the first one asking for a home
+  const g = TW_GATE;
+  if (!waiting.length) return store.monsters.length ? '' : `<button class="twsoon" type="button" data-sign="make" aria-label="Make a monster"
+      style="${twPlace(g.x, g.y)}; height: ${twPct(250, TW_V)}"><span class="twq">?</span></button>
+    <div class="twbubble" style="left: ${twPct(g.x - 10, TW_U)}; top: ${twPct(g.y - 270, TW_V)}"><b>Make a monster</b><b>to move in!</b></div>`;
+  const shown = waiting.slice(0, 4), first = shown[0], name = twName(first);
+  const back = shown.slice(1).map((m, k) => `<span class="twwait" style="${twPlace(g.x - 115 * (k + 1), g.y + 38 * (k + 1))}; height: ${twPct(230 - k * 20, TW_V)}">${twFigure(m)}</span>`).join('');
+  const more = waiting.length > 4 ? `<span class="twmore" style="${twPlace(g.x - 450, g.y + 150)}">+${waiting.length - 4}</span>` : '';
+  const short = name.length > 20 ? name.slice(0, 19) + '…' : name;
+  return `${back}${more}<button class="twfirst" type="button" data-queue="0" style="${twPlace(g.x, g.y)}; height: ${twPct(270, TW_V)}"
+      aria-label="${twEsc(name ? `${name} needs a home!` : 'I need a home!')}">${twFigure(first, 'twbob')}</button>
+    <div class="twbubble" style="left: ${twPct(g.x - 10, TW_U)}; top: ${twPct(g.y - 290, TW_V)}">${name ? `<b>${twEsc(short)}</b><b>needs a home!</b>` : '<b>I need a home!</b>'}</div>`;
+}
+function twSize() {   // the valley fills the screen under the tabs (but not so tall on a narrow phone that she sees only a sliver)
+  const box = $('townBox'), top = $('townWrap').getBoundingClientRect().top + scrollY;
+  const avail = innerHeight - top - 18, h = Math.round(Math.max(260, Math.min(780, avail, Math.max(300, box.clientWidth * .9))));
+  const w = Math.round(h * TW_U / TW_V);
+  box.style.height = `${h}px`;
+  const world = $('townWorld'); world.style.width = `${w}px`; world.style.height = `${h}px`;
+  tw.u = w / TW_U; world.style.setProperty('--u', `${tw.u}px`);
+  $('twValley').sizes = `${w}px`;
+  return { w, h };
+}
+function renderTown() {
+  twSize();
+  const waiting = twWaiting(), byPlot = new Map(tw.houses.map(h => [h.plot, h]));
+  let html = twSignpost();
+  TW_PLOTS.forEach((p, i) => { const h = byPlot.get(i); html += h ? twCottage(i, twMon(h.id)) : twEmpty(i, waiting.length > 0); });
+  $('twLayer').innerHTML = html + twQueue(waiting);
+  const full = tw.houses.length >= TW_PLOTS.length && !TW_PLOTS.some((p, i) => byPlot.get(i) && !twMon(byPlot.get(i).id));
+  $('townHint').textContent = waiting.length ? (full ? 'The valley is full! New places are coming soon.' : 'Tap a plot to build a house!')
+    : tw.houses.some(h => twMon(h.id)) ? 'Tap a house to visit!' : 'Welcome to your monster town!';
+}
+function openTown() { tw.brew++; tw.busy = false; twCloseUp(null); show('town'); renderTown(); }
+function twAt(x, y) { return { left: `${(x / TW_U * 100).toFixed(3)}%`, top: `${(y / TW_V * 100).toFixed(3)}%` }; }
+async function twBuild(plot) {   // a cottage pops up, and the first monster in the queue hops over and moves in
+  const m = twWaiting()[0];
+  if (!m || tw.busy) return;
+  const old = tw.houses.find(h => h.plot === plot);
+  if (old && twMon(old.id)) return;
+  tw.houses = tw.houses.filter(h => h.plot !== plot);
+  tw.houses.push({ plot, id: m.id }); twSave();   // saved straight away, so folding the phone shut mid-move loses nothing
+  tw.busy = true; const brew = ++tw.brew;
+  const [, px, py, pw] = TW_PLOTS[plot];
+  sound.unlock(); sound.pop(); setTimeout(() => { if (brew === tw.brew) sound.boing(); }, 140);
+  renderTown();
+  $('townHint').textContent = `${twName(m) || 'Your monster'} is moving in!`;
+  const house = $('twLayer').querySelector(`.twhouse[data-plot="${plot}"]`);
+  if (house && !reduced) house.animate([{ scale: '.05' }, { scale: '1.12', offset: .7 }, { scale: '1' }], { duration: 480, easing: 'ease-out' });
+  if (!reduced) {   // it hops from the gate to its door, getting smaller as it goes further away, then goes in
+    const walker = document.createElement('span');
+    walker.className = 'twwalker'; walker.innerHTML = twFigure(m);
+    const h0 = 270, h1 = Math.max(60, pw * .62), door = { x: px, y: py - pw * .08 };
+    Object.assign(walker.style, twAt(TW_GATE.x, TW_GATE.y), { height: twPct(h0, TW_V), zIndex: 1400 });
+    $('twLayer').append(walker);
+    const dist = Math.hypot(door.x - TW_GATE.x, door.y - TW_GATE.y), hops = Math.max(3, Math.min(8, Math.round(dist / 260))), ms = Math.min(2200, 600 + dist * .9);
+    const frames = [];
+    for (let k = 0; k <= hops * 2; k++) {
+      const f = k / (hops * 2), x = TW_GATE.x + (door.x - TW_GATE.x) * f, hh = h0 + (h1 - h0) * f, y = TW_GATE.y + (door.y - TW_GATE.y) * f - (k % 2 ? hh * .18 : 0);
+      frames.push({ ...twAt(x, y), height: twPct(hh, TW_V) });
+    }
+    for (let k = 0; k < hops; k++) setTimeout(() => { if (brew === tw.brew) sound.hop(); }, 420 + k * ms / hops);
+    await walker.animate(frames, { duration: ms, delay: 380, easing: 'linear', fill: 'forwards' }).finished.catch(() => {});
+    if (brew === tw.brew) await walker.animate([{ opacity: 1, scale: '1' }, { opacity: 0, scale: '.3' }], { duration: 320, fill: 'forwards' }).finished.catch(() => {});
+    walker.remove();
+  }
+  if (brew !== tw.brew) return;
+  tw.busy = false;
+  sound.click();
+  $('townHint').textContent = `${twName(m) || 'Your monster'} has a new home! Tap it to visit.`;
+}
+function twCloseUp(plot) {   // the close-up of one house: its part of the valley, its roof colour, and its monster at the window
+  const box = $('twClose');
+  if (plot === null) { box.hidden = true; tw.open = null; $('townBox').hidden = false; return; }
+  const h = tw.houses.find(x => x.plot === plot), m = h && twMon(h.id);
+  if (!m) return;
+  tw.open = plot;
+  const [area] = TW_PLOTS[plot], H = $('townBox').clientHeight || 400, W = $('townWrap').clientWidth;
+  // the picture covers the box (like a cover photo), moved so the window sits a little left of the middle
+  const cover = Math.max(H, W / TW_CLOSE_RATIO), ih = Math.round(cover), iw = Math.round(ih * TW_CLOSE_RATIO);
+  const wx = (TW_WIN[0] + TW_WIN[1]) / 2 * iw, wy = (TW_WIN[2] + TW_WIN[3]) / 2 * ih;
+  const left = Math.round(Math.max(Math.min(0, W * .42 - wx), W - iw)), top = Math.round(Math.max(Math.min(0, H * .55 - wy), H - ih));
+  const win = { x0: left + TW_WIN[0] * iw, x1: left + TW_WIN[1] * iw, y0: top + TW_WIN[2] * ih, y1: top + TW_WIN[3] * ih };
+  const T = G.heights.H + G.heights.B + G.heights.L, ww = win.x1 - win.x0, a = kp.art.get(kpCombo(m));
+  // the book figure is 2 windows wide, its chin on the line .74 of the way down the window; a 3D one is about as tall
+  // as the book figure would be at 1.65, with its chin about .4 of the way down it, and its head (hx across) in the
+  // middle of the window
+  const fh = ww * (a ? 1.65 * .9 : 2) * T / G.width, fw = a ? fh * a.w / a.h : ww * 2, hx = a ? a.hx : .5;
+  const chin = win.y0 + (win.y1 - win.y0) * (a ? .72 : .74), figTop = chin - fh * (a ? .4 : G.heights.H / T);
+  box.style.height = `${H}px`;
+  box.innerHTML = `<div class="twroom" style="left: ${win.x0 - 4}px; top: ${win.y0 - 4}px; width: ${ww + 8}px; height: ${win.y1 - win.y0 + 8}px"></div>
+    <img class="twclosepic" src="town/close-${area}-${twColour(m)}.webp" alt="" draggable="false" style="left: ${left}px; top: ${top}px; width: ${iw}px; height: ${ih}px">
+    <div class="twlean" style="left: ${win.x0 - ww * .7}px; width: ${ww * 2.4}px; height: ${win.y1 - 3}px">
+      <button class="twleaner" id="twLeaner" type="button" aria-label="${twEsc(twName(m) || 'Your monster')} waves"
+        style="left: ${ww * .7 + ww / 2 - fw * hx}px; top: ${figTop}px; width: ${fw}px; height: ${fh}px">${twFigure(m)}</button></div>
+    <p class="twcloseName">${twEsc(twName(m) ? `${twName(m)}'s house` : 'A monster lives here')}</p>
+    <button class="twback" id="twBack" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>Town</button>`;
+  $('townBox').hidden = true; box.hidden = false;
+  twWave();
+}
+function twWave() {   // the monster leans out of its window, bobs and waves
+  const b = $('twLeaner'), h = tw.houses.find(x => x.plot === tw.open), m = h && twMon(h.id);
+  if (!b || !m) return;
+  sound.unlock(); sound.giggle();
+  b.classList.remove('waving'); void b.getBoundingClientRect(); b.classList.add('waving');
+  $('townHint').textContent = `${twName(m) || 'Your monster'} says hello!`;
+}
+function twGo(id) {   // the signposts
+  sound.unlock(); sound.click();
+  if (id === 'games') openGame('games');
+  else if (id === 'make') show('make');
+  else if (id === 'learn') location.href = learnURL('');
+  else if (id === 'seek') {
+    const u = new URL('https://seek.mikeohalloran.au/');
+    if (ownerName()) u.searchParams.set('for', ownerName());
+    location.href = u.toString();
+  }
+}
+function twTap(e) {
+  const t = e.target.closest('[data-sign], [data-plot], [data-queue], #twBack, #twLeaner');
+  if (!t) return;
+  if (t.id === 'twBack') { sound.unlock(); sound.click(); twCloseUp(null); renderTown(); return; }
+  if (t.id === 'twLeaner') { twWave(); return; }
+  if (t.dataset.sign) { twGo(t.dataset.sign); return; }
+  if (tw.busy) return;
+  if (t.dataset.queue !== undefined) {   // tapping the monster at the gate: it hops, and the plots wiggle
+    sound.unlock(); sound.hop();
+    if (!reduced) {
+      t.querySelector('.twfig')?.animate([{ translate: '0 0' }, { translate: '0 -18%' }, { translate: '0 0' }], { duration: 380, easing: 'ease-out' });
+      document.querySelectorAll('#twLayer .twplot.ready .twplus').forEach(c => c.animate([{ scale: '1' }, { scale: '1.35' }, { scale: '1' }], { duration: 500 }));
+    }
+    return;
+  }
+  const plot = Number(t.dataset.plot), h = tw.houses.find(x => x.plot === plot);
+  if (h && twMon(h.id)) { sound.unlock(); sound.click(); twCloseUp(plot); }
+  else if (twWaiting().length) twBuild(plot);
+  else { sound.unlock(); sound.click(); $('townHint').textContent = store.monsters.length ? 'Make another monster to live here!' : 'Make a monster, and it will move in!'; }
+}
+function buildTown() {
+  $('townWrap').addEventListener('click', twTap);
+  let rt;
+  addEventListener('resize', () => {   // folding or turning the phone: stop any move halfway (it's already saved) and redraw
+    clearTimeout(rt); rt = setTimeout(() => {
+      if ($('town').hidden) return;
+      tw.brew++; tw.busy = false;
+      const open = tw.open; twCloseUp(null); renderTown(); if (open !== null) twCloseUp(open);
+    }, 120);
+  });
+}
+
+// ---------------------------------------------------- keeping them safe ---
+// A grown-up can link this phone to the family's private store, which answers under /store/ on the Monster Lab's own
+// address and nowhere else (on any other copy of this page, linking just says it can't be done here). Nothing is sent
+// anywhere unless a grown-up does this. Open #keep: the phone makes its own key (the private half can't be read out of
+// the browser), the store gives it three monster faces, and the grown-up taps the same three on the store's grown-up
+// page, signed in with their passkey. After that, every change is copied to the store; a phone that joins a child who
+// already has a copy brings it back; and each monster is made in 3D (once for each head, body and legs, shared by every
+// linked phone) and used in the town. Unlinked, none of this runs: not even the phone's own key store is opened.
+const KP_FLAG = 'monster-book.keep', KP_SAVE_MS = 1500;
+const kp = { me: null, db: null, queue: Promise.resolve(), t: 0, art: new Map(), timer: 0, poll: 0, making: new Set(), offline: false, busy: false, msg: '' };
+const kpCombo = m => `${pad(m.h)}-${pad(m.b)}-${pad(m.l)}`;
+const kpLinked = () => !!(kp.me && kp.me.status === 'approved');
+function kpDB() {
+  if (!kp.db) kp.db = new Promise((res, rej) => {
+    const r = indexedDB.open(KP_FLAG, 1);
+    r.onupgradeneeded = () => { r.result.createObjectStore('kv'); r.result.createObjectStore('art'); };
+    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+  });
+  return kp.db;
+}
+async function kpIDB(name, mode, fn) {
+  const db = await kpDB();
+  return new Promise((res, rej) => {
+    const tx = db.transaction(name, mode), req = fn(tx.objectStore(name));
+    tx.oncomplete = () => res(req ? req.result : undefined); tx.onerror = tx.onabort = () => rej(tx.error);
+  });
+}
+const kpGet = (s, k) => kpIDB(s, 'readonly', o => o.get(k));
+const kpPut = (s, k, v) => kpIDB(s, 'readwrite', o => o.put(v, k));
+const kpAll = s => kpIDB(s, 'readonly', o => o.getAll());
+const kpAllKeys = s => kpIDB(s, 'readonly', o => o.getAllKeys());
+const kpSaveMe = () => kpPut('kv', 'me', kp.me).catch(() => {});
+function kpB64(buf) { const b = new Uint8Array(buf); let s = ''; for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode(...b.subarray(i, i + 0x8000)); return btoa(s); }
+const kpB64url = buf => kpB64(buf).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+async function kpHex(data) { return [...new Uint8Array(await crypto.subtle.digest('SHA-256', data))].map(x => x.toString(16).padStart(2, '0')).join(''); }
+
+function kpFetch(method, path, body, type = 'application/json') {   // a request signed with this phone's key, one at a time
+  const run = async () => {
+    const data = body == null ? new Uint8Array() : body instanceof Uint8Array ? body : new TextEncoder().encode(body);
+    kp.t = Math.max(Date.now(), kp.t + 1);
+    const sig = await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, kp.me.keys.privateKey,
+      new TextEncoder().encode(`${method}\n${path}\n${kp.t}\n${await kpHex(data)}`));
+    const headers = { 'x-mb-device': kp.me.id, 'x-mb-time': String(kp.t), 'x-mb-sig': kpB64url(sig) };
+    if (data.length) headers['content-type'] = type;
+    return fetch(path, { method, headers, body: data.length ? data : undefined, credentials: 'omit', cache: 'no-store' });
+  };
+  const p = kp.queue.then(run, run);
+  kp.queue = p.catch(() => {});
+  return p;
+}
+
+async function kpStart() {   // on opening: only if this phone was ever linked
+  let flagged = false;
+  try { flagged = localStorage.getItem(KP_FLAG) === '1'; } catch (e) {}
+  if (!flagged || !window.indexedDB || !window.crypto?.subtle) return;
+  try {
+    const me = await kpGet('kv', 'me');
+    if (!me || !me.id || !me.keys) return;
+    kp.me = me;
+    const keys = await kpAllKeys('art'), vals = await kpAll('art');
+    keys.forEach((k, i) => { const a = vals[i]; if (a && a.blob) kp.art.set(k, { url: URL.createObjectURL(a.blob), w: a.w, h: a.h, hx: a.hx }); });
+    if (kp.art.size && !$('town').hidden && !tw.busy && tw.open === null) renderTown();
+    await kpCheck();
+  } catch (e) {}
+  renderKeepLine();
+}
+async function kpCheck() {   // asks the store how this phone stands
+  if (!kp.me) return;
+  let d;
+  try {
+    const r = await kpFetch('GET', '/store/v1/me');
+    if (!r.ok) { kp.offline = r.status >= 500 || r.status === 404; return; }
+    d = await r.json(); kp.offline = false;
+  } catch (e) { kp.offline = true; return; }
+  const was = kp.me.status;
+  kp.me.status = d.status;
+  if (d.faces) kp.me.faces = d.faces;
+  await kpSaveMe();
+  if (d.status === 'approved') {
+    if (was !== 'approved') await kpApproved(d);
+    else { kpSaveSoon(0); kpArtAll(); }
+  }
+  renderKeepLine();
+  if (!$('keep').hidden) renderKeep();
+}
+async function kpApproved(d) {   // a grown-up has just said yes: bring back the saved copy if there is one, then keep saving
+  kpStopPoll();
+  sound.unlock(); sound.click();
+  if (d.copy && !d.copy.fromHere && d.copy.monsters) await kpBringBack();
+  kpSaveSoon(0); kpArtAll();
+}
+async function kpBringBack() {
+  try {
+    const r = await kpFetch('GET', '/store/v1/copy');
+    if (!r.ok) { if (r.status !== 404) toast("The saved copy couldn't be fetched. Try again soon."); return; }
+    restoreFrom((await r.json()).data);   // adds whatever isn't here yet, and the houses where they're free
+    kpArtAll();
+  } catch (e) { toast("The saved copy couldn't be fetched. Try again soon."); }
+}
+function kpSaveSoon(ms = KP_SAVE_MS) {
+  if (!kpLinked()) return;
+  clearTimeout(kp.timer); kp.timer = setTimeout(kpSave, ms);
+}
+async function kpSave() {
+  if (!kpLinked()) return;
+  try {
+    const r = await kpFetch('PUT', '/store/v1/save', backupText());
+    if (r.ok) { kp.me.saved = Date.now(); kp.offline = false; await kpSaveMe(); }
+    else if (r.status === 403) await kpCheck();
+    else kp.offline = true;
+  } catch (e) { kp.offline = true; }
+  renderKeepLine();
+  if (!$('keep').hidden) renderKeep();
+}
+
+// --- 3D monsters
+function kpBookPicture(m) {   // the book monster, its three strips stacked on white, as a JPEG for the picture maker
+  const T = G.heights.H + G.heights.B + G.heights.L, s = .5, c = document.createElement('canvas');
+  c.width = Math.round(G.width * s); c.height = Math.round(T * s);
+  const g = c.getContext('2d');
+  g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height);
+  return Promise.all(PARTS.map(p => loadImg(stripSrc(p, m[p.toLowerCase()])))).then(([h, b, l]) => {
+    let y = 0;
+    for (const [im, p] of [[h, 'H'], [b, 'B'], [l, 'L']]) { const hh = G.heights[p] * s; g.drawImage(im, 0, y, c.width, hh); y += hh; }
+    return new Promise(res => c.toBlob(res, 'image/jpeg', .9));
+  }).then(async blob => kpB64(await blob.arrayBuffer()));
+}
+async function kpCutOut(blob) {   // the picture maker paints on white: cut the white away from the edges in, then trim
+  const bmp = await createImageBitmap(blob), W = bmp.width, H = bmp.height;
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(bmp, 0, 0);
+  const img = g.getImageData(0, 0, W, H), d = img.data, gone = new Uint8Array(W * H), stack = [];
+  const white = p => { const i = p * 4, r = d[i], gg = d[i + 1], b = d[i + 2]; return r > 228 && gg > 228 && b > 228 && Math.max(r, gg, b) - Math.min(r, gg, b) < 20; };
+  const seed = p => { if (!gone[p] && white(p)) { gone[p] = 1; stack.push(p); } };
+  for (let x = 0; x < W; x++) { seed(x); seed((H - 1) * W + x); }
+  for (let y = 0; y < H; y++) { seed(y * W); seed(y * W + W - 1); }
+  while (stack.length) {
+    const p = stack.pop(), x = p % W;
+    if (x > 0) seed(p - 1); if (x < W - 1) seed(p + 1); if (p >= W) seed(p - W); if (p < W * (H - 1)) seed(p + W);
+  }
+  let x0 = W, x1 = -1, y0 = H, y1 = -1;
+  for (let p = 0; p < W * H; p++) {
+    if (gone[p]) { d[p * 4 + 3] = 0; continue; }
+    const x = p % W, y = (p - x) / W;
+    // the edge: pale pixels next to the cut-out fade out, so there's no white rim
+    if ((x > 0 && gone[p - 1]) || (x < W - 1 && gone[p + 1]) || (p >= W && gone[p - W]) || (p < W * (H - 1) && gone[p + W])) {
+      const i = p * 4, lo = Math.min(d[i], d[i + 1], d[i + 2]);
+      if (lo > 200) d[i + 3] = Math.round(255 * Math.min(1, (255 - lo) / 55));
+    }
+    if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+  }
+  if (x1 < 0) return null;
+  g.putImageData(img, 0, 0);
+  const cw = x1 - x0 + 1, ch = y1 - y0 + 1, k = Math.min(1, 640 / ch), out = document.createElement('canvas');
+  out.width = Math.round(cw * k); out.height = Math.round(ch * k);
+  out.getContext('2d').drawImage(c, x0, y0, cw, ch, 0, 0, out.width, out.height);
+  return new Promise(res => out.toBlob(res, 'image/webp', .86));
+}
+async function kpArtMeta(blob) {   // its size, and where its head is across (the middle of the top quarter)
+  const bmp = await createImageBitmap(blob), w = bmp.width, h = bmp.height, sh = 120, sw = Math.max(1, Math.round(w * sh / h));
+  const c = document.createElement('canvas'); c.width = sw; c.height = sh;
+  const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(bmp, 0, 0, sw, sh);
+  const d = g.getImageData(0, 0, sw, Math.round(sh * .25)).data;
+  let sum = 0, n = 0;
+  for (let i = 3; i < d.length; i += 4) if (d[i] > 128) { sum += ((i - 3) / 4) % sw; n++; }
+  return { w, h, hx: n ? (sum / n + .5) / sw : .5 };
+}
+async function kpKeepArt(combo, blob) {
+  const meta = await kpArtMeta(blob);
+  await kpPut('art', combo, { blob, ...meta }).catch(() => {});
+  const old = kp.art.get(combo);
+  if (old) URL.revokeObjectURL(old.url);
+  kp.art.set(combo, { url: URL.createObjectURL(blob), ...meta });
+  if (!$('town').hidden && !tw.busy && tw.open === null) renderTown();
+}
+function kpUnb64(text) { const bin = atob(text), out = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i); return out; }
+async function kpArtFor(m) {   // this monster in 3D: fetched if some phone has made it already, made if not
+  const combo = kpCombo(m);
+  if (!kpLinked() || kp.art.has(combo) || kp.making.has(combo)) return;
+  kp.making.add(combo);
+  try {
+    let r = await kpFetch('GET', `/store/v1/art/${combo}`), blob = r.ok ? await r.blob() : null;
+    if (!blob && r.status === 404) {
+      r = await kpFetch('POST', `/store/v1/art/${combo}/make`, JSON.stringify({ type: 'image/jpeg', image: await kpBookPicture(m) }));
+      if (r.status === 409) { r = await kpFetch('GET', `/store/v1/art/${combo}`); blob = r.ok ? await r.blob() : null; }
+      else if (r.ok) {
+        const parts = (await r.json()).candidates?.[0]?.content?.parts || [];
+        const inl = parts.map(p => p.inlineData || p.inline_data).find(Boolean);
+        if (inl && inl.data) {
+          blob = await kpCutOut(new Blob([kpUnb64(inl.data)], { type: inl.mimeType || inl.mime_type || 'image/png' }));
+          if (blob && blob.type === 'image/webp') await kpFetch('PUT', `/store/v1/art/${combo}`, new Uint8Array(await blob.arrayBuffer()), 'image/webp');
+        }
+      }
+    }
+    if (blob) await kpKeepArt(combo, blob);
+  } catch (e) {} finally { kp.making.delete(combo); }
+}
+async function kpArtAll() {   // every monster here that isn't in 3D yet, one at a time
+  if (kp.busy) return;
+  kp.busy = true;
+  try {
+    const seen = new Set();
+    for (const m of [...store.monsters].reverse()) {
+      const c = kpCombo(m);
+      if (seen.has(c) || kp.art.has(c)) continue;
+      seen.add(c);
+      await kpArtFor(m);
+      if (!kpLinked()) break;
+    }
+  } finally { kp.busy = false; }
+}
+
+// --- the Keep screen (#keep) and the line in My monsters
+async function kpJoin() {
+  kp.msg = '';
+  try {
+    const keys = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign', 'verify']);
+    const jwk = await crypto.subtle.exportKey('jwk', keys.publicKey);
+    const r = await fetch('/store/v1/join', { method: 'POST', headers: { 'content-type': 'application/json' }, credentials: 'omit', cache: 'no-store',
+      body: JSON.stringify({ key: { kty: jwk.kty, crv: jwk.crv, x: jwk.x, y: jwk.y } }) });
+    const d = await r.json().catch(() => null);
+    if (!r.ok || !d || !d.device) {
+      kp.msg = d && d.error ? d.error : "This copy of the Monster Lab can't link to a family's store. Use monsters.mikeohalloran.au.";
+      renderKeep(); return;
+    }
+    try { localStorage.setItem(KP_FLAG, '1'); } catch (e) {}
+    kp.me = { id: d.device, keys, status: 'waiting', faces: d.faces, expires: d.expires };
+    await kpSaveMe();
+  } catch (e) {
+    kp.msg = "This copy of the Monster Lab can't link to a family's store. Use monsters.mikeohalloran.au.";
+  }
+  renderKeep(); renderKeepLine(); kpStartPoll();
+}
+function kpStartPoll() {
+  kpStopPoll();
+  if (kp.me && kp.me.status === 'waiting') kp.poll = setInterval(() => { if (!$('keep').hidden) kpCheck(); else kpStopPoll(); }, 3000);
+}
+function kpStopPoll() { clearInterval(kp.poll); kp.poll = 0; }
+function kpAgo(t) {
+  if (!t) return 'not yet';
+  const s = Math.round((Date.now() - t) / 1000);
+  return s < 60 ? 'just now' : s < 3600 ? `${Math.round(s / 60)} min ago` : new Date(t).toLocaleString('en-AU', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
+}
+function renderKeep() {
+  const me = kp.me, st = me ? me.status : 'none', p = $('keepPanel');
+  const faces = me && me.faces ? me.faces : [];
+  const msg = kp.msg ? `<p class="note kpmsg">${twEsc(kp.msg)}</p>` : '';
+  if (st === 'approved') {
+    p.innerHTML = `<h2 class="h2">These monsters are kept safe</h2>
+      <p class="lede">Every change is copied to your family's private store. ${kp.offline ? "This phone is offline, so it'll save when it's back." : `Last saved ${kpAgo(me.saved)}.`}</p>
+      <p class="note">If this phone is lost or wiped, link the new one and everything comes back. Each new monster is also made in 3D for the town.</p>
+      <div class="row2"><button class="btn" id="kpBring" type="button">Get the saved copy back</button></div>${msg}`;
+  } else if (st === 'waiting') {
+    p.innerHTML = `<h2 class="h2">Show these to your grown-up</h2>
+      <div class="kpfaces" role="img" aria-label="${faces.map(f => mon(f).name).join(', ')}">${faces.map((f, i) => `<figure><img src="faces/F${pad(f)}.webp" alt=""><figcaption>${i + 1}</figcaption></figure>`).join('')}</div>
+      <p class="lede">On your own phone or computer, open <b>${twEsc(location.host)}/store/grownup</b>, sign in with your passkey, and tap these three faces in this order.</p>
+      <p class="note kpwait">Waiting for a grown-up to say yes…</p>
+      <div class="row2"><button class="btn quiet" id="kpAgain" type="button">Start again</button></div>${msg}`;
+  } else {
+    const why = st === 'expired' ? '<p class="lede">That took too long, so the faces have run out. Start again for new ones.</p>'
+      : st === 'removed' ? '<p class="lede">A grown-up has unlinked this phone, so nothing is saved to the store any more. The monsters on it are still here.</p>'
+      : '<p class="lede">For grown-ups: link this phone to your family\'s private store. A copy of every monster and house is kept safe, a new phone can get them all back, and each new monster is made in 3D.</p>';
+    p.innerHTML = `<h2 class="h2">Keep these monsters safe</h2>${why}
+      <button class="btn primary" id="kpStart" type="button">${st === 'none' ? 'Link this phone' : 'Start again'}</button>
+      <p class="note">Nothing is sent anywhere until you do this. You'll need a grown-up's passkey for the family's store.</p>${msg}`;
+  }
+}
+function renderKeepLine() {
+  const line = $('kpLine'), note = $('libNote');
+  const st = kp.me ? kp.me.status : null;
+  line.hidden = !st;
+  if (st) line.querySelector('a').textContent = st === 'approved' ? (kp.offline ? 'Kept safe · saves when back online' : `Kept safe · saved ${kpAgo(kp.me.saved)}`)
+    : st === 'waiting' ? "Keeping safe · waiting for a grown-up's yes" : 'Not kept safe any more';
+  note.textContent = st === 'approved' ? 'Your monsters are saved on this device, and a copy is kept safe in your family\'s private store.'
+    : 'Your monsters are saved on this device only. Nothing you type is sent anywhere.';
+}
+function openKeep() {
+  kp.msg = '';
+  show('keep'); renderKeep();
+  if (kp.me) { kpCheck(); kpStartPoll(); }
+}
+function buildKeep() {
+  $('keepPanel').addEventListener('click', async e => {
+    const b = e.target.closest('button'); if (!b) return;
+    sound.unlock(); sound.click();
+    if (b.id === 'kpStart' || b.id === 'kpAgain') { b.disabled = true; await kpJoin(); }
+    else if (b.id === 'kpBring') { b.disabled = true; await kpBringBack(); renderKeep(); }
+  });
+  addEventListener('online', () => { if (kpLinked()) { kpSaveSoon(0); kpArtAll(); } });
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && kpLinked() && kp.offline) kpSaveSoon(0); });
+  renderKeepLine();
+  kpStart();
+}
+
+// ----------------------------------------------------- picture answers ---
+// Every question on Meet your monster has answers to pick, so a child can make a monster without typing or reading:
+// names made from the monster's own pieces, pictures of foods (some of them silly), the other monsters they've made as
+// best friends, and things that make monsters grumpy. Tapping one says it out loud. The box still takes typing.
+const PICKS = {
+  food: ['Pizza', 'Socks', 'Spaghetti', 'Worms', 'Bananas', 'Soap', 'Ice cream', 'Rocks', 'Cupcakes', 'Smelly shoes', 'Carrots', 'Crayons'],
+  friend: ['A snail', 'A puppy', 'A kitten', 'A dinosaur', 'A ghost', 'A bee', 'A unicorn', 'A robot'],
+  grumpy: ['Bath time', 'Bedtime', 'Rain', 'Broccoli', 'Spiders', 'Wet socks', 'Loud noises', 'Brushing teeth', 'Waking up', 'Tidying up', 'Being tickled', 'Waiting'],
+};
+const pickSlug = w => w.toLowerCase().replace(/[^a-z]+/g, '-').replace(/^-|-$/g, '').replace(/^a-/, '');
+function pickSrc(key, ans) {   // the little 3D picture for a picked answer (town/pick-food-pizza.webp), or '' if it was typed
+  const w = (PICKS[key] || []).find(p => p.toLowerCase() === String(ans).trim().toLowerCase());
+  return w ? `town/pick-${key}-${pickSlug(w)}.webp` : '';
+}
+// the start and end of each monster's name, for joining pieces into names: Unicorn head + Penguin legs = Uniguin
+const NAME_BITS = [['Uni', 'corn'], ['Dino', 'saur'], ['Balle', 'rina'], ['Peng', 'guin'], ['Octo', 'pus'], ['Bana', 'nana'],
+  ['Mer', 'maid'], ['Owl', 'owl'], ['Yet', 'eti'], ['Frog', 'frog'], ['Bumble', 'bee'], ['Pump', 'kin'], ['Flam', 'mingo'],
+  ['Bat', 'bat'], ['Shark', 'ark'], ['Troll', 'troll'], ['Chick', 'ick'], ['Fox', 'fox'], ['Axo', 'lotl'], ['Chame', 'leon'],
+  ['Snow', 'ster'], ['Parr', 'rot'], ['Pine', 'apple'], ['Drag', 'gon'], ['Cup', 'cake'], ['Ali', 'lien'], ['Jelly', 'fish'],
+  ['Cact', 'tus'], ['Snail', 'ail'], ['Fire', 'bird']];
+const NAME_TITLES = ['Sir', 'Lady', 'Captain', 'Professor', 'Little', 'Big', 'Baby', 'Princess', 'Prince', 'King', 'Queen', 'Doctor'];
+const NAME_ENDS = ['bert', 'ella', 'bop', 'kins', 'boo', 'ster', 'ina', 'wump', 'doodle', 'pop', 'y', 'o'];
+const NAME_FUNNY = ['Wobblebottom', 'Noodle', 'Gumdrop', 'Bumblesnoot', 'Gloop', 'Squishy', 'Snorkel', 'Puddles', 'Dumpling',
+  'Sprinkles', 'Mr Grumbles', 'Tickles', 'Jellybean', 'Captain Wiggles', 'Burp', 'Fizzwhistle', 'Muddle', 'Sir Snores-a-lot'];
+let nameIdeas = [], nameIdeasFor = '';
+function makeNameIdeas(d) {
+  const any = a => a[Math.floor(Math.random() * a.length)];
+  const [H, B, L] = [d.h, d.b, d.l].map(n => NAME_BITS[n - 1]);
+  const join = (a, b) => a[0].toLowerCase() === b[1] ? a[0] + any(NAME_ENDS) : a[0] + b[1];
+  const out = new Set(), real = new Set(DATA.monsters.map(m => m.name.toLowerCase()));
+  const add = n => { if (n && !real.has(n.toLowerCase())) out.add(n); };
+  add(join(H, L));                                   // head + legs
+  add(`${any(NAME_TITLES)} ${join(B, H)}`);          // a title, and body + head
+  add(H[0] + any(NAME_ENDS));                        // head + a silly ending
+  while (out.size < 4) add(any(NAME_FUNNY));        // and one just for fun
+  return [...out].slice(0, 4).sort(() => Math.random() - .5);
+}
+const say = (() => {   // the phone's own voice reads the picks and questions out
+  let voice = null;
+  const choose = () => {
+    try {   // an Australian voice if there is one, and one that runs on the device rather than online
+      const v = speechSynthesis.getVoices(), en = [/en[-_]AU/i, /en[-_]GB/i, /^en/i];
+      voice = en.map(r => v.find(x => x.localService && r.test(x.lang))).find(Boolean) || en.map(r => v.find(x => r.test(x.lang))).find(Boolean) || null;
+    } catch (e) {}
+  };
+  try { choose(); speechSynthesis.addEventListener('voiceschanged', choose); } catch (e) {}
+  return text => {
+    if (!sound.on || !text) return;
+    try {
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      if (voice) { u.voice = voice; u.lang = voice.lang; } else u.lang = 'en-AU';
+      u.rate = .9; u.pitch = 1.15; speechSynthesis.speak(u);
+    } catch (e) {}
+  };
+})();
+function pickButton(key, value, inner, id = '') {
+  return `<button class="pick" type="button" data-key="${key}" data-pick="${twEsc(value)}"${id ? ` data-id="${twEsc(id)}"` : ''} aria-pressed="false">${inner}</button>`;
+}
+function renderPicks() {   // fills in the picks for the monster on the Meet page
+  if (!nameIdeas.length) nameIdeas = makeNameIdeas(draft);
+  $('p_name').innerHTML = nameIdeas.map(n => pickButton('name', n, twEsc(n))).join('')
+    + '<button class="pick dice" id="makeName" type="button" aria-label="More names"><span class="pe" aria-hidden="true">🎲</span></button>';
+  const friends = store.monsters.filter(m => m.id !== draft.id && twName(m)).slice(-8).reverse();
+  $('p_friend').innerHTML = friends.map(m => pickButton('friend', twName(m), `<img src="faces/F${pad(m.h)}.webp" alt=""><span class="pw">${twEsc(twName(m))}</span>`, m.id)).join('')
+    + PICKS.friend.map(w => pickButton('friend', w, `<img class="pp" src="${pickSrc('friend', w)}" alt=""><span class="pw">${w}</span>`)).join('');
+  for (const key of ['food', 'grumpy']) $('p_' + key).innerHTML = PICKS[key].map(w => pickButton(key, w, `<img class="pp" src="${pickSrc(key, w)}" alt=""><span class="pw">${w}</span>`)).join('');
+  QUESTIONS.forEach(q => markPicks(q.key));
+}
+function markPicks(key) {
+  const v = $('q_' + key).value.trim().toLowerCase();
+  $('p_' + key).querySelectorAll('[data-pick]').forEach(b => {
+    const on = b.dataset.pick.toLowerCase() === v && (key !== 'friend' || !draft.friendId || !b.dataset.id || b.dataset.id === draft.friendId);
+    b.setAttribute('aria-pressed', String(on));
+  });
+}
+function setAnswer(key, value, id) {
+  $('q_' + key).value = value;
+  if (key === 'friend') { if (id) draft.friendId = id; else delete draft.friendId; }
+  markPicks(key);
+  sound.unlock(); say(value);
+}
+function buildPicks() {
+  const box = $('questions');
+  box.addEventListener('click', e => {
+    const b = e.target.closest('[data-pick], [data-say], #makeName');
+    if (!b || !draft) return;
+    if (b.id === 'makeName') {   // new name ideas, and the first one goes in
+      const now = $('q_name').value.trim();
+      nameIdeas = makeNameIdeas(draft); renderPicks();
+      const fresh = nameIdeas.filter(n => n !== now);
+      setAnswer('name', fresh[Math.floor(Math.random() * fresh.length)] || nameIdeas[0]); return;
+    }
+    if (b.dataset.say) { sound.unlock(); say(QUESTIONS.find(q => q.key === b.dataset.say).q); return; }
+    setAnswer(b.dataset.key, b.dataset.pick, b.dataset.id);
+  });
+  box.addEventListener('input', e => { const k = e.target.id?.replace(/^q_/, ''); if (PICKS[k] || k === 'name') markPicks(k); });
 }
 
 // ------------------------------------------------------------- wiring ----
@@ -3441,6 +4200,10 @@ function init() {
   $('tabMake').addEventListener('click', () => show('make'));
   $('tabLib').addEventListener('click', () => { renderLibrary(); show('library'); });
   $('tabGames').addEventListener('click', () => openGame('games'));
+  $('tabTown').addEventListener('click', openTown);
+  $('toTown').addEventListener('click', () => { tw.next = (viewing || draft || {}).id || null; openTown(); });
+  buildTown();
+  buildKeep();
   $('playMatch').addEventListener('click', () => openGame('matchgame'));
   $('playWhack').addEventListener('click', () => openGame('whackgame'));
   $('playBed').addEventListener('click', () => openGame('bedgame'));
@@ -3475,7 +4238,6 @@ function init() {
   $('codes').addEventListener('submit', submitCodes);
   $('toMeet').addEventListener('click', () => openMeet(false));
   $('backFlip').addEventListener('click', () => { readAnswers(); show('make'); });
-  $('makeName').addEventListener('click', () => { $('q_name').value = silly(); $('q_name').focus(); });
   $('toCard').addEventListener('click', () => {
     readAnswers();
     if (!draft.created) draft.created = new Date().toISOString();
@@ -3494,8 +4256,9 @@ function init() {
     if (!draft) return;
     const i = store.monsters.findIndex(m => m.id === draft.id);
     if (i >= 0) store.monsters[i] = { ...draft }; else store.monsters.push({ ...draft });
-    persist(); renderLibrary();
+    persist(); renderLibrary(); kpArtFor(draft);
     $('saveLib').disabled = true; $('saveLib').textContent = 'Saved in My monsters';
+    $('toTown').hidden = tw.houses.some(h => h.id === draft.id);
     toast(`${draft.name || 'Your monster'} is in My monsters.`);
   });
   $('del').addEventListener('click', () => {
