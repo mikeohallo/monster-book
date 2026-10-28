@@ -18,7 +18,16 @@ These never count as approval: a bare "go", a commit message, a trailer, an auth
 
 The monster art (`faces/`, `strips/`) is the book itself, so it's kept out of this repo and comes from Mike's machine with the upload. The town's pictures (`town/`) are the site's own, so they're in the repo, and the gate covers them like the page. The gate covers the code and the town; the book's art is content.
 
-After the deploy, check that the live page's SHA-256 matches `index.html` at `<commit>`, and that a sample of the live `town/` files (at least the valley pictures and one close-up) match theirs. Record the live commit in the project handover (not in this repo).
+After the deploy, check that the live page's SHA-256 matches `index.html` at `<commit>`, and that every live `town/` file matches its own. Record the live commit in the project handover (not in this repo).
+
+## Uploading: Mike clicks
+
+Claude's own safety check won't let a chat put a site live, whatever line it holds, and the chat never works round that check (agreed with the ideas chat, 28 Oct 2026). So once the gate above passes:
+
+1. The chat builds the upload zip from the checked files. Rollback zips live in a folder of their own, away from the upload zip, so the file picker can't offer the wrong one.
+2. The chat opens the project's **Create deployment → Production** page in Chrome and stops there. It tells Mike exactly which file to choose.
+3. **Mike chooses the zip and clicks Save and deploy.**
+4. The chat checks the live site against the commit: every gated file, not a sample.
 
 ## Before every push
 
