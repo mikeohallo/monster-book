@@ -29,10 +29,14 @@ def new_page(b, size='fold inner', mobile=True):
     ctx.route('https://fonts.gstatic.com/**', lambda r: r.abort())
     for site in ('learn', 'seek'):
         ctx.route(f'https://{site}.mikeohalloran.au/**', lambda r, site=site: r.fulfill(status=200, content_type='text/html', body=f'<p>{site}</p>'))
-    # the phone's voice, written down instead of spoken: window.__said is every line the page asked it to say
-    ctx.add_init_script("""window.__said = [];
-        Object.defineProperty(window, 'speechSynthesis', { configurable: true, value: { speak: u => window.__said.push(u.text),
-          cancel() {}, getVoices: () => [], addEventListener() {}, removeEventListener() {} } });""")
+    # the phone's voice, written down instead of spoken. The page says a line one sentence at a time, starting each line
+    # with cancel(), so window.__said is the lines (the sentences of each joined up again) and window.__parts each sentence
+    # as it was spoken; finishing a sentence takes a moment, and the breath between sentences is cut to nothing
+    ctx.add_init_script("""window.__said = []; window.__parts = []; window.__sayGap = 0; let fresh = true;
+        Object.defineProperty(window, 'speechSynthesis', { configurable: true, value: {
+          speak: u => { window.__parts.push(u.text); if (fresh || !window.__said.length) window.__said.push(u.text); else window.__said[window.__said.length - 1] += ' ' + u.text;
+                        fresh = false; setTimeout(() => u.onend && u.onend({}), 5); },
+          cancel() { fresh = true; }, getVoices: () => [], addEventListener() {}, removeEventListener() {} } });""")
     p = ctx.new_page()
     p.on('console', lambda m: m.type == 'error' and problems.append(f'console error: {m.text}'))
     p.on('pageerror', lambda e: problems.append(f'page error: {e}'))
@@ -214,7 +218,8 @@ with sync_playwright() as pw:
     ctx.close()
 
     # --- the town talks -------------------------------------------------------------------------------------------------
-    said = lambda p: p.evaluate('window.__said')
+    def said(p):   # every line said so far, once the last one has had time to finish
+        p.wait_for_timeout(120); return p.evaluate('window.__said')
     def touch_sky(p):   # a real touch on the valley's sky, where nothing is tappable
         box = p.locator('#townBox').bounding_box(); p.mouse.click(box['x'] + box['width'] * .5, box['y'] + 8)
     WELCOME = 'Welcome to your monster town! Make a monster, and it will move in.'
@@ -280,6 +285,17 @@ with sync_playwright() as pw:
     tap_house(p, 1); p.wait_for_timeout(400); facts = [said(p)[-1]]
     for k in range(2): p.click('#twLeaner'); p.wait_for_timeout(150); facts.append(said(p)[-1])
     check(f'  no name and only a grumpy thing: the rest is skipped ({facts})', facts == ["Hi! I'm a monster!", 'I get grumpy about Rain!', "Hi! I'm a monster!"])
+    parts = p.evaluate('window.__parts.slice(-3)')
+    check(f'  each sentence is spoken on its own ({parts})', parts == ['I get grumpy about Rain!', 'Hi!', "I'm a monster!"])
+    p.evaluate("window.__sayGap = 400"); p.click('#twLeaner'); p.wait_for_timeout(150)   # the grumpy line, so hello is next
+    p.evaluate("window.__parts = []"); p.click('#twLeaner'); p.wait_for_timeout(150)
+    mid = p.evaluate('window.__parts.slice()'); p.wait_for_timeout(700); after = p.evaluate('window.__parts.slice()')
+    check(f'  with a breath between sentences ({mid}, then {after})', mid == ['Hi!'] and after == ['Hi!', "I'm a monster!"])
+    p.click('#twLeaner'); p.wait_for_timeout(150)   # the grumpy line again, so hello is next
+    p.evaluate("window.__parts = []"); p.click('#twLeaner'); p.wait_for_timeout(100); p.click('#twLeaner'); p.wait_for_timeout(1300)
+    cut = p.evaluate('window.__parts.slice()')
+    check(f'  a new line cuts off what the last one had left to say ({cut})', cut == ['Hi!', 'I get grumpy about Rain!'])
+    p.evaluate("window.__sayGap = 0")
     p.click('#twBack'); p.wait_for_timeout(300); tap_house(p, 2); p.wait_for_timeout(400); p.click('#twLeaner'); p.wait_for_timeout(150)
     check('  nothing answered but a name: hello each time', said(p)[-2:] == ["Hi! I'm Wigglebum!", "Hi! I'm Wigglebum!"])
     p.click('#twBack'); p.wait_for_timeout(300); tap_plot(p, 5)
@@ -362,6 +378,7 @@ with sync_playwright() as pw:
     name = p.evaluate('store.monsters.at(-1).name')
     check(f'  which goes to the town with {name} first in the queue (ahead of older monsters)', p.is_visible('#town')
           and p.get_attribute('#twLayer .twfirst', 'aria-label') == f'{name} needs a home!')
+    p.wait_for_timeout(120)
     check(f'  and says so ({p.evaluate("window.__said.at(-1)")})', p.evaluate('window.__said.at(-1)') == f'{name} needs a home! Tap a plus to build a house.')
     tap_plot(p, 0); p.wait_for_timeout(2800)
     p.click('#tabLib'); p.wait_for_timeout(400); p.evaluate("openCard(store.monsters.at(-1), true)"); p.wait_for_timeout(1500)

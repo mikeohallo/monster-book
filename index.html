@@ -4178,8 +4178,8 @@ function makeNameIdeas(d) {
   while (out.size < 4) add(any(NAME_FUNNY));        // and one just for fun
   return [...out].slice(0, 4).sort(() => Math.random() - .5);
 }
-const say = (() => {   // the phone's own voice reads the picks and questions out
-  let voice = null;
+const say = (() => {   // the phone's own voice reads things out: the picks and questions, and everything the town says
+  let voice = null, run = 0, timer = 0;
   const choose = () => {
     try {   // an Australian voice if there is one, and one that runs on the device rather than online
       const v = speechSynthesis.getVoices(), en = [/en[-_]AU/i, /en[-_]GB/i, /^en/i];
@@ -4187,13 +4187,29 @@ const say = (() => {   // the phone's own voice reads the picks and questions ou
     } catch (e) {}
   };
   try { choose(); speechSynthesis.addEventListener('voiceschanged', choose); } catch (e) {}
+  // One sentence at a time, with a breath between them: a voice handed "Hi! I'm Cupcake! I love cupcakes!" in one go
+  // reads it as one run-on line. A new line cuts off the last, along with any sentences it still had to say.
+  const breath = () => (typeof window.__sayGap === 'number' ? window.__sayGap : 350);   // the tests shorten it
   return text => {
     if (!sound.on || !text) return;
     try {
-      speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text);
-      if (voice) { u.voice = voice; u.lang = voice.lang; } else u.lang = 'en-AU';
-      u.rate = .9; u.pitch = 1.15; speechSynthesis.speak(u);
+      speechSynthesis.cancel(); clearTimeout(timer);
+      const me = ++run, parts = (String(text).match(/[^.!?]+[.!?]+|[^.!?]+$/g) || []).map(s => s.trim()).filter(Boolean);
+      const next = i => {
+        if (me !== run || i >= parts.length) return;
+        const u = new SpeechSynthesisUtterance(parts[i]);
+        if (voice) { u.voice = voice; u.lang = voice.lang; } else u.lang = 'en-AU';
+        u.rate = .9; u.pitch = 1.15;
+        let done = false, backstop = 0;
+        const go = () => {   // when it finishes (or if the phone never says it has), the breath, then the next sentence
+          if (done) return; done = true; clearTimeout(backstop);
+          if (me === run) timer = setTimeout(() => next(i + 1), breath());
+        };
+        u.onend = go; u.onerror = go;
+        speechSynthesis.speak(u);
+        backstop = setTimeout(go, 1500 + parts[i].length * 120);
+      };
+      next(0);
     } catch (e) {}
   };
 })();
