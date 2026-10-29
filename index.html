@@ -3582,7 +3582,7 @@ const TW_PLOTS = [   // [area, x, y, width] of each plot's ground, in valley uni
 const TW_COT = { disc: .9953, cx: .4992, cy: .7349, ratio: 513 / 640 };   // the cottage picture: its grass disc's width and middle
 const TW_WIN = [.2613, .3278, .5521, .6855];                             // the close-ups' open window: x0, x1, y0, y1 of the picture
 const TW_CLOSE_RATIO = 2200 / 1228;
-const tw = { houses: [], busy: false, brew: 0, next: null, u: 1, open: null };
+const tw = { houses: [], busy: false, brew: 0, next: null, u: 1, open: null, said: 0, pending: null, fact: 0, leaving: false };
 function twLoad() {
   try {
     const t = JSON.parse(localStorage.getItem(TW_KEY) || '{}');
@@ -3678,11 +3678,38 @@ function renderTown() {
   let html = twSignpost();
   TW_PLOTS.forEach((p, i) => { const h = byPlot.get(i); html += h ? twCottage(i, twMon(h.id)) : twEmpty(i, waiting.length > 0); });
   $('twLayer').innerHTML = html + twQueue(waiting);
-  const full = tw.houses.length >= TW_PLOTS.length && !TW_PLOTS.some((p, i) => byPlot.get(i) && !twMon(byPlot.get(i).id));
-  $('townHint').textContent = waiting.length ? (full ? 'The valley is full! New places are coming soon.' : 'Tap a plot to build a house!')
+  $('townHint').textContent = waiting.length ? (twFull() ? 'The valley is full! New places are coming soon.' : 'Tap a plot to build a house!')
     : tw.houses.some(h => twMon(h.id)) ? 'Tap a house to visit!' : 'Welcome to your monster town!';
 }
-function openTown() { tw.brew++; tw.busy = false; twCloseUp(null); show('town'); renderTown(); }
+function twFull() {   // every plot has a house with a monster living in it (an empty house can take a new one)
+  const byPlot = new Map(tw.houses.map(h => [h.plot, h]));
+  return TW_PLOTS.every((p, i) => byPlot.get(i) && twMon(byPlot.get(i).id));
+}
+function openTown() { tw.brew++; tw.busy = false; twCloseUp(null); show('town'); renderTown(); twGreet(); }
+
+// --- the town talks: what's happening is said out loud in the phone's own voice (the same one that reads the picks on
+// Meet your monster), so she can play without anyone reading the words to her. The words on screen stay as they are.
+// A new line cuts off the last one, nothing is repeated by itself (tapping the monster at the gate says it again), and
+// redrawing (folding or turning the phone) says nothing. Mute silences it. Phones won't speak before the first touch on
+// the page, so a welcome that comes before then waits for that touch (and is dropped if the touch says something else).
+function twSay(text) { tw.said++; try { say(text); } catch (e) {} }
+function twWelcome() {   // what the town says when she comes to it
+  const first = twWaiting()[0];
+  if (!store.monsters.length) return 'Welcome to your monster town! Make a monster, and it will move in.';
+  if (first) return twFull() ? 'The valley is full! New places are coming soon.' : `${twName(first) || 'A new monster'} needs a home! Tap a plus to build a house.`;
+  return 'Tap a house to visit!';
+}
+function twGreet() {
+  const line = twWelcome();
+  if (navigator.userActivation && !navigator.userActivation.hasBeenActive) { tw.pending = line; return; }
+  tw.pending = null; twSay(line);
+}
+function twFacts(m) {   // what a monster says at its window: hello (and its favourite food) first, then one thing more each tap
+  const ans = k => (typeof m[k] === 'string' ? m[k].trim() : '');
+  const food = ans('food'), friend = ans('friend').replace(/^(A|An) /, a => a.toLowerCase()), grumpy = ans('grumpy');
+  return [`Hi! I'm ${twName(m) || 'a monster'}!${food ? ` I love ${food}!` : ''}`,
+    friend && `My best friend is ${friend}!`, grumpy && `I get grumpy about ${grumpy}!`].filter(Boolean);
+}
 function twAt(x, y) { return { left: `${(x / TW_U * 100).toFixed(3)}%`, top: `${(y / TW_V * 100).toFixed(3)}%` }; }
 async function twBuild(plot) {   // a cottage pops up, and the first monster in the queue hops over and moves in
   const m = twWaiting()[0];
@@ -3719,8 +3746,11 @@ async function twBuild(plot) {   // a cottage pops up, and the first monster in 
   tw.busy = false;
   sound.click();
   $('townHint').textContent = `${twName(m) || 'Your monster'} has a new home! Tap it to visit.`;
+  const next = twWaiting()[0];
+  twSay(`${twName(m) || 'Your monster'} has a new home! ${!next ? 'Tap it to visit!'
+    : twFull() ? 'The valley is full! New places are coming soon.' : `${twName(next) || 'Another monster'} needs one too!`}`);
 }
-function twCloseUp(plot) {   // the close-up of one house: its part of the valley, its roof colour, and its monster at the window
+function twCloseUp(plot, redraw = false) {   // the close-up of one house: its part of the valley, its roof colour, and its monster at the window
   const box = $('twClose');
   if (plot === null) { box.hidden = true; tw.open = null; $('townBox').hidden = false; return; }
   const h = tw.houses.find(x => x.plot === plot), m = h && twMon(h.id);
@@ -3747,35 +3777,45 @@ function twCloseUp(plot) {   // the close-up of one house: its part of the valle
     <p class="twcloseName">${twEsc(twName(m) ? `${twName(m)}'s house` : 'A monster lives here')}</p>
     <button class="twback" id="twBack" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>Town</button>`;
   $('townBox').hidden = true; box.hidden = false;
-  twWave();
+  if (!redraw) tw.fact = 0;
+  twWave(!redraw);
 }
-function twWave() {   // the monster leans out of its window, bobs and waves
+function twWave(talk = true) {   // the monster leans out of its window, bobs and waves, and says hello or the next thing about it
   const b = $('twLeaner'), h = tw.houses.find(x => x.plot === tw.open), m = h && twMon(h.id);
   if (!b || !m) return;
   sound.unlock(); sound.giggle();
   b.classList.remove('waving'); void b.getBoundingClientRect(); b.classList.add('waving');
   $('townHint').textContent = `${twName(m) || 'Your monster'} says hello!`;
+  if (talk) { const f = twFacts(m); twSay(f[tw.fact % f.length]); tw.fact++; }
 }
-function twGo(id) {   // the signposts
-  sound.unlock(); sound.click();
+const TW_SIGN_SAY = { games: 'Games!', make: 'Make a monster!', learn: 'Learning Lab!', seek: 'Seek and Find!' };
+function twGo(id) {   // the signposts: each says where it goes
+  if (tw.leaving) return;
+  sound.unlock(); sound.click(); twSay(TW_SIGN_SAY[id]);
   if (id === 'games') openGame('games');
   else if (id === 'make') show('make');
-  else if (id === 'learn') location.href = learnURL('');
-  else if (id === 'seek') {
-    const u = new URL('https://seek.mikeohalloran.au/');
-    if (ownerName()) u.searchParams.set('for', ownerName());
-    location.href = u.toString();
+  else {   // the Learning Lab and Seek are other sites: wait a moment, so the word isn't cut off
+    const go = () => {
+      tw.leaving = false;
+      if (id === 'learn') { location.href = learnURL(''); return; }
+      const u = new URL('https://seek.mikeohalloran.au/');
+      if (ownerName()) u.searchParams.set('for', ownerName());
+      location.href = u.toString();
+    };
+    if (sound.on) { tw.leaving = true; setTimeout(go, 1000); } else go();
   }
 }
 function twTap(e) {
   const t = e.target.closest('[data-sign], [data-plot], [data-queue], #twBack, #twLeaner');
   if (!t) return;
+  tw.pending = null;   // a first touch on something in the town says its own thing, not the welcome
   if (t.id === 'twBack') { sound.unlock(); sound.click(); twCloseUp(null); renderTown(); return; }
   if (t.id === 'twLeaner') { twWave(); return; }
   if (t.dataset.sign) { twGo(t.dataset.sign); return; }
   if (tw.busy) return;
-  if (t.dataset.queue !== undefined) {   // tapping the monster at the gate: it hops, and the plots wiggle
+  if (t.dataset.queue !== undefined) {   // tapping the monster at the gate: it hops, the plots wiggle, and it asks again
     sound.unlock(); sound.hop();
+    twSay(twFull() ? 'I need a home! New places are coming soon.' : 'I need a home! Tap a plus to build me a house.');
     if (!reduced) {
       t.querySelector('.twfig')?.animate([{ translate: '0 0' }, { translate: '0 -18%' }, { translate: '0 0' }], { duration: 380, easing: 'ease-out' });
       document.querySelectorAll('#twLayer .twplot.ready .twplus').forEach(c => c.animate([{ scale: '1' }, { scale: '1.35' }, { scale: '1' }], { duration: 500 }));
@@ -3785,16 +3825,24 @@ function twTap(e) {
   const plot = Number(t.dataset.plot), h = tw.houses.find(x => x.plot === plot);
   if (h && twMon(h.id)) { sound.unlock(); sound.click(); twCloseUp(plot); }
   else if (twWaiting().length) twBuild(plot);
-  else { sound.unlock(); sound.click(); $('townHint').textContent = store.monsters.length ? 'Make another monster to live here!' : 'Make a monster, and it will move in!'; }
+  else {
+    sound.unlock(); sound.click();
+    const line = store.monsters.length ? 'Make another monster to live here!' : 'Make a monster, and it will move in!';
+    $('townHint').textContent = line; twSay(line);
+  }
 }
 function buildTown() {
   $('townWrap').addEventListener('click', twTap);
+  document.addEventListener('click', () => {   // the first touch on the page: a welcome that was waiting for it is said now
+    const line = tw.pending; tw.pending = null;
+    if (line && !$('town').hidden && tw.open === null) twSay(line);
+  });
   let rt;
   addEventListener('resize', () => {   // folding or turning the phone: stop any move halfway (it's already saved) and redraw
     clearTimeout(rt); rt = setTimeout(() => {
       if ($('town').hidden) return;
       tw.brew++; tw.busy = false;
-      const open = tw.open; twCloseUp(null); renderTown(); if (open !== null) twCloseUp(open);
+      const open = tw.open; twCloseUp(null); renderTown(); if (open !== null) twCloseUp(open, true);
     }, 120);
   });
 }
