@@ -1,10 +1,12 @@
 # Monster Lab
 
-A tiny website for young children. Flip a monster's head, body and legs, answer four questions about the monster you made, and get a card to print. Then give it a house in a little 3D valley, and play games with the monsters.
+**For** a young child with the printed monster book, on a phone. **It does** what the book does and more: flip heads, bodies and legs (27,000 monsters from 30 heads, 30 bodies and 30 legs), answer four questions by tapping pictures, print a card, give each monster a house in a toy-model valley that says its hints out loud, and play games with them.
 
-**Try it:** [monsters.mikeohalloran.au](https://monsters.mikeohalloran.au/)
+**Try it:** [monsters.mikeohalloran.au](https://monsters.mikeohalloran.au/), on a phone. No account, no download.
 
-Built with [Claude](https://claude.ai) in a day, alongside the printed book it goes with.
+**What's measured:** seven test suites play the site the way a child would, in a real browser: the flip book, every game, the town (22 plots, a monster that moves in and waves from its window, and every line the town says), the private store's link-and-restore, and every link between the three sites. The first version was built with [Claude](https://claude.ai) in a day, alongside the printed book; the town and the store came later.
+
+**Where the AI is:** in the art, not the play. The 30 monsters and the valley were painted with Google AI Studio; a linked phone can ask Gemini for a 3D toy version of a monster, made once per combination and shared, so nothing personal is in it. The page is one HTML file with no framework, no accounts and no analytics. A child's monsters stay on the phone unless a grown-up links it to the family's private store, approved by passkey, never a sign-in.
 
 ![The monster town: a toy-model valley with a signpost to the games, Make, Learn and Seek, a monster at the gate asking for a home and cottages with name signs; a close-up of one cottage with its monster waving from the window; and Meet your monster, with name ideas and pictures of foods and friends to tap](docs/town.jpg)
 
