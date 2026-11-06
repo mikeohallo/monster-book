@@ -715,7 +715,26 @@ body.townmode .app { max-width: none; }
 .twback { position: absolute; z-index: 5; left: 10px; top: 10px; display: inline-flex; align-items: center; gap: 4px; padding: 6px 14px 6px 10px; border-radius: 999px;
   border: 3px solid var(--ink); background: #fff; font-family: var(--font-display); font-weight: 700; font-size: 17px; color: var(--ink); }
 .twback svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
-.townwrap:has(.twclose:not([hidden])) .townhint { display: none; }
+.twmove { left: auto; right: 10px; }
+.twmove svg { width: 24px; stroke-width: 2.2; }
+.twhouse.from img { opacity: .5; }
+.townwrap:has(.twclose:not([hidden])) .townhint, .townwrap:has(.twclose:not([hidden])) .twnav { display: none; }
+.twnav { position: absolute; z-index: 6; right: 10px; bottom: 10px; display: inline-flex; align-items: center; gap: 6px; padding: 7px 16px 7px 10px;
+  border: 3px solid var(--ink); border-radius: 14px; background: #C98B52; color: #fff; font-family: var(--font-display); font-weight: 700; font-size: 19px;
+  box-shadow: 0 3px 0 rgba(58, 40, 82, .3); cursor: pointer; -webkit-tap-highlight-color: transparent; text-shadow: 0 1px 0 rgba(58, 40, 82, .5); }
+.twnav svg { width: 32px; height: 32px; flex: none; }
+.twnav:active { translate: 0 2px; }
+@media (max-width: 480px) { .twnav { font-size: 15px; padding: 4px 11px 4px 7px; right: 8px; bottom: 8px; border-radius: 12px; } .twnav svg { width: 24px; height: 24px; } }
+.twnav:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+.townworld { transform-origin: 50% 50%; }
+.twlayer .twspot { border-radius: 30%; }
+.twspot:focus-visible { outline-offset: -6px !important; }
+.twspotname { position: absolute; left: 50%; bottom: 6%; translate: -50% 0; z-index: 2; padding: .12em .65em .16em; border-radius: 999px; background: rgba(255, 255, 255, .94);
+  border: 2px solid var(--ink); font-family: var(--font-display); font-weight: 700; font-size: max(14px, calc(var(--u) * 46)); line-height: 1.15; white-space: nowrap; color: var(--ink); pointer-events: none; }
+.twcloud { position: absolute; z-index: 1; height: auto; max-width: none; pointer-events: none; filter: drop-shadow(0 calc(var(--u) * 10) calc(var(--u) * 12) rgba(40, 70, 110, .3)); }
+.twcloud.a { left: -12%; top: -8%; width: 78%; }
+.twcloud.b { right: -14%; top: 2%; width: 70%; }
+.twcloud.c { left: 14%; top: 38%; width: 72%; }
 @media (prefers-reduced-motion: reduce) { .kpwait { animation: none; } .twleaner { transition: none; } .twleaner.waving .twhead, .twleaner.waving .twbody, .twbob, .twplot.ready .twplus { animation: none; } }
 @media (max-width: 400px) { .tab { min-width: 0; padding: 6px 9px 5px; } }
 </style>
@@ -742,6 +761,7 @@ body.townmode .app { max-width: none; }
         </div>
       </div>
       <div class="twclose" id="twClose" hidden></div>
+      <button class="twnav" id="twNav" type="button" data-to="island" aria-label="Go to the island"></button>
       <p class="townhint" id="townHint" aria-live="polite"></p>
     </div>
   </section>
@@ -3543,7 +3563,7 @@ function thumb(rec) {
   return thumbs.get(key);
 }
 let delArmed = false, delTimer;
-function backupText() { return JSON.stringify({ app: 'monster-book', version: 1, owner: store.owner, monsters: store.monsters, town: { v: 1, houses: tw.houses } }); }
+function backupText() { return JSON.stringify({ app: 'monster-book', version: 1, owner: store.owner, monsters: store.monsters, town: twTownData() }); }
 function restoreFrom(text) {
   let d;
   try { d = JSON.parse(text); } catch (e) { toast("That isn't a monster backup."); return; }
@@ -3556,8 +3576,11 @@ function restoreFrom(text) {
   if (!store.owner && d.owner) store.owner = d.owner;
   persist(); renderTitle(); renderLibrary();
   // the houses come back too, wherever their plot and their monster are both free
-  const plots = new Set(tw.houses.map(h => h.plot)), housed = new Set(tw.houses.map(h => h.id)), ids = new Set(store.monsters.map(m => m.id));
-  for (const h of twClean(d.town && d.town.houses)) if (!plots.has(h.plot) && !housed.has(h.id) && ids.has(h.id)) { tw.houses.push(h); plots.add(h.plot); housed.add(h.id); }
+  // (the valley's from town.houses, the villages' from town.world, which an older backup doesn't have)
+  const t = d.town || {}, w = t.world || {};
+  const plots = new Set(tw.houses.map(h => `${twPl(h)}:${h.plot}`)), housed = new Set(tw.houses.map(h => h.id)), ids = new Set(store.monsters.map(m => m.id));
+  for (const h of twClean(t.houses, w.houses)) if (!plots.has(`${h.place}:${h.plot}`) && !housed.has(h.id) && ids.has(h.id)) { tw.houses.push(h); plots.add(`${h.place}:${h.plot}`); housed.add(h.id); }
+  tw.seen = twSeen([...tw.seen, ...(Array.isArray(w.seen) ? w.seen : [])]);
   twSave(); if (!$('town').hidden) renderTown();
   toast(added.length ? `Restored ${added.length} monster${added.length > 1 ? 's' : ''}.` : 'Those monsters are already here.');
 }
@@ -3580,29 +3603,77 @@ const TW_PLOTS = [   // [area, x, y, width] of each plot's ground, in valley uni
   ['hill', 795, 660, 200], ['hill', 1040, 575, 140],
   ['mountain', 2678, 315, 85], ['mountain', 2818, 285, 85], ['mountain', 2908, 298, 90]];
 const TW_COT = { disc: .9953, cx: .4992, cy: .7349, ratio: 513 / 640 };   // the cottage picture: its grass disc's width and middle
-const TW_WIN = [.2613, .3278, .5521, .6855];                             // the close-ups' open window: x0, x1, y0, y1 of the picture
+const TW_WIN = [.2613, .3278, .5521, .6855];                             // the valley close-ups' open window: x0, x1, y0, y1 of the picture
 const TW_CLOSE_RATIO = 2200 / 1228;
-const tw = { houses: [], busy: false, brew: 0, next: null, u: 1, open: null, said: 0, pending: null, fact: 0, leaving: false };
+// --- Monster World (6 Nov): the valley is one place on an island, with four villages round it, all open from the
+// start. The Island button goes to the island; tapping a place goes there (a village's cloud parts the first time).
+// Each village works like the valley: plots, houses in the monster's colour, a close-up with the monster at the window,
+// Move house (to anywhere on the island). Saved: the valley's houses where they always were (monster-book.town, and
+// town.houses in the backup), and the villages' in monster-book.world (town.world in the backup), so an older page that
+// only knows the valley keeps her valley exactly as it is and leaves the villages alone.
+const TW_WORLD_KEY = 'monster-book.world';
+const TW_STYLES = {   // each kind of house: its picture, and where its ground sits in it (width, and the middle)
+  cot: { pic: c => `town/cottage-${c}.webp`, disc: .9953, cx: .4992, cy: .7349, noun: 'house' },
+  mt: { pic: c => `town/world/cottage-mt-${c}.webp`, disc: .9563, cx: .5070, cy: .8379, win: [0.2523, 0.3491, 0.6156, 0.7704], noun: 'cottage' },
+  lk: { pic: c => `town/world/cottage-lk-${c}.webp`, disc: .9938, cx: .4992, cy: .6573, win: [0.3014, 0.3968, 0.5155, 0.6441], noun: 'hut' },
+  bc: { pic: c => `town/world/cottage-bc-${c}.webp`, disc: .9594, cx: .4992, cy: .7304, win: [0.2868, 0.3991, 0.5342, 0.6857], noun: 'sandcastle' },
+  tr: { pic: c => `town/world/cottage-tr-${c}.webp`, disc: .9594, cx: .5164, cy: .6853, win: [0.2695, 0.4118, 0.4064, 0.6189], noun: 'tree house' },
+  mu: { pic: c => `town/world/cottage-mu-${c}.webp`, disc: .9969, cx: .4992, cy: .7686, win: [0.3500, 0.4323, 0.5676, 0.7028], noun: 'mushroom house' },
+};
+const twPlots = list => list.map(([s, x, y, w]) => ({ s, x, y, w }));
+const TW_PLACES = {   // [house style, x, y, width of its ground] for every plot, in the picture's own units
+  valley: { U: TW_U, V: TW_V, pic: 'town/valley-2400.webp', set: 'town/valley-2400.webp 2400w, town/valley-3800.webp 3800w', bg: '#A6DC84',
+    gate: { x: TW_GATE.x, y: TW_GATE.y, h: 270 }, name: 'the valley', to: 'to the valley', plots: TW_PLOTS.map(([area, x, y, w]) => ({ s: 'cot', area, x, y, w })) },
+  witch: { U: 2400, V: 1018, pic: 'town/world/witch-2400.webp', bg: '#3E3A5E', gate: { x: 540, y: 935, h: 220 }, name: "Witches' Mountain", to: 'up the mountain',
+    plots: twPlots([['mt', 2175, 238, 95], ['mt', 1915, 410, 90], ['mt', 737, 434, 118], ['mt', 592, 506, 199], ['mt', 1756, 517, 179], ['mt', 2177, 615, 154], ['mt', 1891, 623, 161], ['mt', 983, 671, 155], ['mt', 2102, 729, 236], ['mt', 607, 769, 236], ['mt', 1987, 813, 248], ['mt', 1364, 821, 226], ['mt', 1654, 823, 228], ['mt', 950, 830, 256]]) },
+  lake: { U: 2400, V: 1018, pic: 'town/world/lake-2400.webp', bg: '#6FB2E0', gate: { x: 330, y: 830, h: 210 }, name: 'the lake', to: 'to the lake',
+    plots: twPlots([['lk', 856, 327, 98], ['lk', 1034, 329, 96], ['lk', 1362, 348, 103], ['lk', 1682, 356, 100], ['lk', 853, 367, 98], ['lk', 1848, 368, 105], ['lk', 1008, 376, 109], ['lk', 1240, 403, 130], ['lk', 1441, 420, 121], ['lk', 648, 465, 150], ['lk', 1825, 486, 162], ['lk', 2182, 503, 150], ['lk', 1548, 588, 219], ['lk', 2036, 615, 207], ['lk', 1290, 759, 321], ['lk', 1826, 780, 310]]) },
+  beach: { U: 2400, V: 1018, pic: 'town/world/beach-2400.webp', bg: '#F1D59A', gate: { x: 540, y: 965, h: 220 }, name: 'the beach', to: 'to the beach',
+    plots: twPlots([['bc', 2189, 412, 94], ['bc', 335, 436, 116], ['bc', 2105, 469, 134], ['bc', 331, 489, 134], ['bc', 1939, 550, 150], ['bc', 628, 575, 163], ['bc', 325, 595, 175], ['bc', 2188, 596, 136], ['bc', 1854, 601, 163], ['bc', 775, 636, 185], ['bc', 1117, 654, 136], ['bc', 1415, 666, 175], ['bc', 1736, 668, 171], ['bc', 455, 676, 187], ['bc', 2080, 705, 191], ['bc', 1975, 755, 170], ['bc', 620, 769, 238], ['bc', 1362, 802, 195], ['bc', 1045, 809, 258], ['bc', 1676, 813, 222]]) },
+  forest: { U: 2400, V: 1018, pic: 'town/world/forest-2400.webp', bg: '#8FC66B', gate: { x: 540, y: 885, h: 220 }, name: 'the forest', to: 'to the forest',
+    plots: twPlots([['tr', 1463, 446, 116], ['tr', 1742, 502, 150], ['tr', 738, 535, 217], ['tr', 2178, 574, 235], ['mu', 1909, 623, 159], ['tr', 370, 635, 296], ['mu', 998, 661, 138], ['mu', 1483, 674, 161], ['mu', 1732, 681, 179], ['mu', 796, 712, 175], ['mu', 2126, 723, 197], ['mu', 1122, 769, 199], ['mu', 1988, 780, 234], ['mu', 626, 787, 165], ['mu', 1345, 787, 187], ['mu', 1662, 801, 215], ['mu', 952, 831, 242]]) },
+};
+const TW_VILLAGES = ['witch', 'lake', 'beach', 'forest'];
+const TW_ISLAND = { U: 2400, V: 1340, pic: 'town/world/map-2400.webp', bg: '#5FC3E4',   // where each place is on the island picture: x0, y0, x1, y1
+  spots: { valley: [700, 520, 1600, 920], lake: [140, 460, 700, 750], witch: [850, 110, 1650, 470], forest: [1680, 300, 2260, 800], beach: [680, 920, 1760, 1210] } };
+const twCap = s => s.charAt(0).toUpperCase() + s.slice(1);
+const tw = { houses: [], seen: [], place: 'valley', busy: false, brew: 0, next: null, u: 1, open: null, said: 0, pending: null, fact: 0, leaving: false, moving: null };
 function twLoad() {
-  try {
-    const t = JSON.parse(localStorage.getItem(TW_KEY) || '{}');
-    tw.houses = twClean(t.houses);
-  } catch (e) { tw.houses = []; }
+  let valley = [], world = {};
+  try { valley = JSON.parse(localStorage.getItem(TW_KEY) || '{}').houses; } catch (e) {}
+  try { world = JSON.parse(localStorage.getItem(TW_WORLD_KEY) || '{}') || {}; } catch (e) {}
+  tw.houses = twClean(valley, world.houses);
+  tw.seen = twSeen(world.seen);
 }
-function twClean(list) {   // one house per plot and one plot per monster, whatever's in the saved data
+function twClean(valley, world) {   // one house per plot and one home per monster, whatever's in the saved data (the valley first)
   const plots = new Set(), ids = new Set(), out = [];
-  for (const h of Array.isArray(list) ? list : []) {
-    if (!h || !Number.isInteger(h.plot) || h.plot < 0 || h.plot >= TW_PLOTS.length || typeof h.id !== 'string' || plots.has(h.plot) || ids.has(h.id)) continue;
-    plots.add(h.plot); ids.add(h.id); out.push({ plot: h.plot, id: h.id });
-  }
+  const take = (place, h) => {
+    const P = TW_PLACES[place];
+    if (!P || !h || !Number.isInteger(h.plot) || h.plot < 0 || h.plot >= P.plots.length || typeof h.id !== 'string') return;
+    const k = `${place}:${h.plot}`;
+    if (plots.has(k) || ids.has(h.id)) return;
+    plots.add(k); ids.add(h.id); out.push({ place, plot: h.plot, id: h.id });
+  };
+  for (const h of Array.isArray(valley) ? valley : []) take('valley', h);
+  for (const h of Array.isArray(world) ? world : []) if (h && TW_VILLAGES.includes(h.place)) take(h.place, h);
   return out;
+}
+const twSeen = list => TW_VILLAGES.filter(v => Array.isArray(list) && list.includes(v));
+function twTownData() {   // what's saved and backed up: the valley as it always was, the villages beside it
+  return { v: 1, houses: tw.houses.filter(h => twPl(h) === 'valley').map(({ plot, id }) => ({ plot, id })),
+    world: { v: 1, houses: tw.houses.filter(h => twPl(h) !== 'valley').map(({ place, plot, id }) => ({ place, plot, id })), seen: tw.seen } };
 }
 twLoad();
 function twSave() {
-  try { localStorage.setItem(TW_KEY, JSON.stringify({ v: 1, houses: tw.houses })); } catch (e) { storageOK = false; }
+  const t = twTownData();
+  try { localStorage.setItem(TW_KEY, JSON.stringify({ v: 1, houses: t.houses })); localStorage.setItem(TW_WORLD_KEY, JSON.stringify(t.world)); } catch (e) { storageOK = false; }
   try { kpSaveSoon(); } catch (e) {}
 }
 const twMon = id => store.monsters.find(m => m.id === id);
+const twP = () => TW_PLACES[tw.place] || TW_PLACES.valley;
+const twPl = h => h.place || 'valley';   // (a house saved before the villages is in the valley)
+const twHere = (place = tw.place) => tw.houses.filter(h => twPl(h) === place);
+const twHouseAt = plot => tw.houses.find(h => twPl(h) === tw.place && h.plot === plot);
 function twWaiting() {   // monsters with no house yet, oldest first (or the one just sent here from its card)
   const housed = new Set(tw.houses.map(h => h.id)), w = store.monsters.filter(m => !housed.has(m.id)), k = w.findIndex(m => m.id === tw.next);
   if (k > 0) w.unshift(...w.splice(k, 1));
@@ -3621,19 +3692,20 @@ function twFigure(m, cls = '') {   // a whole monster, as tall as its box: in 3D
     <img class="twbody" src="${stripSrc('B', m.b)}" alt="" style="height: ${(G.heights.B / T * 100).toFixed(2)}%">
     <img class="twlegs" src="${stripSrc('L', m.l)}" alt="" style="height: ${(G.heights.L / T * 100).toFixed(2)}%"></span>`;
 }
-function twPlace(x, y) { return `left: ${twPct(x, TW_U)}; top: ${twPct(y, TW_V)}; z-index: ${Math.round(y)}`; }
-function twCottage(i, m) {   // a cottage on plot i, its grass disc covering the plot
-  const [area, x, y, w] = TW_PLOTS[i], name = twName(m), wide = w / TW_COT.disc;
-  const tag = name && w >= 150 ? `<span class="twname" style="font-size: calc(var(--u) * ${Math.round(w * .13)})">${twEsc(name.length > 14 ? name.slice(0, 13) + '…' : name)}</span>` : '';
-  return `<button class="twhouse${m ? '' : ' empty'}${y < 700 ? ' far' : ''}" type="button" data-plot="${i}" data-area="${area}"
-      style="${twPlace(x, y)}; width: ${twPct(wide, TW_U)}" aria-label="${m ? `${twEsc(name || 'A monster')}'s house` : 'An empty house'}">
-    <img src="town/cottage-${twColour(m)}.webp" alt="" draggable="false">${tag}</button>`;
+function twPlace(x, y) { const P = twP(); return `left: ${twPct(x, P.U)}; top: ${twPct(y, P.V)}; z-index: ${Math.round(y / P.V * TW_V)}`; }
+function twCottage(i, m) {   // a house on plot i, its ground covering the plot
+  const P = twP(), p = P.plots[i], st = TW_STYLES[p.s], name = twName(m), wide = p.w / st.disc, u = TW_U / P.U;   // u: the valley's units per this picture's
+  const tag = name && p.w * u >= 150 ? `<span class="twname" style="font-size: calc(var(--u) * ${Math.round(p.w * .13)})">${twEsc(name.length > 14 ? name.slice(0, 13) + '…' : name)}</span>` : '';
+  const shift = p.s === 'cot' ? '' : `; translate: -${(st.cx * 100).toFixed(2)}% -${(st.cy * 100).toFixed(2)}%`;
+  return `<button class="twhouse${m ? '' : ' empty'}${p.y < P.V * .52 ? ' far' : ''}" type="button" data-plot="${i}" data-area="${p.area || p.s}"
+      style="${twPlace(p.x, p.y)}; width: ${twPct(wide, P.U)}${shift}" aria-label="${m ? `${twEsc(name || 'A monster')}'s ${st.noun}` : `An empty ${st.noun}`}">
+    <img src="${st.pic(twColour(m))}" alt="" draggable="false">${tag}</button>`;
 }
 function twEmpty(i, someone) {   // a plot to build on: an invisible button over its ground, with a pulsing plus when someone's waiting
-  const [area, x, y, w] = TW_PLOTS[i];
-  return `<button class="twplot${someone ? ' ready' : ''}" type="button" data-plot="${i}" data-area="${area}"
-      style="${twPlace(x, y)}; width: ${twPct(w * 1.1, TW_U)}" aria-label="${someone ? 'Build a house here' : 'An empty plot'}">
-    ${someone ? `<span class="twplus" style="width: calc(var(--u) * ${Math.round(Math.max(60, w * .32))})"></span>` : ''}</button>`;
+  const P = twP(), { x, y, w, s } = P.plots[i], u = TW_U / P.U;
+  return `<button class="twplot${someone ? ' ready' : ''}" type="button" data-plot="${i}" data-area="${P.plots[i].area || s}"
+      style="${twPlace(x, y)}; width: ${twPct(w * 1.1, P.U)}" aria-label="${someone ? 'Build a house here' : 'An empty plot'}">
+    ${someone ? `<span class="twplus" style="width: calc(var(--u) * ${Math.round(Math.max(60, w * u * .32) / u)})"></span>` : ''}</button>`;
 }
 const TW_SIGNS = [   // the four arms of the signpost at the town gate, over the blank arms of town/signpost.webp
   { id: 'games', label: 'Games', box: [.17, .86, .07, .21], icon: '<path d="M7 9h14c4 0 6 3.4 6.5 7.6.5 4.3-.7 7.4-3.6 7.4-2.2 0-3.4-2.1-4.8-3.6H8.9c-1.5 1.5-2.6 3.6-4.8 3.6-2.9 0-4.1-3.1-3.6-7.4C1 12.4 3 9 7 9z" fill="#A880D6"/><path d="M6 15.5h5M8.5 13v5" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><circle cx="19.5" cy="14" r="1.8" fill="#EC6AA8" stroke="none"/><circle cx="22.8" cy="17.3" r="1.8" fill="#F2C828" stroke="none"/>' },
@@ -3650,42 +3722,180 @@ function twSignpost() {   // standing over the little painted one by the gate: 3
     <img src="town/signpost.webp" alt="" draggable="false">${arms}</div>`;
 }
 function twQueue(waiting) {   // the monsters waiting just inside the gate, the first one asking for a home
-  const g = TW_GATE;
-  if (!waiting.length) return store.monsters.length ? '' : `<button class="twsoon" type="button" data-sign="make" aria-label="Make a monster"
+  const P = twP(), g = P.gate, f = g.h / 270 * P.V / TW_V, mv = twMoving();   // f: this place's units for the valley's
+  if (mv) {   // a monster moving house waits at the gate instead, asking where to
+    const n = twName(mv), s = n.length > 20 ? n.slice(0, 19) + '…' : n;
+    return `<button class="twfirst" type="button" data-moving="1" style="${twPlace(g.x, g.y)}; height: ${twPct(g.h, P.V)}"
+        aria-label="${twEsc(`${n || 'This monster'} is moving house. Tap to stay home.`)}">${twFigure(mv, 'twbob')}</button>
+      <div class="twbubble" style="left: ${twPct(g.x - 10 * f, P.U)}; top: ${twPct(g.y - g.h - 20 * f, P.V)}">${n ? `<b>${twEsc(s)}</b>` : ''}<b>Where to?</b></div>`;
+  }
+  if (!waiting.length) return store.monsters.length || tw.place !== 'valley' ? '' : `<button class="twsoon" type="button" data-sign="make" aria-label="Make a monster"
       style="${twPlace(g.x, g.y)}; height: ${twPct(250, TW_V)}"><span class="twq">?</span></button>
     <div class="twbubble" style="left: ${twPct(g.x - 10, TW_U)}; top: ${twPct(g.y - 270, TW_V)}"><b>Make a monster</b><b>to move in!</b></div>`;
   const shown = waiting.slice(0, 4), first = shown[0], name = twName(first);
-  const back = shown.slice(1).map((m, k) => `<span class="twwait" style="${twPlace(g.x - 115 * (k + 1), g.y + 38 * (k + 1))}; height: ${twPct(230 - k * 20, TW_V)}">${twFigure(m)}</span>`).join('');
-  const more = waiting.length > 4 ? `<span class="twmore" style="${twPlace(g.x - 450, g.y + 150)}">+${waiting.length - 4}</span>` : '';
+  const back = shown.slice(1).map((m, k) => `<span class="twwait" style="${twPlace(g.x - 115 * f * (k + 1), g.y + 38 * f * (k + 1))}; height: ${twPct((230 - k * 20) * f, P.V)}">${twFigure(m)}</span>`).join('');
+  const more = waiting.length > 4 ? `<span class="twmore" style="${twPlace(g.x - 450 * f, g.y + 150 * f)}">+${waiting.length - 4}</span>` : '';
   const short = name.length > 20 ? name.slice(0, 19) + '…' : name;
-  return `${back}${more}<button class="twfirst" type="button" data-queue="0" style="${twPlace(g.x, g.y)}; height: ${twPct(270, TW_V)}"
+  return `${back}${more}<button class="twfirst" type="button" data-queue="0" style="${twPlace(g.x, g.y)}; height: ${twPct(g.h, P.V)}"
       aria-label="${twEsc(name ? `${name} needs a home!` : 'I need a home!')}">${twFigure(first, 'twbob')}</button>
-    <div class="twbubble" style="left: ${twPct(g.x - 10, TW_U)}; top: ${twPct(g.y - 290, TW_V)}">${name ? `<b>${twEsc(short)}</b><b>needs a home!</b>` : '<b>I need a home!</b>'}</div>`;
+    <div class="twbubble" style="left: ${twPct(g.x - 10 * f, P.U)}; top: ${twPct(g.y - g.h - 20 * f, P.V)}">${name ? `<b>${twEsc(short)}</b><b>needs a home!</b>` : '<b>I need a home!</b>'}</div>`;
 }
-function twSize() {   // the valley fills the screen under the tabs (but not so tall on a narrow phone that she sees only a sliver)
+function twSize(P = tw.place === 'island' ? TW_ISLAND : twP()) {   // the picture fills the screen under the tabs (but not so tall on a narrow phone that she sees only a sliver)
   const box = $('townBox'), top = $('townWrap').getBoundingClientRect().top + scrollY;
-  const avail = innerHeight - top - 18, h = Math.round(Math.max(260, Math.min(780, avail, Math.max(300, box.clientWidth * .9))));
-  const w = Math.round(h * TW_U / TW_V);
+  const avail = innerHeight - top - 18, tall = Math.min(780, avail, Math.max(300, box.clientWidth * .9));
+  // the island fits the width when that leaves it tall enough to tap (a narrow phone pans it, like the valley)
+  const h = Math.round(Math.max(260, P === TW_ISLAND ? Math.min(tall, Math.max(300, box.clientWidth * P.V / P.U)) : tall));
+  const w = Math.round(h * P.U / P.V);
   box.style.height = `${h}px`;
   const world = $('townWorld'); world.style.width = `${w}px`; world.style.height = `${h}px`;
-  tw.u = w / TW_U; world.style.setProperty('--u', `${tw.u}px`);
-  $('twValley').sizes = `${w}px`;
+  tw.u = w / P.U; world.style.setProperty('--u', `${tw.u}px`);
+  const img = $('twValley');
+  if (img.dataset.pic !== P.pic) { img.dataset.pic = P.pic; img.srcset = P.set || `${P.pic} 2400w`; img.src = P.pic; }
+  img.sizes = `${w}px`;
+  $('townWrap').style.background = P.bg;
   return { w, h };
 }
 function renderTown() {
+  if (tw.place === 'island') { renderIsland(); return; }
   twSize();
-  const waiting = twWaiting(), byPlot = new Map(tw.houses.map(h => [h.plot, h]));
-  let html = twSignpost();
-  TW_PLOTS.forEach((p, i) => { const h = byPlot.get(i); html += h ? twCottage(i, twMon(h.id)) : twEmpty(i, waiting.length > 0); });
+  const P = twP(), waiting = twWaiting(), byPlot = new Map(twHere().map(h => [h.plot, h])), mv = twMoving();
+  let html = tw.place === 'valley' ? twSignpost() : '';
+  P.plots.forEach((p, i) => { const h = byPlot.get(i); html += h ? twCottage(i, twMon(h.id)) : twEmpty(i, !!mv || waiting.length > 0); });
   $('twLayer').innerHTML = html + twQueue(waiting);
-  $('townHint').textContent = waiting.length ? (twFull() ? 'The valley is full! New places are coming soon.' : 'Tap a plot to build a house!')
-    : tw.houses.some(h => twMon(h.id)) ? 'Tap a house to visit!' : 'Welcome to your monster town!';
+  $('twLayer').setAttribute('aria-label', tw.place === 'valley' ? 'Your monster town' : twCap(P.name));
+  const from = mv && tw.houses.find(h => h.id === mv.id);
+  if (from && twPl(from) === tw.place) $('twLayer').querySelector(`.twhouse[data-plot="${from.plot}"]`)?.classList.add('from');
+  $('townHint').textContent = mv ? twMoveLine(mv)
+    : waiting.length ? (twFull() ? twFullLine() : 'Tap a plot to build a house!')
+    : twHere().some(h => twMon(h.id)) ? 'Tap a house to visit!' : tw.place === 'valley' ? 'Welcome to your monster town!' : `Welcome to ${P.name}!`;
+  twNav();
 }
-function twFull() {   // every plot has a house with a monster living in it (an empty house can take a new one)
-  const byPlot = new Map(tw.houses.map(h => [h.plot, h]));
-  return TW_PLOTS.every((p, i) => byPlot.get(i) && twMon(byPlot.get(i).id));
+function twFull(place = tw.place) {   // every plot has a house with a monster living in it (an empty house can take a new one)
+  const byPlot = new Map(twHere(place).map(h => [h.plot, h]));
+  return TW_PLACES[place].plots.every((p, i) => byPlot.get(i) && twMon(byPlot.get(i).id));
 }
-function openTown() { tw.brew++; tw.busy = false; twCloseUp(null); show('town'); renderTown(); twGreet(); }
+const twAllFull = () => Object.keys(TW_PLACES).every(k => twFull(k));
+function twFullLine() {
+  if (twAllFull()) return 'Every home on the island is full!';
+  return `${twCap(twP().name)} is full! Tap Island for more homes.`;
+}
+function twNav() {   // the button in the corner: to the island, or from the island back to the valley
+  const b = $('twNav'), isl = tw.place === 'island';
+  b.dataset.to = isl ? 'valley' : 'island';
+  b.setAttribute('aria-label', isl ? 'Back to the valley' : 'Go to the island');
+  b.innerHTML = isl ? `<svg viewBox="0 0 34 34" aria-hidden="true"><path d="M5 16 17 5l12 11" fill="#EC6AA8" stroke="#3A2852" stroke-width="2.4" stroke-linejoin="round"/><path d="M8 15h18v14H8z" fill="#FFF3DC" stroke="#3A2852" stroke-width="2.4" stroke-linejoin="round"/><rect x="14" y="20" width="6" height="9" rx="2" fill="#B07A4F" stroke="#3A2852" stroke-width="2"/></svg><span>Valley</span>`
+    : `<svg viewBox="0 0 34 34" aria-hidden="true"><ellipse cx="17" cy="26" rx="15" ry="5" fill="#5FC3E4" stroke="#3A2852" stroke-width="2"/><path d="M5 25c2-6 7-9 12-9s10 3 12 9z" fill="#68B242" stroke="#3A2852" stroke-width="2" stroke-linejoin="round"/><path d="M17 17c0-5 1-9 3-11" fill="none" stroke="#8A5A33" stroke-width="2.4" stroke-linecap="round"/><path d="M20 6c-4-1-7 1-8 3 3-1 5 0 8-3zM20 6c3-2 7-1 8 1-3 0-5 0-8-1zM20 6c1 3 0 6-2 7 0-3 1-5 2-7z" fill="#4E9A35" stroke="#3A2852" stroke-width="1.4" stroke-linejoin="round"/></svg><span>Island</span>`;
+}
+function openTown() { tw.brew++; tw.busy = false; tw.moving = null; tw.place = 'valley'; twCloseUp(null); show('town'); renderTown(); $('townBox').scrollLeft = 0; twGreet(); }
+
+// --- the island: the five places on Mike's island picture. A village not yet visited is under a cloud; the first tap
+// parts the cloud and flies down into it. A monster waiting for a home, or moving house, comes along ("Which village?").
+function renderIsland() {
+  const I = TW_ISLAND, { w } = twSize(I), mv = twMoving(), who = mv || twWaiting()[0], n = twName(who);
+  let html = '';
+  for (const [k, [x0, y0, x1, y1]] of Object.entries(I.spots)) {
+    const P = TW_PLACES[k], hidden = k !== 'valley' && !tw.seen.includes(k), homes = twHere(k).filter(h => twMon(h.id)).length;
+    html += `<button class="twspot${hidden ? ' hidden' : ''}" type="button" data-to="${k}" aria-label="${twEsc(twCap(P.name))}${homes ? `, ${homes} monster${homes > 1 ? 's' : ''}` : ''}"
+        style="left: ${twPct(x0, I.U)}; top: ${twPct(y0, I.V)}; width: ${twPct(x1 - x0, I.U)}; height: ${twPct(y1 - y0, I.V)}">
+      ${hidden ? '<img class="twcloud a" src="town/world/cloud-a.webp" alt="" draggable="false"><img class="twcloud b" src="town/world/cloud-b.webp" alt="" draggable="false"><img class="twcloud c" src="town/world/cloud-a.webp" alt="" draggable="false">' : ''}
+      <span class="twspotname">${twEsc(twCap(P.name))}</span></button>`;
+  }
+  $('twLayer').innerHTML = html;
+  $('twLayer').setAttribute('aria-label', 'The island');
+  $('townHint').textContent = mv ? `Where to${n ? `, ${n}` : ''}? Tap a place!` : who ? `Which village for ${n || 'your monster'}?` : 'Where shall we go?';
+  twNav();
+  return w;
+}
+function twIslandLine() {
+  const mv = twMoving(), who = mv || twWaiting()[0], n = twName(who) || 'your monster';
+  return mv ? `Where shall ${n} live? Tap a place!` : who ? `Which village for ${n}? Tap one to look!` : 'The island! Tap a place to visit.';
+}
+function twArriveLine() {
+  const P = twP(), mv = twMoving(), first = twWaiting()[0], noun = tw.place === 'forest' ? 'house' : TW_STYLES[P.plots[0].s].noun;
+  const hi = tw.place === 'valley' ? 'Back to the valley!' : `Welcome to ${P.name}!`;
+  if (mv) return `${hi} ${twFree() ? `Tap a plus for ${twName(mv) || 'your monster'}'s new ${noun}.` : 'Tap a house to swap.'}`;
+  if (first) return `${hi} ${twFull() ? twFullLine() : `${twName(first) || 'A new monster'} needs a home! Tap a plus to build a ${noun}.`}`;
+  return `${hi} ${twHere().some(h => twMon(h.id)) ? 'Tap a house to visit!' : 'Nobody lives here yet.'}`;
+}
+function twEnter(place, talk = true) {   // arrive somewhere: the valley, a village or the island
+  tw.place = place; tw.open = null; tw.brew++; tw.busy = false;
+  const world = $('townWorld'); world.getAnimations().forEach(a => a.cancel()); world.style.transformOrigin = '';
+  twCloseUp(null); renderTown();
+  const box = $('townBox'); box.scrollLeft = place === 'island' ? (box.scrollWidth - box.clientWidth) / 2 : 0;   // the island opens on its middle
+  if (talk) twSay(place === 'island' ? twIslandLine() : twArriveLine());
+}
+async function twGoPlace(k) {   // a tap on the island (or the corner button)
+  if (tw.busy || tw.leaving) return;
+  sound.unlock(); sound.click();
+  if (k === 'island' || tw.place !== 'island') { twEnter(k); return; }
+  const spot = $('twLayer').querySelector(`.twspot[data-to="${k}"]`), brew = ++tw.brew;
+  tw.busy = true;
+  if (spot && spot.classList.contains('hidden')) {   // the first visit: the cloud parts (it's remembered, so only once)
+    tw.seen = twSeen([...tw.seen, k]); twSave();
+    sound.whoosh();
+    twSay(`${twCap(TW_PLACES[k].name)}!`);
+    const clouds = [...spot.querySelectorAll('.twcloud')];
+    await Promise.all(clouds.map((c, i) => c.animate(reduced ? [{ opacity: 1 }, { opacity: 0 }]
+      : [{ translate: '0 0', opacity: 1 }, { translate: `${[-70, 70, 0][i]}% ${[-15, -10, 40][i]}%`, opacity: 0 }],
+      { duration: reduced ? 450 : 1200, easing: 'ease-in', fill: 'forwards' }).finished.catch(() => {})));
+    spot.classList.remove('hidden');
+    if (brew !== tw.brew) return;
+  }
+  if (!reduced && spot) {   // the picture flies down into the place
+    const world = $('townWorld'), b = spot.getBoundingClientRect(), r = world.getBoundingClientRect();
+    world.style.transformOrigin = `${b.left - r.left + b.width / 2}px ${b.top - r.top + b.height / 2}px`;
+    await world.animate([{ transform: 'scale(1)', opacity: 1 }, { transform: 'scale(2.6)', opacity: .15 }], { duration: 650, easing: 'ease-in', fill: 'forwards' }).finished.catch(() => {});
+    if (brew !== tw.brew) return;
+  }
+  twEnter(k);
+  if (!reduced) $('townWorld').animate([{ opacity: .2 }, { opacity: 1 }], { duration: 350 });
+}
+
+// --- moving house: "Move house" in the close-up carries the monster back to the gate ("Where to?"). A plus moves it
+// there and its old plot goes back to empty ground; another monster's house swaps the two. It can go anywhere on the
+// island: the Island button takes it along. Tapping it at the gate, its own house or the Town tab changes its mind.
+// Saved the moment it's decided, like moving in.
+function twMoving() { const m = tw.moving && twMon(tw.moving); return m && tw.houses.some(h => h.id === m.id) ? m : null; }
+function twFree() { const byPlot = new Map(twHere().map(h => [h.plot, h])); return twP().plots.some((p, i) => !byPlot.get(i) || !twMon(byPlot.get(i).id)); }
+const twMoveLine = m => `${twName(m) || 'Your monster'} wants to move! ${twFree() ? 'Tap a plus for a new house.' : 'Tap another house to swap, or Island.'}`;
+function twStartMove() {
+  const h = twHouseAt(tw.open), m = h && twMon(h.id);
+  if (!m || tw.busy) return;
+  sound.unlock(); sound.click();
+  tw.moving = m.id; twCloseUp(null); renderTown(); twSay(twMoveLine(m));
+}
+function twStayHome() {
+  const m = twMoving(); tw.moving = null; renderTown();
+  if (m) { sound.unlock(); sound.click(); twSay(`${twName(m) || 'Your monster'} stays home!`); }
+}
+async function twMoveTo(plot) {
+  const m = twMoving();
+  if (!m || tw.busy) return;
+  const mine = tw.houses.find(h => h.id === m.id), there = twHouseAt(plot), other = there && twMon(there.id);
+  if (twPl(mine) === tw.place && mine.plot === plot) { twStayHome(); return; }
+  const was = { place: twPl(mine), plot: mine.plot }, here = was.place === tw.place;
+  tw.moving = null;
+  if (other) { there.place = was.place; there.plot = was.plot; }   // a swap: each takes the other's home
+  else if (there) tw.houses = tw.houses.filter(h => h !== there);   // an empty house there goes
+  mine.place = tw.place; mine.plot = plot;                          // its old plot is free
+  twSave();   // saved straight away, so folding the phone shut mid-move loses nothing
+  tw.busy = true; const brew = ++tw.brew;
+  sound.unlock(); sound.pop(); setTimeout(() => { if (brew === tw.brew) sound.boing(); }, 140);
+  renderTown();
+  $('townHint').textContent = `${twName(m) || 'Your monster'} is moving house!`;
+  for (const p of other && here ? [plot, was.plot] : [plot]) {
+    const house = $('twLayer').querySelector(`.twhouse[data-plot="${p}"]`);
+    if (house && !reduced) house.animate([{ scale: '.05' }, { scale: '1.12', offset: .7 }, { scale: '1' }], { duration: 480, easing: 'ease-out' });
+  }
+  await Promise.all([twWalk(m, twP().gate, plot, brew), other && here ? twWalk(other, twDoor(plot), was.plot, brew) : null]);
+  if (brew !== tw.brew) return;
+  tw.busy = false;
+  sound.click();
+  const a = twName(m) || 'Your monster', b = twName(other) || 'its neighbour', there2 = TW_PLACES[was.place];
+  const line = other ? (here ? `${a} and ${b} swapped houses!` : `${a} and ${b} swapped homes! ${b} went ${there2.to}.`)
+    : here ? `${a} moved house!` : `${a} moved ${twP().to}!`;
+  $('townHint').textContent = line; twSay(line);
+}
 
 // --- the town talks: what's happening is said out loud in the phone's own voice (the same one that reads the picks on
 // Meet your monster), so she can play without anyone reading the words to her. The words on screen stay as they are.
@@ -3696,7 +3906,7 @@ function twSay(text) { tw.said++; try { say(text); } catch (e) {} }
 function twWelcome() {   // what the town says when she comes to it
   const first = twWaiting()[0];
   if (!store.monsters.length) return 'Welcome to your monster town! Make a monster, and it will move in.';
-  if (first) return twFull() ? 'The valley is full! New places are coming soon.' : `${twName(first) || 'A new monster'} needs a home! Tap a plus to build a house.`;
+  if (first) return twFull() ? `${twName(first) || 'A new monster'} needs a home! ${twFullLine()}` : `${twName(first) || 'A new monster'} needs a home! Tap a plus to build a house.`;
   return 'Tap a house to visit!';
 }
 function twGreet() {
@@ -3710,78 +3920,83 @@ function twFacts(m) {   // what a monster says at its window: hello (and its fav
   return [`Hi! I'm ${twName(m) || 'a monster'}!${food ? ` I love ${food}!` : ''}`,
     friend && `My best friend is ${friend}!`, grumpy && `I get grumpy about ${grumpy}!`].filter(Boolean);
 }
-function twAt(x, y) { return { left: `${(x / TW_U * 100).toFixed(3)}%`, top: `${(y / TW_V * 100).toFixed(3)}%` }; }
-async function twBuild(plot) {   // a cottage pops up, and the first monster in the queue hops over and moves in
+function twAt(x, y) { const P = twP(); return { left: `${(x / P.U * 100).toFixed(3)}%`, top: `${(y / P.V * 100).toFixed(3)}%` }; }
+function twDoor(plot) { const p = twP().plots[plot]; return { x: p.x, y: p.y - p.w * .08, h: Math.max(60 * twP().U / TW_U, p.w * .62) }; }
+async function twWalk(m, from, plot, brew) {   // it hops from where it is to a plot's door, smaller as it goes further away, then goes in
+  if (reduced) return;
+  const P = twP(), door = twDoor(plot), walker = document.createElement('span'), k = P.U / TW_U;
+  walker.className = 'twwalker'; walker.innerHTML = twFigure(m);
+  Object.assign(walker.style, twAt(from.x, from.y), { height: twPct(from.h, P.V), zIndex: 1400 });
+  $('twLayer').append(walker);
+  const dist = Math.hypot(door.x - from.x, door.y - from.y) / k, hops = Math.max(3, Math.min(8, Math.round(dist / 260))), ms = Math.min(2200, 600 + dist * .9);
+  const frames = [];
+  for (let j = 0; j <= hops * 2; j++) {
+    const f = j / (hops * 2), x = from.x + (door.x - from.x) * f, hh = from.h + (door.h - from.h) * f, y = from.y + (door.y - from.y) * f - (j % 2 ? hh * .18 : 0);
+    frames.push({ ...twAt(x, y), height: twPct(hh, P.V) });
+  }
+  for (let j = 0; j < hops; j++) setTimeout(() => { if (brew === tw.brew) sound.hop(); }, 420 + j * ms / hops);
+  await walker.animate(frames, { duration: ms, delay: 380, easing: 'linear', fill: 'forwards' }).finished.catch(() => {});
+  if (brew === tw.brew) await walker.animate([{ opacity: 1, scale: '1' }, { opacity: 0, scale: '.3' }], { duration: 320, fill: 'forwards' }).finished.catch(() => {});
+  walker.remove();
+}
+async function twBuild(plot) {   // a house pops up, and the first monster in the queue hops over and moves in
   const m = twWaiting()[0];
   if (!m || tw.busy) return;
-  const old = tw.houses.find(h => h.plot === plot);
+  const old = twHouseAt(plot);
   if (old && twMon(old.id)) return;
-  tw.houses = tw.houses.filter(h => h.plot !== plot);
-  tw.houses.push({ plot, id: m.id }); twSave();   // saved straight away, so folding the phone shut mid-move loses nothing
+  tw.houses = tw.houses.filter(h => h !== old);
+  tw.houses.push({ place: tw.place, plot, id: m.id }); twSave();   // saved straight away, so folding the phone shut mid-move loses nothing
   tw.busy = true; const brew = ++tw.brew;
-  const [, px, py, pw] = TW_PLOTS[plot];
   sound.unlock(); sound.pop(); setTimeout(() => { if (brew === tw.brew) sound.boing(); }, 140);
   renderTown();
   $('townHint').textContent = `${twName(m) || 'Your monster'} is moving in!`;
   const house = $('twLayer').querySelector(`.twhouse[data-plot="${plot}"]`);
   if (house && !reduced) house.animate([{ scale: '.05' }, { scale: '1.12', offset: .7 }, { scale: '1' }], { duration: 480, easing: 'ease-out' });
-  if (!reduced) {   // it hops from the gate to its door, getting smaller as it goes further away, then goes in
-    const walker = document.createElement('span');
-    walker.className = 'twwalker'; walker.innerHTML = twFigure(m);
-    const h0 = 270, h1 = Math.max(60, pw * .62), door = { x: px, y: py - pw * .08 };
-    Object.assign(walker.style, twAt(TW_GATE.x, TW_GATE.y), { height: twPct(h0, TW_V), zIndex: 1400 });
-    $('twLayer').append(walker);
-    const dist = Math.hypot(door.x - TW_GATE.x, door.y - TW_GATE.y), hops = Math.max(3, Math.min(8, Math.round(dist / 260))), ms = Math.min(2200, 600 + dist * .9);
-    const frames = [];
-    for (let k = 0; k <= hops * 2; k++) {
-      const f = k / (hops * 2), x = TW_GATE.x + (door.x - TW_GATE.x) * f, hh = h0 + (h1 - h0) * f, y = TW_GATE.y + (door.y - TW_GATE.y) * f - (k % 2 ? hh * .18 : 0);
-      frames.push({ ...twAt(x, y), height: twPct(hh, TW_V) });
-    }
-    for (let k = 0; k < hops; k++) setTimeout(() => { if (brew === tw.brew) sound.hop(); }, 420 + k * ms / hops);
-    await walker.animate(frames, { duration: ms, delay: 380, easing: 'linear', fill: 'forwards' }).finished.catch(() => {});
-    if (brew === tw.brew) await walker.animate([{ opacity: 1, scale: '1' }, { opacity: 0, scale: '.3' }], { duration: 320, fill: 'forwards' }).finished.catch(() => {});
-    walker.remove();
-  }
+  await twWalk(m, twP().gate, plot, brew);
   if (brew !== tw.brew) return;
   tw.busy = false;
   sound.click();
   $('townHint').textContent = `${twName(m) || 'Your monster'} has a new home! Tap it to visit.`;
   const next = twWaiting()[0];
   twSay(`${twName(m) || 'Your monster'} has a new home! ${!next ? 'Tap it to visit!'
-    : twFull() ? 'The valley is full! New places are coming soon.' : `${twName(next) || 'Another monster'} needs one too!`}`);
+    : twFull() ? twFullLine() : `${twName(next) || 'Another monster'} needs one too!`}`);
 }
-function twCloseUp(plot, redraw = false) {   // the close-up of one house: its part of the valley, its roof colour, and its monster at the window
+function twCloseUp(plot, redraw = false) {   // the close-up of one house: its part of the island, its roof colour, and its monster at the window
   const box = $('twClose');
   if (plot === null) { box.hidden = true; tw.open = null; $('townBox').hidden = false; return; }
-  const h = tw.houses.find(x => x.plot === plot), m = h && twMon(h.id);
+  const h = twHouseAt(plot), m = h && twMon(h.id);
   if (!m) return;
   tw.open = plot;
-  const [area] = TW_PLOTS[plot], H = $('townBox').clientHeight || 400, W = $('townWrap').clientWidth;
+  const p = twP().plots[plot], st = TW_STYLES[p.s], win0 = st.win || TW_WIN, H = $('townBox').clientHeight || 400, W = $('townWrap').clientWidth;
+  const src = p.s === 'cot' ? `town/close-${p.area}-${twColour(m)}.webp` : `town/world/close-${p.s}-${twColour(m)}.webp`;
   // the picture covers the box (like a cover photo), moved so the window sits a little left of the middle
   const cover = Math.max(H, W / TW_CLOSE_RATIO), ih = Math.round(cover), iw = Math.round(ih * TW_CLOSE_RATIO);
-  const wx = (TW_WIN[0] + TW_WIN[1]) / 2 * iw, wy = (TW_WIN[2] + TW_WIN[3]) / 2 * ih;
+  const wx = (win0[0] + win0[1]) / 2 * iw, wy = (win0[2] + win0[3]) / 2 * ih;
   const left = Math.round(Math.max(Math.min(0, W * .42 - wx), W - iw)), top = Math.round(Math.max(Math.min(0, H * .55 - wy), H - ih));
-  const win = { x0: left + TW_WIN[0] * iw, x1: left + TW_WIN[1] * iw, y0: top + TW_WIN[2] * ih, y1: top + TW_WIN[3] * ih };
-  const T = G.heights.H + G.heights.B + G.heights.L, ww = win.x1 - win.x0, a = kp.art.get(kpCombo(m));
+  const win = { x0: left + win0[0] * iw, x1: left + win0[1] * iw, y0: top + win0[2] * ih, y1: top + win0[3] * ih };
+  // the monster is sized by the window: by its width, or for a wide window by its height (as if it were the valley's shape)
+  const T = G.heights.H + G.heights.B + G.heights.L, ww = win.x1 - win.x0, wh = win.y1 - win.y0, ew = Math.min(ww, wh * .893), a = kp.art.get(kpCombo(m));
   // the book figure is 2 windows wide, its chin on the line .74 of the way down the window; a 3D one is about as tall
   // as the book figure would be at 1.65, with its chin about .4 of the way down it, and its head (hx across) in the
   // middle of the window
-  const fh = ww * (a ? 1.65 * .9 : 2) * T / G.width, fw = a ? fh * a.w / a.h : ww * 2, hx = a ? a.hx : .5;
-  const chin = win.y0 + (win.y1 - win.y0) * (a ? .72 : .74), figTop = chin - fh * (a ? .4 : G.heights.H / T);
+  const fh = ew * (a ? 1.65 * .9 : 2) * T / G.width, fw = a ? fh * a.w / a.h : ew * 2, hx = a ? a.hx : .5;
+  const chin = win.y0 + wh * (a ? .72 : .74), figTop = chin - fh * (a ? .4 : G.heights.H / T);
+  const name = twName(m), noun = st.noun;
   box.style.height = `${H}px`;
-  box.innerHTML = `<div class="twroom" style="left: ${win.x0 - 4}px; top: ${win.y0 - 4}px; width: ${ww + 8}px; height: ${win.y1 - win.y0 + 8}px"></div>
-    <img class="twclosepic" src="town/close-${area}-${twColour(m)}.webp" alt="" draggable="false" style="left: ${left}px; top: ${top}px; width: ${iw}px; height: ${ih}px">
+  box.innerHTML = `<div class="twroom" style="left: ${win.x0 - 4}px; top: ${win.y0 - 4}px; width: ${ww + 8}px; height: ${wh + 8}px"></div>
+    <img class="twclosepic" src="${src}" alt="" draggable="false" style="left: ${left}px; top: ${top}px; width: ${iw}px; height: ${ih}px">
     <div class="twlean" style="left: ${win.x0 - ww * .7}px; width: ${ww * 2.4}px; height: ${win.y1 - 3}px">
-      <button class="twleaner" id="twLeaner" type="button" aria-label="${twEsc(twName(m) || 'Your monster')} waves"
+      <button class="twleaner" id="twLeaner" type="button" aria-label="${twEsc(name || 'Your monster')} waves"
         style="left: ${ww * .7 + ww / 2 - fw * hx}px; top: ${figTop}px; width: ${fw}px; height: ${fh}px">${twFigure(m)}</button></div>
-    <p class="twcloseName">${twEsc(twName(m) ? `${twName(m)}'s house` : 'A monster lives here')}</p>
-    <button class="twback" id="twBack" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>Town</button>`;
+    <p class="twcloseName">${twEsc(name ? `${name}'s ${noun}` : 'A monster lives here')}</p>
+    <button class="twback" id="twBack" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>${tw.place === 'valley' ? 'Town' : 'Back'}</button>
+    <button class="twback twmove" id="twMove" type="button"><svg viewBox="0 0 26 24" aria-hidden="true"><path d="M2 6h12v11H2zM14 10h5l4 4v3h-9z"/><circle cx="6.5" cy="18.5" r="2.2"/><circle cx="18.5" cy="18.5" r="2.2"/></svg>Move house</button>`;
   $('townBox').hidden = true; box.hidden = false;
   if (!redraw) tw.fact = 0;
   twWave(!redraw);
 }
 function twWave(talk = true) {   // the monster leans out of its window, bobs and waves, and says hello or the next thing about it
-  const b = $('twLeaner'), h = tw.houses.find(x => x.plot === tw.open), m = h && twMon(h.id);
+  const b = $('twLeaner'), h = twHouseAt(tw.open), m = h && twMon(h.id);
   if (!b || !m) return;
   sound.unlock(); sound.giggle();
   b.classList.remove('waving'); void b.getBoundingClientRect(); b.classList.add('waving');
@@ -3806,23 +4021,32 @@ function twGo(id) {   // the signposts: each says where it goes
   }
 }
 function twTap(e) {
-  const t = e.target.closest('[data-sign], [data-plot], [data-queue], #twBack, #twLeaner');
+  const t = e.target.closest('[data-sign], [data-plot], [data-queue], [data-moving], [data-to], #twBack, #twLeaner, #twMove');
   if (!t) return;
   tw.pending = null;   // a first touch on something in the town says its own thing, not the welcome
   if (t.id === 'twBack') { sound.unlock(); sound.click(); twCloseUp(null); renderTown(); return; }
   if (t.id === 'twLeaner') { twWave(); return; }
+  if (t.id === 'twMove') { twStartMove(); return; }
   if (t.dataset.sign) { twGo(t.dataset.sign); return; }
+  if (t.dataset.to) { twGoPlace(t.dataset.to); return; }
   if (tw.busy) return;
+  if (t.dataset.moving) { twStayHome(); return; }
+  if (twMoving() && t.dataset.plot !== undefined) { twMoveTo(Number(t.dataset.plot)); return; }
   if (t.dataset.queue !== undefined) {   // tapping the monster at the gate: it hops, the plots wiggle, and it asks again
+    if (twFull()) {   // nowhere free here: off to the island to choose a village
+      sound.unlock(); sound.hop(); twSay("I need a home! Let's go to the island!");
+      const brew = tw.brew; setTimeout(() => { if (brew === tw.brew && !tw.busy && tw.place !== 'island' && !$('town').hidden && tw.open === null) twGoPlace('island'); }, 1800);
+      return;
+    }
     sound.unlock(); sound.hop();
-    twSay(twFull() ? 'I need a home! New places are coming soon.' : 'I need a home! Tap a plus to build me a house.');
+    twSay('I need a home! Tap a plus to build me a house.');
     if (!reduced) {
       t.querySelector('.twfig')?.animate([{ translate: '0 0' }, { translate: '0 -18%' }, { translate: '0 0' }], { duration: 380, easing: 'ease-out' });
       document.querySelectorAll('#twLayer .twplot.ready .twplus').forEach(c => c.animate([{ scale: '1' }, { scale: '1.35' }, { scale: '1' }], { duration: 500 }));
     }
     return;
   }
-  const plot = Number(t.dataset.plot), h = tw.houses.find(x => x.plot === plot);
+  const plot = Number(t.dataset.plot), h = twHouseAt(plot);
   if (h && twMon(h.id)) { sound.unlock(); sound.click(); twCloseUp(plot); }
   else if (twWaiting().length) twBuild(plot);
   else {
@@ -3832,7 +4056,7 @@ function twTap(e) {
   }
 }
 function buildTown() {
-  $('townWrap').addEventListener('click', twTap);
+  $('townWrap').addEventListener('click', twTap);   // (the corner button, #twNav, is inside it too: it carries data-to)
   document.addEventListener('click', () => {   // the first touch on the page: a welcome that was waiting for it is said now
     const line = tw.pending; tw.pending = null;
     if (line && !$('town').hidden && tw.open === null) twSay(line);
@@ -3846,6 +4070,7 @@ function buildTown() {
     }, 120);
   });
 }
+
 
 // ---------------------------------------------------- keeping them safe ---
 // A grown-up can link this phone to the family's private store, which answers under /store/ on the Monster Lab's own

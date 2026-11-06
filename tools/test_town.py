@@ -188,7 +188,7 @@ with sync_playwright() as pw:
     check('  a messed-up town in a backup only brings back houses that make sense', saved_town(p) == [{'plot': 9, 'id': 'm0'}])
     p.evaluate("localStorage.setItem('monster-book.town', '{\"houses\": [{\"plot\": 0, \"id\": \"m0\"}, {\"plot\": 0, \"id\": \"m4\"}, {\"plot\": 2, \"id\": \"m0\"}]}')")
     p.reload(); p.wait_for_timeout(800)
-    check('  and so does messed-up saved data: one house per plot, one plot per monster', p.evaluate('tw.houses') == [{'plot': 0, 'id': 'm0'}])
+    check('  and so does messed-up saved data: one house per plot, one plot per monster', p.evaluate('tw.houses') == [{'place': 'valley', 'plot': 0, 'id': 'm0'}])
     # names that need care
     p.evaluate("""() => { store.monsters.push({id: 'mx', created: '2026-10-30T00:00:00Z', h: 2, b: 2, l: 2, name: '<i>Bo</i> & "Co"', food: '', friend: '', grumpy: ''},
                                            {id: 'my', created: '2026-10-31T00:00:00Z', h: 3, b: 4, l: 5, name: 'Supercalifragilistic', food: '', friend: '', grumpy: ''});
@@ -312,11 +312,73 @@ with sync_playwright() as pw:
     p.click('#tabTown'); p.wait_for_timeout(300)
     check('talk: one plot left, two waiting', said(p)[-1] == f'Monster {N_PLOTS - 1} needs a home! Tap a plus to build a house.')
     tap_plot(p, N_PLOTS - 1); p.wait_for_timeout(3200)
-    check(f'  the last plot taken, with one still waiting ({said(p)[-1]})', said(p)[-1] == f'Monster {N_PLOTS - 1} has a new home! The valley is full! New places are coming soon.')
+    check(f'  the last plot taken, with one still waiting ({said(p)[-1]})', said(p)[-1] == f'Monster {N_PLOTS - 1} has a new home! The valley is full! Tap Island for more homes.')
     tap(p, '#twLayer .twfirst')
-    check('  the monster at the gate in a full valley', said(p)[-1] == 'I need a home! New places are coming soon.')
+    check('  the monster at the gate in a full valley says to go to the island, and goes', said(p)[-1] == "I need a home! Let's go to the island!")
+    p.wait_for_timeout(2400)
+    check('  ... to the island', p.evaluate('tw.place') == 'island' and said(p)[-1].startswith('Which village for Monster'))
     p.click('#tabTown'); p.wait_for_timeout(300)
-    check('  coming to a full town', said(p)[-1] == 'The valley is full! New places are coming soon.')
+    check(f'  coming to a full town ({said(p)[-1]})', said(p)[-1] == f'Monster {N_PLOTS} needs a home! The valley is full! Tap Island for more homes.')
+    ctx.close()
+
+    # --- moving house -------------------------------------------------------------------------------------------------
+    ctx, p = new_page(b)
+    three = [{'plot': 0, 'id': 'm0'}, {'plot': 1, 'id': 'm1'}, {'plot': 2, 'id': 'm2'}]
+    p.goto(BASE + '?for=Sam'); seed(p, MONS[:4], three)
+    tap_house(p, 0); p.wait_for_timeout(400)
+    check('move: the close-up has a "Move house" button', p.is_visible('#twMove') and p.text_content('#twMove').strip() == 'Move house')
+    p.click('#twMove'); p.wait_for_timeout(300)
+    check('  it goes back to the valley, with Fuzzbert at the gate asking where to, in place of the queue',
+          p.is_visible('#townBox') and p.evaluate('tw.moving') == 'm0' and p.get_attribute('#twLayer [data-moving]', 'aria-label').startswith('Fuzzbert is moving house')
+          and 'Where to?' in p.text_content('#twLayer .twbubble') and p.eval_on_selector_all('#twLayer .twwait', 'e => e.length') == 0)
+    check('  every free plot shows a plus, and its own house is faded', p.eval_on_selector_all('#twLayer .twplot.ready', 'e => e.length') == N_PLOTS - 3
+          and 'from' in p.get_attribute('#twLayer .twhouse[data-plot="0"]', 'class'))
+    line = said(p)[-1]
+    check(f'  and the town says so ({line})', line == 'Fuzzbert wants to move! Tap a plus for a new house.' and p.text_content('#townHint') == line)
+    p.screenshot(path=OUT / 't7_moving.png')
+    tap(p, '#twLayer [data-moving]'); p.wait_for_timeout(200)
+    check('  tapping it at the gate: it stays home, and the queue comes back', p.evaluate('tw.moving') is None and saved_town(p) == three
+          and said(p)[-1] == 'Fuzzbert stays home!' and p.get_attribute('#twLayer .twfirst', 'aria-label') == 'I need a home!')
+    tap_house(p, 0); p.wait_for_timeout(300); p.click('#twMove'); p.wait_for_timeout(200); tap_house(p, 0); p.wait_for_timeout(200)
+    check('  tapping its own house: it stays home too', p.evaluate('tw.moving') is None and saved_town(p) == three and said(p)[-1] == 'Fuzzbert stays home!')
+    tap_house(p, 0); p.wait_for_timeout(300); p.click('#twMove'); p.wait_for_timeout(200); p.click('#tabTown'); p.wait_for_timeout(300)
+    check('  and the Town tab', p.evaluate('tw.moving') is None and saved_town(p) == three)
+    tap_house(p, 0); p.wait_for_timeout(300); p.click('#twMove'); p.wait_for_timeout(200); tap_plot(p, 5); p.wait_for_timeout(100)
+    town = saved_town(p)
+    check('a plus: the move is saved straight away', {'plot': 5, 'id': 'm0'} in town and not any(h['plot'] == 0 for h in town) and len(town) == 3 and p.evaluate('tw.busy'))
+    p.wait_for_timeout(3000)
+    check("  Fuzzbert's cottage stands on the new plot in its colour, and the old plot is empty ground again",
+          p.get_attribute('#twLayer .twhouse[data-plot="5"]', 'aria-label') == "Fuzzbert's house" and p.get_attribute('#twLayer .twhouse[data-plot="5"] img', 'src') == 'town/cottage-purple.webp'
+          and p.eval_on_selector_all('#twLayer .twplot[data-plot="0"]', 'e => e.length') == 1 and not p.evaluate('tw.busy') and p.evaluate('tw.moving') is None)
+    check(f'  and the town says so ({said(p)[-1]})', said(p)[-1] == 'Fuzzbert moved house!')
+    tap_house(p, 5); p.wait_for_timeout(300); p.click('#twMove'); p.wait_for_timeout(200); tap_house(p, 1); p.wait_for_timeout(100)
+    town = saved_town(p)
+    check("another monster's house: the two swap, saved straight away", {'plot': 1, 'id': 'm0'} in town and {'plot': 5, 'id': 'm1'} in town and len(town) == 3)
+    p.wait_for_timeout(3000)
+    check('  each cottage takes its own monster\'s colour', p.get_attribute('#twLayer .twhouse[data-plot="1"]', 'aria-label') == "Fuzzbert's house"
+          and p.get_attribute('#twLayer .twhouse[data-plot="1"] img', 'src') == 'town/cottage-purple.webp'
+          and p.get_attribute('#twLayer .twhouse[data-plot="5"]', 'aria-label') == "Gloop's house" and p.get_attribute('#twLayer .twhouse[data-plot="5"] img', 'src') == 'town/cottage-orange.webp')
+    check(f'  and the town says so ({said(p)[-1]})', said(p)[-1] == 'Fuzzbert and Gloop swapped houses!')
+    tap_house(p, 1); p.wait_for_timeout(300); p.click('#twMove'); p.wait_for_timeout(200); tap_plot(p, 17); p.wait_for_timeout(500)
+    p.set_viewport_size({'width': 344, 'height': 760}); p.wait_for_timeout(600)
+    check('folding the phone shut mid-move: the move is kept, and the town redraws', {'plot': 17, 'id': 'm0'} in saved_town(p) and not p.evaluate('tw.busy')
+          and p.eval_on_selector_all('.twwalker', 'e => e.length') == 0 and p.get_attribute('#twLayer .twhouse[data-plot="17"]', 'aria-label') == "Fuzzbert's house")
+    tap_house(p, 17); p.wait_for_timeout(400)
+    boxes = p.evaluate("""(() => { const a = $('twBack').getBoundingClientRect(), b = $('twMove').getBoundingClientRect(), c = $('twClose').getBoundingClientRect();
+        return {apart: a.right <= b.left, inside: b.right <= c.right && b.left >= c.left, tall: b.height >= 36}; })()""")
+    check(f'  on the folded phone the close-up shows Town and Move house side by side ({boxes})', boxes['apart'] and boxes['inside'] and boxes['tall'])
+    p.set_viewport_size({'width': 673, 'height': 760}); p.wait_for_timeout(600)
+    lots = [mon(i, 1 + i % 30, 1 + (i * 7) % 30, 1 + (i * 13) % 30, f'Monster {i}') for i in range(N_PLOTS)]
+    seed(p, lots, [{'plot': i, 'id': f'm{i}'} for i in range(N_PLOTS)])
+    tap_house(p, 0); p.wait_for_timeout(300); p.click('#twMove'); p.wait_for_timeout(200)
+    check(f'a full valley: no plus to move to, so it offers a swap ({said(p)[-1]})', said(p)[-1] == 'Monster 0 wants to move! Tap another house to swap, or Island.'
+          and p.eval_on_selector_all('#twLayer .twplot.ready', 'e => e.length') == 0)
+    tap_house(p, 21); p.wait_for_timeout(3200)
+    town = saved_town(p)
+    check(f'  and the swap works ({said(p)[-1]})', {'plot': 21, 'id': 'm0'} in town and {'plot': 0, 'id': 'm21'} in town and len(town) == N_PLOTS
+          and said(p)[-1] == 'Monster 0 and Monster 21 swapped houses!')
+    backup = json.loads(p.evaluate('backupText()'))
+    check('  Back up keeps the new places', {'plot': 21, 'id': 'm0'} in backup['town']['houses'])
     ctx.close()
 
     # --- every screen size --------------------------------------------------------------------------------------------
