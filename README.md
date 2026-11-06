@@ -86,7 +86,7 @@ The three sites sit behind one front door, [play.mikeohalloran.au](https://play.
 
 ## How it's built
 
-**It's one HTML file and about 260 images.** No framework, no build step, no accounts, no analytics. Hosting is Cloudflare Pages on the free plan, which comfortably covers the handful of families who have the book.
+**It's one HTML file and about 260 images.** No framework, no build step, no accounts, no cookies; Cloudflare's privacy-friendly Web Analytics counts visits. Hosting is Cloudflare Pages on the free plan, which comfortably covers the handful of families who have the book.
 
 That was the main design decision. The obvious version of this site has user accounts, cloud saves and an API. For a thing used by a handful of families, each of those is a cost, a privacy question and something to maintain. So everything works on the phone alone, and the one backend (the private store above) is something a family opts into, with no accounts: a phone is approved by a grown-up's passkey, not signed in. Beyond that:
 
