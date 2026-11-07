@@ -3902,7 +3902,7 @@ async function twMoveTo(plot) {
 // A new line cuts off the last one, nothing is repeated by itself (tapping the monster at the gate says it again), and
 // redrawing (folding or turning the phone) says nothing. Mute silences it. Phones won't speak before the first touch on
 // the page, so a welcome that comes before then waits for that touch (and is dropped if the touch says something else).
-function twSay(text) { tw.said++; try { say(text); } catch (e) {} }
+function twSay(text, who = 'narrator') { tw.said++; try { say(text, who); } catch (e) {} }
 function twWelcome() {   // what the town says when she comes to it
   const first = twWaiting()[0];
   if (!store.monsters.length) return 'Welcome to your monster town! Make a monster, and it will move in.';
@@ -4001,7 +4001,7 @@ function twWave(talk = true) {   // the monster leans out of its window, bobs an
   sound.unlock(); sound.giggle();
   b.classList.remove('waving'); void b.getBoundingClientRect(); b.classList.add('waving');
   $('townHint').textContent = `${twName(m) || 'Your monster'} says hello!`;
-  if (talk) { const f = twFacts(m); twSay(f[tw.fact % f.length]); tw.fact++; }
+  if (talk) { const f = twFacts(m); twSay(f[tw.fact % f.length], 'monster'); tw.fact++; }
 }
 const TW_SIGN_SAY = { games: 'Games!', make: 'Make a monster!', learn: 'Learning Lab!', seek: 'Seek and Find!' };
 function twGo(id) {   // the signposts: each says where it goes
@@ -4034,12 +4034,12 @@ function twTap(e) {
   if (twMoving() && t.dataset.plot !== undefined) { twMoveTo(Number(t.dataset.plot)); return; }
   if (t.dataset.queue !== undefined) {   // tapping the monster at the gate: it hops, the plots wiggle, and it asks again
     if (twFull()) {   // nowhere free here: off to the island to choose a village
-      sound.unlock(); sound.hop(); twSay("I need a home! Let's go to the island!");
+      sound.unlock(); sound.hop(); twSay("I need a home! Let's go to the island!", 'monster');
       const brew = tw.brew; setTimeout(() => { if (brew === tw.brew && !tw.busy && tw.place !== 'island' && !$('town').hidden && tw.open === null) twGoPlace('island'); }, 1800);
       return;
     }
     sound.unlock(); sound.hop();
-    twSay('I need a home! Tap a plus to build me a house.');
+    twSay('I need a home! Tap a plus to build me a house.', 'monster');
     if (!reduced) {
       t.querySelector('.twfig')?.animate([{ translate: '0 0' }, { translate: '0 -18%' }, { translate: '0 0' }], { duration: 380, easing: 'ease-out' });
       document.querySelectorAll('#twLayer .twplot.ready .twplus').forEach(c => c.animate([{ scale: '1' }, { scale: '1.35' }, { scale: '1' }], { duration: 500 }));
@@ -4134,6 +4134,7 @@ async function kpStart() {   // on opening: only if this phone was ever linked
     const keys = await kpAllKeys('art'), vals = await kpAll('art');
     keys.forEach((k, i) => { const a = vals[i]; if (a && a.blob) kp.art.set(k, { url: URL.createObjectURL(a.blob), w: a.w, h: a.h, hx: a.hx }); });
     if (kp.art.size && !$('town').hidden && !tw.busy && tw.open === null) renderTown();
+    await voLoadKept();
     await kpCheck();
   } catch (e) {}
   renderKeepLine();
@@ -4151,8 +4152,10 @@ async function kpCheck() {   // asks the store how this phone stands
   if (d.faces) kp.me.faces = d.faces;
   await kpSaveMe();
   if (d.status === 'approved') {
+    await voNamesChanged(d.names);
     if (was !== 'approved') await kpApproved(d);
     else { kpSaveSoon(0); kpArtAll(); }
+    voWarm();
   }
   renderKeepLine();
   if (!$('keep').hidden) renderKeep();
@@ -4179,7 +4182,7 @@ async function kpSave() {
   if (!kpLinked()) return;
   try {
     const r = await kpFetch('PUT', '/store/v1/save', backupText());
-    if (r.ok) { kp.me.saved = Date.now(); kp.offline = false; await kpSaveMe(); }
+    if (r.ok) { kp.me.saved = Date.now(); kp.offline = false; await kpSaveMe(); voWarm(); }
     else if (r.status === 403) await kpCheck();
     else kp.offline = true;
   } catch (e) { kp.offline = true; }
@@ -4363,6 +4366,7 @@ function buildKeep() {
   addEventListener('online', () => { if (kpLinked()) { kpSaveSoon(0); kpArtAll(); } });
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && kpLinked() && kp.offline) kpSaveSoon(0); });
   renderKeepLine();
+  voLoadIndex();
   kpStart();
 }
 
@@ -4403,8 +4407,93 @@ function makeNameIdeas(d) {
   while (out.size < 4) add(any(NAME_FUNNY));        // and one just for fun
   return [...out].slice(0, 4).sort(() => Math.random() - .5);
 }
-const say = (() => {   // the phone's own voice reads things out: the picks and questions, and everything the town says
-  let voice = null, run = 0, timer = 0;
+// --- the voices: the town's voice (Hali) and the monsters' voice (Twinkle), chosen by Mike on 7 Nov. Every line the
+// town or Meet your monster says is decided once, when it starts: its clip if the page has one, otherwise the phone's own
+// voice, exactly as before, so nothing ever goes silent. The lines that never change ship with the page
+// (town/voices/, listed in index.json). A line with a word that changes (a monster's name or answers, a name idea) is
+// made by the family's store the first time a linked phone needs it, and kept on the phone (in its own database,
+// monster-book.voices) from then on; a clip that arrives while the phone's voice is speaking is only kept for next
+// time, never played over or after it. A new line cuts off the last one; mute silences both. Unlinked, only the
+// shipped clips are used and nothing is sent anywhere.
+const VO = { index: null, store: new Map(), db: null, wanted: new Set(), off: false, warming: false, names: null };
+const voKey = (who, text) => `${who}\n${text}`;
+function voLoadIndex() {
+  fetch('town/voices/index.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : null)
+    .then(d => { if (d && typeof d === 'object') VO.index = new Map(Object.entries(d)); }).catch(() => {});
+}
+function voDB() {
+  if (!VO.db) VO.db = new Promise((res, rej) => {
+    const r = indexedDB.open('monster-book.voices', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('clips');
+    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+  });
+  return VO.db;
+}
+async function voIDB(mode, fn) {
+  const db = await voDB();
+  return new Promise((res, rej) => {
+    const tx = db.transaction('clips', mode), req = fn(tx.objectStore('clips'));
+    tx.oncomplete = () => res(req ? req.result : undefined); tx.onerror = tx.onabort = () => rej(tx.error);
+  });
+}
+async function voLoadKept() {   // the clips this phone kept from its store, ready to play at once
+  try {
+    const keys = await voIDB('readonly', o => o.getAllKeys()), vals = await voIDB('readonly', o => o.getAll());
+    keys.forEach((k, i) => { const v = vals[i]; if (v && v.blob && !VO.store.has(k)) VO.store.set(k, { url: URL.createObjectURL(v.blob), named: !!v.named }); });
+  } catch (e) {}
+}
+async function voNamesChanged(t) {   // a grown-up gave a name a new spelling: drop every kept clip with a name in it
+  if (typeof t !== 'number' || !kp.me) return;
+  if (kp.me.voNames === undefined) { kp.me.voNames = t; await kpSaveMe(); return; }
+  if (kp.me.voNames === t) return;
+  for (const [k, v] of [...VO.store]) if (v.named) { URL.revokeObjectURL(v.url); VO.store.delete(k); }
+  try { const keys = await voIDB('readonly', o => o.getAllKeys()), vals = await voIDB('readonly', o => o.getAll());
+    await voIDB('readwrite', o => { keys.forEach((k, i) => { if (vals[i] && vals[i].named) o.delete(k); }); }); } catch (e) {}
+  kp.me.voNames = t; await kpSaveMe();
+}
+function voNamesIn(text) {   // the monster names (and name ideas) said in a line, longest first, at most four
+  const all = new Set(store.monsters.map(twName).filter(Boolean));
+  if (draft) { const n = $('q_name')?.value.trim(); if (n) all.add(n); }
+  nameIdeas.forEach(n => all.add(n));
+  const esc = n => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), found = [];
+  for (const n of [...all].sort((a, b) => b.length - a.length)) {
+    if (n.length > 40 || /["<>\\]/.test(n)) continue;
+    if (new RegExp(`(^|[^\\p{L}\\p{N}])${esc(n)}(?![\\p{L}\\p{N}])`, 'u').test(text) && !found.some(f => f.includes(n))) found.push(n);
+  }
+  return found.slice(0, 4);
+}
+async function voMake(who, text) {   // asks the store for a line's clip (made there the first time) and keeps it
+  const k = voKey(who, text);
+  if (VO.off || !kpLinked() || VO.store.has(k) || VO.wanted.has(k) || text.length > 200 || /[<>]/.test(text)) return;
+  VO.wanted.add(k);
+  try {
+    const names = voNamesIn(text);
+    const r = await kpFetch('POST', '/store/v1/voice', JSON.stringify({ who, text, names }));
+    if (r.ok) {
+      const blob = await r.blob();
+      if (blob.size && !VO.store.has(k)) {
+        VO.store.set(k, { url: URL.createObjectURL(blob), named: names.length > 0 });
+        voIDB('readwrite', o => o.put({ blob, named: names.length > 0 }, k)).catch(() => {});
+      }
+      return;
+    }
+    if (r.status === 429 || r.status === 503) VO.off = true;   // the month's lines are used up, or no voice key: the phone's voice until next time
+    else if (r.status === 403) kpCheck();
+    VO.wanted.delete(k);   // tried again the next time the line is said
+  } catch (e) { VO.wanted.delete(k); }
+}
+async function voWarm() {   // after a save: each monster's own lines, made one at a time, so most are ready before she taps
+  if (VO.warming || VO.off || !kpLinked()) return;
+  VO.warming = true;
+  try {
+    for (const m of [...store.monsters].reverse()) {
+      if (VO.off || !kpLinked()) break;
+      for (const line of twFacts(m)) await voMake('monster', line);
+    }
+  } finally { VO.warming = false; }
+}
+const say = (() => {   // reads a line out: its clip, or the phone's own voice (the picks and questions, and everything the town says)
+  let voice = null, run = 0, timer = 0, audio = null;
   const choose = () => {
     try {   // an Australian voice if there is one, and one that runs on the device rather than online
       const v = speechSynthesis.getVoices(), en = [/en[-_]AU/i, /en[-_]GB/i, /^en/i];
@@ -4415,11 +4504,15 @@ const say = (() => {   // the phone's own voice reads things out: the picks and 
   // One sentence at a time, with a breath between them: a voice handed "Hi! I'm Cupcake! I love cupcakes!" in one go
   // reads it as one run-on line. A new line cuts off the last, along with any sentences it still had to say.
   const breath = () => (typeof window.__sayGap === 'number' ? window.__sayGap : 350);   // the tests shorten it
-  return text => {
-    if (!sound.on || !text) return;
+  const stop = () => {
+    run++;
+    try { speechSynthesis.cancel(); } catch (e) {}
+    clearTimeout(timer);
+    if (audio) { try { audio.pause(); audio.removeAttribute('src'); audio.load(); } catch (e) {} audio = null; }
+  };
+  function phone(text, me) {
     try {
-      speechSynthesis.cancel(); clearTimeout(timer);
-      const me = ++run, parts = (String(text).match(/[^.!?]+[.!?]+|[^.!?]+$/g) || []).map(s => s.trim()).filter(Boolean);
+      const parts = (String(text).match(/[^.!?]+[.!?]+|[^.!?]+$/g) || []).map(s => s.trim()).filter(Boolean);
       const next = i => {
         if (me !== run || i >= parts.length) return;
         const u = new SpeechSynthesisUtterance(parts[i]);
@@ -4436,7 +4529,28 @@ const say = (() => {   // the phone's own voice reads things out: the picks and 
       };
       next(0);
     } catch (e) {}
+  }
+  function clip(url, text, me) {   // plays a clip; if it can't even start (a shipped one when offline), the phone's voice says it
+    const a = new Audio();
+    let started = false, fell = false;
+    const fallback = () => { if (started || fell || me !== run) return; fell = true; audio = null; phone(text, me); };
+    a.dataset.line = text;
+    a.addEventListener('playing', () => { started = true; });
+    a.addEventListener('error', fallback);
+    a.src = url; audio = a;
+    try { const p = a.play(); if (p && p.then) p.then(() => { started = true; }, fallback); } catch (e) { fallback(); }
+  }
+  const fn = (text, who = 'narrator') => {
+    if (!sound.on || !text) return;
+    text = String(text);
+    stop();
+    const me = run, k = voKey(who, text), mine = VO.store.get(k), shipped = VO.index && VO.index.get(text);
+    if (shipped) clip(`town/voices/${shipped}`, text, me);
+    else if (mine) clip(mine.url, text, me);
+    else { phone(text, me); voMake(who, text); }   // made for next time; never played over or after this line
   };
+  fn.stop = stop;
+  return fn;
 })();
 function pickButton(key, value, inner, id = '') {
   return `<button class="pick" type="button" data-key="${key}" data-pick="${twEsc(value)}"${id ? ` data-id="${twEsc(id)}"` : ''} aria-pressed="false">${inner}</button>`;
@@ -4512,7 +4626,7 @@ function init() {
   $('tAgain').addEventListener('click', newTorch);
   buildPumpkin();
   document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => openGame(b.dataset.go)));
-  document.querySelectorAll('.mute').forEach(b => b.addEventListener('click', () => { sound.set(!sound.on); syncMute(); if (!sound.on) bedQuiet(); }));
+  document.querySelectorAll('.mute').forEach(b => b.addEventListener('click', () => { sound.set(!sound.on); syncMute(); if (!sound.on) { bedQuiet(); say.stop(); } }));
   syncMute();
   buildWhack();
   $('wGo').addEventListener('click', startWhack);

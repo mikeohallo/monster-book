@@ -34,7 +34,15 @@ def new_page(b, size='fold inner', mobile=True, reduce=False):
         Object.defineProperty(window, 'speechSynthesis', { configurable: true, value: {
           speak: u => { if (fresh || !window.__said.length) window.__said.push(u.text); else window.__said[window.__said.length - 1] += ' ' + u.text;
                         fresh = false; setTimeout(() => u.onend && u.onend({}), 5); },
-          cancel() { fresh = true; }, getVoices: () => [], addEventListener() {}, removeEventListener() {} } });""")
+          cancel() { fresh = true; }, getVoices: () => [], addEventListener() {}, removeEventListener() {} } });
+        window.__clips = [];   // a clip played: written down like the phone's voice, and listed in __clips (a missing file fails like a real one)
+        HTMLMediaElement.prototype.play = function () {
+          const a = this, line = a.dataset.line || '';
+          return fetch(a.src).then(r => { if (!r.ok) throw new Error('missing');
+            window.__said.push(line); window.__clips.push(line); fresh = true; a.dispatchEvent(new Event('playing'));
+            setTimeout(() => a.dispatchEvent(new Event('ended')), 5); })
+            .catch(e => { a.dispatchEvent(new Event('error')); throw e; }); };
+        HTMLMediaElement.prototype.pause = function () {};""")
     p = ctx.new_page()
     p.on('console', lambda m: m.type == 'error' and problems.append(f'console error: {m.text}'))
     p.on('pageerror', lambda e: problems.append(f'page error: {e}'))
@@ -80,6 +88,8 @@ with sync_playwright() as pw:
     p.screenshot(path=OUT / 'w1_island.png')
     tap(p, '#twLayer .twspot[data-to="lake"]'); p.wait_for_timeout(500)
     check('tapping a village under a cloud: the cloud parts, and it says where', said(p)[-1] == 'The lake!' and p.evaluate('tw.busy'))
+    check("  with its shipped clip, while a line with a monster's name was the phone's voice",
+          p.evaluate('window.__clips.at(-1)') == 'The lake!' and 'Which village for Monster 22? Tap one to look!' not in p.evaluate('window.__clips'))
     p.screenshot(path=OUT / 'w2_cloud_parting.png')
     p.wait_for_timeout(2200)
     check('  then flies down into the lake village', p.evaluate('tw.place') == 'lake' and p.evaluate("$('twValley').src.includes('lake-2400')"))

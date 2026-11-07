@@ -36,7 +36,15 @@ def new_page(b, size='fold inner', mobile=True):
         Object.defineProperty(window, 'speechSynthesis', { configurable: true, value: {
           speak: u => { window.__parts.push(u.text); if (fresh || !window.__said.length) window.__said.push(u.text); else window.__said[window.__said.length - 1] += ' ' + u.text;
                         fresh = false; setTimeout(() => u.onend && u.onend({}), 5); },
-          cancel() { fresh = true; }, getVoices: () => [], addEventListener() {}, removeEventListener() {} } });""")
+          cancel() { fresh = true; }, getVoices: () => [], addEventListener() {}, removeEventListener() {} } });
+        window.__clips = [];   // a clip played: written down like the phone's voice, and listed in __clips (a missing file fails like a real one)
+        HTMLMediaElement.prototype.play = function () {
+          const a = this, line = a.dataset.line || '';
+          return fetch(a.src).then(r => { if (!r.ok) throw new Error('missing');
+            window.__said.push(line); window.__clips.push(line); fresh = true; a.dispatchEvent(new Event('playing'));
+            setTimeout(() => a.dispatchEvent(new Event('ended')), 5); })
+            .catch(e => { a.dispatchEvent(new Event('error')); throw e; }); };
+        HTMLMediaElement.prototype.pause = function () {};""")
     p = ctx.new_page()
     p.on('console', lambda m: m.type == 'error' and problems.append(f'console error: {m.text}'))
     p.on('pageerror', lambda e: problems.append(f'page error: {e}'))
@@ -447,6 +455,37 @@ with sync_playwright() as pw:
     check('  once housed, its card no longer offers a home', not p.is_visible('#toTown'))
     p.evaluate("openCard(store.monsters[0], true)"); p.wait_for_timeout(1500)
     check('  an older monster with no house does', p.is_visible('#toTown'))
+    ctx.close()
+
+    # --- the voices: the lines that never change are clips shipped with the page -----------------------------------
+    import hashlib
+    idx = json.loads((SITE / 'town' / 'voices' / 'index.json').read_text())
+    files = sorted(set(idx.values()))
+    check(f'the shipped lines: {len(idx)} in the index, each with its own file, all there',
+          len(idx) == 70 and len(files) == 70 and all((SITE / 'town' / 'voices' / f).stat().st_size > 2000 for f in files))
+    ctx, p = new_page(b)
+    p.goto(BASE + '?for=Sam'); p.evaluate('localStorage.clear()'); p.reload(); p.wait_for_timeout(1200)
+    fixed = p.evaluate("""[...Object.values(TW_SIGN_SAY), ...QUESTIONS.map(q => q.q), 'Welcome to your monster town! Make a monster, and it will move in.',
+        'Tap a house to visit!', 'I need a home! Tap a plus to build me a house.', "I need a home! Let's go to the island!",
+        'Make another monster to live here!', 'Make a monster, and it will move in!', 'The island! Tap a place to visit.']""")
+    missing = [t for t in fixed if t not in idx]
+    check(f"every fixed line the page says has its clip, word for word {missing}", not missing)
+    p.evaluate('window.__said.length = 0; window.__clips.length = 0')
+    p.click('#twLayer [data-sign="make"]') if p.is_visible('#twLayer [data-sign="make"]') else p.eval_on_selector('#twLayer [data-sign="make"]', 'e => e.click()')
+    p.wait_for_timeout(300)
+    check(f"a signpost says where it goes with its clip, not the phone's voice {p.evaluate('window.__said')}", p.evaluate('window.__clips') == ['Make a monster!'] and p.evaluate('window.__said') == ['Make a monster!'])
+    p.click('#tabTown'); p.wait_for_timeout(500)
+    p.route('**/town/voices/*.mp3', lambda r: r.fulfill(status=404, body='no'))
+    seen = len(problems)
+    p.evaluate('window.__said.length = 0; window.__clips.length = 0')
+    p.evaluate("say('Tap a house to visit!')"); p.wait_for_timeout(400)
+    check(f"when a shipped clip can't be fetched (offline), the phone's voice says the line instead {p.evaluate('window.__said')}",
+          p.evaluate('window.__said') == ['Tap a house to visit!'] and p.evaluate('window.__clips') == [])
+    p.unroute('**/town/voices/*.mp3')
+    problems[seen:] = [x for x in problems[seen:] if 'status of 404' not in x]   # the missing clip, on purpose
+    p.evaluate("sound.set(false)"); p.evaluate('window.__said.length = 0'); p.evaluate("say('Games!')"); p.wait_for_timeout(300)
+    check('muted, nothing is said', p.evaluate('window.__said') == [])
+    p.evaluate("sound.set(true)")
     ctx.close()
     b.close()
 srv.shutdown()
