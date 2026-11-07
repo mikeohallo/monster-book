@@ -140,7 +140,7 @@ with Stack(SITE) as s:
         a.wait_for_function(f"VO.store.has('monster\\n' + {json.dumps(hi)})", timeout=15000)
         t = [c for c in talks() if 'oh! I love Worms!' in c['body']['input'][0]['content'][0]['text']]
         check(f"after the save, the monster's hello is made in the monsters' voice, its name respelled {[c['body']['input'][0]['content'][0]['text'] for c in t]}",
-              len(t) == 1 and t[0]['body']['generation_config'] == {'speech_config': [{'voice': 'voice_1iki1zg5qzyg'}]} and t[0]['body']['input'][0]['content'][0]['text'] == "Hi! I'm fuzzbert-oh! I love Worms!")
+              len(t) == 1 and t[0]['body']['generation_config'] == {'speech_config': [{'voice': 'voice_470blbv3lvbu'}]} and t[0]['body']['input'][0]['content'][0]['text'] == "Hi! I'm fuzzbert-oh! I love Worms!")
         kept = a.evaluate("indexedDB.databases().then(d => d.map(x => x.name))")
         check('  and kept on the phone, in its own database', 'monster-book.voices' in kept)
         a.click('#toTown'); a.wait_for_timeout(900)
