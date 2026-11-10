@@ -462,14 +462,24 @@ with sync_playwright() as pw:
     idx = json.loads((SITE / 'town' / 'voices' / 'index.json').read_text())
     files = sorted(set(idx.values()))
     check(f'the shipped lines: {len(idx)} in the index, each with its own file, all there',
-          len(idx) == 70 and len(files) == 70 and all((SITE / 'town' / 'voices' / f).stat().st_size > 2000 for f in files))
+          len(idx) == 102 and len(files) == 102 and all((SITE / 'town' / 'voices' / f).stat().st_size > 2000 for f in files))
     ctx, p = new_page(b)
     p.goto(BASE + '?for=Sam'); p.evaluate('localStorage.clear()'); p.reload(); p.wait_for_timeout(1200)
     fixed = p.evaluate("""[...Object.values(TW_SIGN_SAY), ...QUESTIONS.map(q => q.q), 'Welcome to your monster town! Make a monster, and it will move in.',
         'Tap a house to visit!', 'I need a home! Tap a plus to build me a house.', "I need a home! Let's go to the island!",
-        'Make another monster to live here!', 'Make a monster, and it will move in!', 'The island! Tap a place to visit.']""")
+        'Make another monster to live here!', 'Make a monster, and it will move in!', 'The island! Tap a place to visit.',
+        ...PICKS.food, ...PICKS.friend, ...PICKS.grumpy]""")
     missing = [t for t in fixed if t not in idx]
-    check(f"every fixed line the page says has its clip, word for word {missing}", not missing)
+    check(f"every fixed line the page says has its clip, word for word, the 32 picture answers too {missing}", not missing and len(fixed) == 47)
+    # a picture answer on Meet your monster is said with its clip, not the phone's voice (missed on 7 Nov; found by Mike 10 Nov)
+    p.goto(BASE + '?for=Sam#make'); p.wait_for_timeout(1000)
+    p.click('#toMeet'); p.wait_for_timeout(1000)
+    heard = []
+    for key, word in (('food', 'Worms'), ('friend', 'A robot'), ('grumpy', 'Being tickled')):
+        p.evaluate('window.__said.length = 0; window.__clips.length = 0')
+        p.click(f'#p_{key} [data-pick="{word}"]'); p.wait_for_timeout(300)
+        heard.append((word, p.evaluate('window.__clips'), p.evaluate('window.__said')))
+    check(f"tapping a picture answer plays its clip, not the phone's voice {heard}", all(c == [w] and s == [w] for w, c, s in heard))
     p.evaluate('window.__said.length = 0; window.__clips.length = 0')
     p.click('#twLayer [data-sign="make"]') if p.is_visible('#twLayer [data-sign="make"]') else p.eval_on_selector('#twLayer [data-sign="make"]', 'e => e.click()')
     p.wait_for_timeout(300)
