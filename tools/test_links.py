@@ -127,3 +127,4 @@ with sync_playwright() as pw:
     ctx.close(); b.close()
 srv.shutdown()
 print('PROBLEMS:' if problems else 'all good', *problems, sep='\n  ')
+sys.exit(1 if problems else 0)

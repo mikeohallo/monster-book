@@ -62,3 +62,4 @@ with sync_playwright() as pw:
     b.close()
 srv.shutdown()
 print('PROBLEMS:' if problems else 'no errors', *problems, sep='\n  ')
+sys.exit(1 if problems else 0)

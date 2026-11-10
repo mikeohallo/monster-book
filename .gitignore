@@ -8,3 +8,11 @@ __pycache__/
 *.pyc
 .DS_Store
 Thumbs.db
+
+# test runs: the fonts, the older pages and the results
+Fredoka.ttf
+Nunito.ttf
+old.html
+index_v33.html
+out/
+screens/

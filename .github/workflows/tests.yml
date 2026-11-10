@@ -1,0 +1,105 @@
+# Tests and screenshot checks on every push. Never deploys: the site goes live only by Direct Upload on Mike's line
+# (CLAUDE.md). No secrets, no model calls. The book's art isn't in this repo, so the tests run on stand-in pictures
+# (tools/ci_art.py); the private store's test (test_keep.py) skips here because that repo is private.
+name: tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FONTS_COMMIT: 5bb28733cec313b63fbd415b574b5ae35c8aa8b8   # google/fonts, for Fredoka and Nunito (OFL)
+
+jobs:
+  tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # the rollback tests need the pages that were live before
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Browser and libraries
+        run: |
+          pip install playwright==1.63.0 pillow==12.3.0
+          python -m playwright install --with-deps chromium
+      - name: Fonts, stand-in art and the older pages
+        run: |
+          base=https://raw.githubusercontent.com/google/fonts/$FONTS_COMMIT/ofl
+          curl -sSfL -o Fredoka.ttf "$base/fredoka/Fredoka%5Bwdth,wght%5D.ttf"
+          curl -sSfL -o Nunito.ttf "$base/nunito/Nunito%5Bwght%5D.ttf"
+          python tools/ci_art.py
+          git show a622031:index.html > old.html
+          git show 9f25da8:index.html > index_v33.html
+      - name: Flip book and card
+        if: ${{ !cancelled() }}
+        run: python tools/test_site.py out/site
+      - name: Match
+        if: ${{ !cancelled() }}
+        run: python tools/test_match.py out/match
+      - name: Links
+        if: ${{ !cancelled() }}
+        run: python tools/test_links.py out/links
+      - name: Games
+        if: ${{ !cancelled() }}
+        run: python tools/test_games.py out/games
+      - name: Spooky games
+        if: ${{ !cancelled() }}
+        run: python tools/test_spooky.py out/spooky
+      - name: Town and voices
+        if: ${{ !cancelled() }}
+        run: python tools/test_town.py out/town
+      - name: Villages
+        if: ${{ !cancelled() }}
+        run: python tools/test_world.py out/world
+      - name: Keeping monsters (skips without the private store)
+        if: ${{ !cancelled() }}
+        run: python tools/test_keep.py out/keep
+
+  screens:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: head
+          persist-credentials: false
+      - name: The base to compare with (main; on main itself, the commit before)
+        uses: actions/checkout@v4
+        with:
+          path: base
+          ref: ${{ github.ref_name == 'main' && github.event.before || 'main' }}
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Browser and libraries
+        run: |
+          pip install playwright==1.63.0 pillow==12.3.0
+          python -m playwright install --with-deps chromium
+      - name: Fonts and stand-in art in both copies
+        run: |
+          base=https://raw.githubusercontent.com/google/fonts/$FONTS_COMMIT/ofl
+          curl -sSfL -o Fredoka.ttf "$base/fredoka/Fredoka%5Bwdth,wght%5D.ttf"
+          curl -sSfL -o Nunito.ttf "$base/nunito/Nunito%5Bwght%5D.ttf"
+          for d in head base; do cp Fredoka.ttf Nunito.ttf $d/; python head/tools/ci_art.py $d; done
+      - name: Main screens at phone and laptop widths, light and dark
+        run: python head/tools/test_screens.py base head screens
+      - name: Keep the pictures for a week (stand-in art and no names only)
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: screens
+          path: screens
+          retention-days: 7

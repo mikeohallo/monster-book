@@ -35,4 +35,6 @@ This repo is public. Before each push, scan every file for family names, API key
 
 ## Tests
 
+GitHub Actions runs the tests and the screenshot checks on every push (`.github/workflows/tests.yml`). It never deploys, holds no secrets and calls no model. It runs on stand-in art (`tools/ci_art.py`) because the book's art isn't in the repo, and `test_keep.py` skips there (the store's own CI runs it). `tools/test_screens.py BASE HEAD OUT` renders the four main screens at 390 and 1280 px, light and dark, and compares them with main.
+
 `tools/test_site.py`, `tools/test_match.py`, `tools/test_links.py`, `tools/test_games.py`, `tools/test_spooky.py`, `tools/test_town.py`, `tools/test_world.py` and `tools/test_keep.py`. They need `faces/` and `strips/` next to `index.html` (`town/` is in the repo). `test_keep.py` also runs the private store locally. It needs the private `monster-store` repo beside this one (or at `$MONSTER_STORE`), with `npm ci --ignore-scripts` done there, and says so and skips without it. `test_world.py`'s rollback test needs the page that was live before the villages as `old.html` beside `index.html` (`git show a622031:index.html > old.html`), and skips without it. `test_keep.py`'s rollback test needs the page that was live before the voices as `index_v33.html` (`git show 9f25da8:index.html > index_v33.html`).
