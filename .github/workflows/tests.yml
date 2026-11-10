@@ -32,7 +32,7 @@ jobs:
           python-version: '3.12'
       - name: Browser and libraries
         run: |
-          pip install playwright==1.63.0 pillow==12.3.0
+          pip install playwright==1.63.0 pillow==12.3.0 numpy==2.5.3
           python -m playwright install --with-deps chromium
       - name: Fonts, stand-in art and the older pages
         run: |
@@ -86,7 +86,7 @@ jobs:
           python-version: '3.12'
       - name: Browser and libraries
         run: |
-          pip install playwright==1.63.0 pillow==12.3.0
+          pip install playwright==1.63.0 pillow==12.3.0 numpy==2.5.3
           python -m playwright install --with-deps chromium
       - name: Fonts and stand-in art in both copies
         run: |
