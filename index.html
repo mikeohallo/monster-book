@@ -1622,20 +1622,36 @@ function newGame() {
   document.querySelectorAll('.level').forEach((b, i) => b.setAttribute('aria-pressed', String(i === game.level)));
   const picks = shuffleArr([...Array(N).keys()].map(i => i + 1)).slice(0, L.pairs);
   game.cards = shuffleArr([...picks, ...picks]).map(n => ({ n, up: false, matched: false }));
-  game.open = []; game.lock = false; game.flips = 0; game.found = 0; game.started = true;
+  game.open = []; game.lock = true; game.flips = 0; game.found = 0; game.started = true;
+  const peek = game.peek = (game.peek || 0) + 1;   // a new game while one is peeking cancels the old peek
   $('win').hidden = true; $('board').hidden = false; $('newGame').hidden = false;
   const board = $('board'); board.textContent = '';
   board.style.gridTemplateColumns = `repeat(${L.cols}, minmax(0, 1fr))`;
   game.cards.forEach((c, i) => {
     const b = document.createElement('button'); b.className = 'mcard'; b.type = 'button';
-    b.setAttribute('aria-label', 'Face-down card');
+    b.classList.add('up'); b.setAttribute('aria-label', `${mon(c.n).name} card`);   // face up for a first look
     b.innerHTML = `<div class="back"></div><div class="face"><img alt=""></div>`;
     b.querySelector('img').src = `faces/F${pad(c.n)}.webp`;
     b.addEventListener('click', () => flipCard(i));
     board.append(b);
   });
   updateStatus();
+  // A first look: every card face up for a moment once its picture has loaded (3 s at most), then all turn over
+  // and the game starts. Taps wait until then.
+  const loaded = [...board.querySelectorAll('img')].map(im => im.complete ? null : new Promise(r => { im.onload = im.onerror = r; }));
+  Promise.race([Promise.all(loaded), new Promise(r => setTimeout(r, 3000))]).then(() => {
+    if (peek !== game.peek) return;
+    // so she sees every card in her look: if the board doesn't fit on screen, bring it (and the counts above it) into view
+    const r = board.getBoundingClientRect(), stat = $('flips').getBoundingClientRect();
+    if (r.bottom > innerHeight || r.top < 0) scrollTo({ top: scrollY + Math.min(stat.top, r.top) - 8, behavior: reduced ? 'auto' : 'smooth' });
+    setTimeout(() => {
+      if (peek !== game.peek) return;
+      [...board.children].forEach(b => { b.classList.remove('up'); b.setAttribute('aria-label', 'Face-down card'); });
+      game.lock = false;
+    }, PEEK_MS());
+  });
 }
+const PEEK_MS = () => (typeof window.__peekMs === 'number' ? window.__peekMs : 2000);   // the tests shorten it
 function updateStatus() {
   const L = LEVELS[game.level];
   $('flips').textContent = game.flips; $('found').textContent = game.found; $('total').textContent = L.pairs;
