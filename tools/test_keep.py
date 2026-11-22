@@ -155,17 +155,28 @@ with Stack(SITE) as s:
         check(f'  and in the close-up, the 3D monster leans out of the window {lean}', lean == [True, True])
         a.screenshot(path=OUT / 'k6_close3d.png')
         check(f'  where it says hello with its clip, not the phone voice {a.evaluate("window.__said.slice(-2)")}', a.evaluate('window.__clips.at(-1)') == hi and a.evaluate('window.__said.at(-1)') == hi)
-        # a line with no clip yet: the phone's voice says it, and the clip made meanwhile is only kept for next time
-        s.gemini.delay = 2.5
+        # the town's common lines with its name were made ahead, after the save, in the town's voice
+        a.wait_for_function("VO.store.has('narrator\\nFuzzbert has a new home! Tap it to visit!')", timeout=20000)
+        check('after the save, the town lines with its name are made ahead too', all(a.evaluate(f"VO.store.has('narrator\\n' + {json.dumps(t)})") for t in
+              ['Fuzzbert', 'Fuzzbert stays home!', 'Fuzzbert has a new home! Tap it to visit!', 'Which village for Fuzzbert? Tap one to look!']))
+        line = a.evaluate('twMoveLine(store.monsters[0])')
+        # a new line with a name: the page waits a moment for its real voice instead of using the phone's
+        s.gemini.delay = 0.8
         n_t = len(talks())
         a.evaluate("window.__said.length = 0; window.__clips.length = 0")
-        a.click('#twMove'); a.wait_for_timeout(300)
-        line = a.evaluate('window.__said.at(-1)')
-        check(f'a new line with a name in it is said by the phone at once ({line})', line and line.startswith('Fuzzbert wants to move!') and a.evaluate('window.__clips.length') == 0)
-        a.wait_for_function(f"VO.store.has('narrator\\n' + {json.dumps(line)})", timeout=15000)
-        a.wait_for_timeout(300)
-        check("  the store makes it meanwhile, and it isn't played over or after the phone's voice", len(talks()) == n_t + 1 and a.evaluate('window.__clips.length') == 0
-              and talks()[-1]['body']['generation_config'] == {'speech_config': [{'voice': 'en-us-hali'}]})
+        a.evaluate("say('Fuzzbert loves the lake!')"); a.wait_for_timeout(300)
+        check(f"a new line with a name in it waits for its real voice, saying nothing yet {a.evaluate('window.__said')}", a.evaluate('window.__said') == [])
+        a.wait_for_function("window.__clips.length === 1", timeout=8000)
+        check(f"  then plays its clip, not the phone voice {a.evaluate('window.__said')}", a.evaluate('window.__said') == ['Fuzzbert loves the lake!'] and a.evaluate('window.__clips') == ['Fuzzbert loves the lake!']
+              and len(talks()) == n_t + 1 and talks()[-1]['body']['generation_config'] == {'speech_config': [{'voice': 'en-us-hali'}]})
+        # a store slower than the wait: the phone's voice after the wait, and the clip is only kept for next time
+        s.gemini.delay = 3.0
+        a.evaluate("window.__voWait = 600; window.__said.length = 0; window.__clips.length = 0")
+        a.evaluate("say('Fuzzbert is very slow today!')"); a.wait_for_timeout(1000)
+        check(f"if the real voice isn't ready in time, the phone's voice says it {a.evaluate('window.__said')}", a.evaluate('window.__said') == ['Fuzzbert is very slow today!'] and a.evaluate('window.__clips') == [])
+        a.wait_for_function("VO.store.has('narrator\\nFuzzbert is very slow today!')", timeout=15000); a.wait_for_timeout(300)
+        check("  the clip that arrives later isn't played over or after it", a.evaluate('window.__clips') == [])
+        a.evaluate("delete window.__voWait")
         s.gemini.delay = 0.2
         a.evaluate("twStayHome()"); a.wait_for_timeout(300)
         a.evaluate("twCloseUp(2)"); a.wait_for_timeout(400)
