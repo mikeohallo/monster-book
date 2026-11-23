@@ -1,7 +1,7 @@
 """Keeping monsters safe: a phone linked to the family's private store by three faces and a grown-up's passkey, saving
 every change, a new phone bringing it all back, an unlinked phone, 3D monsters in the town, and the voices: lines with
 a monster's name made by the store and kept on the phone, never played over the phone's own voice. Runs the private store
-(the monster-store repo, beside this one or at $MONSTER_STORE) on this machine, with a pretend Gemini and a pretend
+(the monster-store repo, beside this one or at $MONSTER_STORE) on this machine, with a pretend Gemini, a pretend ElevenLabs and a pretend
 passkey; nothing talks to Cloudflare or Google. Without the store repo, it says so and skips.
     python3 tools/test_keep.py OUTDIR"""
 import base64, io, json, os, sys
@@ -122,7 +122,7 @@ with Stack(SITE) as s:
         copies = s.sql('SELECT monsters, data FROM snapshots ORDER BY id DESC LIMIT 1')
         check('saving a monster copies it to the store', copies and copies[0]['monsters'] == 1 and json.loads(copies[0]['data'])['monsters'][0]['name'] == 'Fuzzbert')
         pics = lambda: [c for c in s.gemini.calls if 'gemini-3-pro-image' in c['path']]
-        talks = lambda: [c for c in s.gemini.calls if c['path'].startswith('/v1beta/interactions')]
+        talks = lambda: [c for c in s.gemini.calls if c['path'].startswith('/v1/text-to-speech/')]
         call = pics()[-1]['body']['contents'][0]['parts'] if pics() else []
         src = Image.open(io.BytesIO(base64.b64decode(call[0]['inlineData']['data']))) if call else None
         check(f'the 3D monster is asked for once, from the book monster drawn on the phone {src.size if src else None}',
@@ -138,9 +138,9 @@ with Stack(SITE) as s:
         # --- the voices: a monster's own lines are made by the store after it's saved, and kept on the phone ----------
         hi = "Hi! I'm Fuzzbert! I love Worms!"
         a.wait_for_function(f"VO.store.has('monster\\n' + {json.dumps(hi)})", timeout=15000)
-        t = [c for c in talks() if 'oh! I love Worms!' in c['body']['input'][0]['content'][0]['text']]
-        check(f"after the save, the monster's hello is made in the monsters' voice, its name respelled {[c['body']['input'][0]['content'][0]['text'] for c in t]}",
-              len(t) == 1 and t[0]['body']['generation_config'] == {'speech_config': [{'voice': 'voice_470blbv3lvbu'}]} and t[0]['body']['input'][0]['content'][0]['text'] == "Hi! I'm fuzzbert-oh! I love Worms!")
+        t = [c for c in talks() if 'oh! I love Worms!' in c['body']['text']]
+        check(f"after the save, the monster's hello is made in the monsters' voice (Lulu), its name respelled {[c['body']['text'] for c in t]}",
+              len(t) == 1 and t[0]['path'].startswith('/v1/text-to-speech/ocZQ262SsZb9RIxcQBOj?') and t[0]['body']['text'] == "Hi! I'm fuzzbert-oh! I love Worms!")
         kept = a.evaluate("indexedDB.databases().then(d => d.map(x => x.name))")
         check('  and kept on the phone, in its own database', 'monster-book.voices' in kept)
         a.click('#toTown'); a.wait_for_timeout(900)
@@ -168,7 +168,7 @@ with Stack(SITE) as s:
         check(f"a new line with a name in it waits for its real voice, saying nothing yet {a.evaluate('window.__said')}", a.evaluate('window.__said') == [])
         a.wait_for_function("window.__clips.length === 1", timeout=8000)
         check(f"  then plays its clip, not the phone voice {a.evaluate('window.__said')}", a.evaluate('window.__said') == ['Fuzzbert loves the lake!'] and a.evaluate('window.__clips') == ['Fuzzbert loves the lake!']
-              and len(talks()) == n_t + 1 and talks()[-1]['body']['generation_config'] == {'speech_config': [{'voice': 'en-us-hali'}]})
+              and len(talks()) == n_t + 1 and talks()[-1]['path'].startswith('/v1/text-to-speech/MgqVq3OCTPeVHCEDr4HU?'))
         # a store slower than the wait: the phone's voice after the wait, and the clip is only kept for next time
         s.gemini.delay = 3.0
         a.evaluate("window.__voWait = 600; window.__said.length = 0; window.__clips.length = 0")
@@ -181,7 +181,7 @@ with Stack(SITE) as s:
         a.evaluate("twStayHome()"); a.wait_for_timeout(300)
         a.evaluate("twCloseUp(2)"); a.wait_for_timeout(400)
         a.click('#twMove'); a.wait_for_timeout(400)
-        moves = [c for c in talks() if 'wants to move' in c['body']['input'][0]['content'][0]['text']]
+        moves = [c for c in talks() if 'wants to move' in c['body']['text']]
         check('  the next time, the line is its clip (made once)', a.evaluate('window.__clips.at(-1)') == line and len(moves) == 1)
         # a new line cuts off the last; mute stops it
         a.evaluate("window.__paused.length = 0"); a.evaluate("twStayHome()"); a.wait_for_timeout(300)
@@ -237,9 +237,9 @@ with Stack(SITE) as s:
         g.wait_for_function("document.getElementById('namesMsg').textContent.startsWith('Saved')")
         a.goto(F + '/'); a.wait_for_timeout(1500)
         a.wait_for_function(f"VO.store.has('monster\\n' + {json.dumps(hi)})", timeout=15000)
-        t = [c for c in talks() if 'I love Worms!' in c['body']['input'][0]['content'][0]['text']]
-        check(f"reopened, the phone drops its clips with the old spelling and gets them made again {[c['body']['input'][0]['content'][0]['text'] for c in t]}",
-              len(t) == 2 and t[-1]['body']['input'][0]['content'][0]['text'] == "Hi! I'm FUZZ-burt! I love Worms!")
+        t = [c for c in talks() if 'I love Worms!' in c['body']['text']]
+        check(f"reopened, the phone drops its clips with the old spelling and gets them made again {[c['body']['text'] for c in t]}",
+              len(t) == 2 and t[-1]['body']['text'] == "Hi! I'm FUZZ-burt! I love Worms!")
 
         # --- rolling back: the page live before the voices still works on this store and this phone ------------------
         if (SITE / 'index_v33.html').exists():
